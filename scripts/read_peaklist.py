@@ -235,6 +235,8 @@ def read_analysis(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndi
 
     df.XW_HZ.replace("None", "20.0", inplace=True)
     df.YW_HZ.replace("None", "20.0", inplace=True)
+    df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
+    df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
 
     df["XW_HZ"] = df.XW_HZ.apply(lambda x: float(x))
     df["YW_HZ"] = df.YW_HZ.apply(lambda x: float(x))
@@ -300,8 +302,10 @@ def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=
 
     df["X_AXIS"] = df.X_PPM.apply(lambda i: uc_f2(i, "ppm"))
     df["Y_AXIS"] = df.Y_PPM.apply(lambda i: uc_f1(i, "ppm"))
-    print(df["XW_HZ"].head())
-    print(df["YW_HZ"].head())
+    df["X_AXISf"] = df.X_PPM.apply(lambda i: uc_f2.f(i, "ppm"))
+    df["Y_AXISf"] = df.Y_PPM.apply(lambda i: uc_f1.f(i, "ppm"))
+    #print(df["XW_HZ"].head())
+    #print(df["YW_HZ"].head())
     #print(uc_f1("10 Hz"))
 
     df.XW_HZ.replace("None", "20.0", inplace=True)
