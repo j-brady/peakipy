@@ -87,7 +87,8 @@ def make_models(model, peaks):
         # make model for first peak
         mod = Model(model, prefix="_%d_" % peaks.INDEX)
         # add parameters
-        p_guess = mod.make_params(**make_param_dict(peaks))
+        param_dict = make_param_dict(peaks)
+        p_guess = mod.make_params(**param_dict)
 
     elif len(peaks) > 1:
         # make model for first peak
@@ -96,14 +97,16 @@ def make_models(model, peaks):
         for index, peak in remaining_peaks:
             mod += Model(model, prefix="_%d_" % peak.INDEX)
 
-        p_guess = mod.make_params(**make_param_dict(peaks))
+        param_dict = make_param_dict(peaks)
+        p_guess = mod.make_params(**param_dict)
         # add Peak params to p_guess
-        # update_params(p_guess, peaks)
+
+    update_params(p_guess, param_dict)
 
     return mod, p_guess
 
 
-def update_params(params, peaks):
+def update_params(params, param_dict):
     """ Update lmfit parameters with values from Peak
 
         Arguments:
@@ -116,29 +119,29 @@ def update_params(params, peaks):
              --
 
     """
-    for peak in peaks:
-        # print(peak)
-        for k, v in peak.param_dict().items():
-            params[k].value = v
-            print("update", k, v)
-            if "center" in k:
-                params[k].min = v - 2.5
-                params[k].max = v + 2.5
-                print(
-                    "setting limit of %s, min = %.3e, max = %.3e"
-                    % (k, params[k].min, params[k].max)
-                )
-            elif "sigma" in k:
-                params[k].min = 0.0
-                params[k].max = 1e6
-                print(
-                    "setting limit of %s, min = %.3e, max = %.3e"
-                    % (k, params[k].min, params[k].max)
-                )
-            elif "fraction" in k:
-                # fix weighting between 0 and 1
-                params[k].min = 0.0
-                params[k].max = 1.0
+    for k, v in param_dict.items():
+        params[k].value = v
+        print("update", k, v)
+        #if "center" in k:
+        #    params[k].min = v - 2.5
+        #    params[k].max = v + 2.5
+        #    print(
+        #        "setting limit of %s, min = %.3e, max = %.3e"
+        #        % (k, params[k].min, params[k].max)
+        #    )
+        if "sigma" in k:
+            params[k].min = 0.0
+            params[k].max = 1e4
+            print(
+                "setting limit of %s, min = %.3e, max = %.3e"
+                % (k, params[k].min, params[k].max)
+            )
+        elif "fraction" in k:
+            # fix weighting between 0 and 1
+            params[k].min = 0.0
+            params[k].max = 1.0
+
+    #return params
 
 
 def fit_first_plane(group, data, x_radius, y_radius, plot=True):
