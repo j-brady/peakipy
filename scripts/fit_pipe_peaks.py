@@ -12,7 +12,9 @@
         --x_radius=<points>  x_radius in points for fit mask [default: 6]
         --y_radius=<points>  y_radius in points for fit mask [default: 5]
         --min_rsq=<float>  minimum R2 required to accept fit [default: 0.85]
+        --lineshape=<G/L/PV>  lineshape to fit [default: PV]
 
+        --plot=<dir>  Whether to plot wireframe fits for each peak (saved into <dir>) [default: None]
         --show  Whether to show wireframe fits for each peak
 
 
@@ -28,9 +30,8 @@
 
 """
 import os
-import sys
+from pathlib import Path
 
-import yaml
 import nmrglue as ng
 import numpy as np
 import matplotlib.pyplot as plt
@@ -144,12 +145,19 @@ def update_params(params, param_dict):
     #return params
 
 
-def fit_first_plane(group, data, x_radius, y_radius, plot=True):
+def fit_first_plane(group, data, x_radius, y_radius, uc_dics, plot=True, show=True):
     """
         Arguments:
 
             group -- pandas data from containing group of peaks
             data  -- 
+            x_radius 
+            y_radius
+            uc_dics -- unit conversion dics
+            plot -- if True show wireframe plots
+
+        To do:
+            add model selection
     
     """
 
@@ -181,7 +189,8 @@ def fit_first_plane(group, data, x_radius, y_radius, plot=True):
     XY_slices = [X.copy()[mask], Y.copy()[mask]]
     out = mod.fit(peak_slices, XY=XY_slices, params=p_guess)
 
-    if plot:
+    if plot is not "None":
+        plot_path = Path(plot)
         Zsim = mod.eval(XY=XY, params=out.params)
         print(report_fit(out.params))
         Zsim[~mask] = np.nan
@@ -191,11 +200,12 @@ def fit_first_plane(group, data, x_radius, y_radius, plot=True):
         ax = fig.add_subplot(111, projection="3d")
         Z_plot = data.copy()
         Z_plot[~mask] = np.nan
-        X_plot = X[min_y - 1 : max_y, min_x - 1 : max_x]
-        Y_plot = Y[min_y - 1 : max_y, min_x - 1 : max_x]
+        X_plot = uc_dics["f2"].ppm(X[min_y - 1 : max_y, min_x - 1 : max_x])
+        Y_plot = uc_dics["f1"].ppm(Y[min_y - 1 : max_y, min_x - 1 : max_x])
 
         ax.plot_wireframe(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x])
-        ax.set_xlabel("x")
+        ax.set_xlabel("F2 ppm")
+        ax.set_ylabel("F1 ppm")
         ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
         ax.plot_wireframe(
             X_plot,
@@ -204,7 +214,32 @@ def fit_first_plane(group, data, x_radius, y_radius, plot=True):
             color="r",
             linestyle="--",
         )
-        plt.show()
+        # Annotate plots
+        labs = []
+        Z_lab = []
+        Y_lab = []
+        X_lab = []
+        for k,v in out.params.valuesdict().items():
+
+            if "amplitude" in k:
+                Z_lab.append(v)   
+                # get prefix
+                labs.append(k.split("_")[1])
+            elif "center_x" in k:
+                X_lab.append(uc_dics["f2"].ppm(v))   
+            elif "center_y" in k:
+                Y_lab.append(uc_dics["f1"].ppm(v))   
+
+        for l,x,y,z in zip(labs, X_lab, Y_lab, Z_lab):  
+            print(l,x,y,z)
+            ax.text(x,y,z,l,None)
+
+        name = group.CLUSTID.iloc[0]
+        if show:
+            plt.savefig(plot_path/f"{name}.png",dpi=300)
+            plt.show()
+        else:
+            plt.savefig(plot_path/f"{name}.png",dpi=300)
         #    print(p_guess)
     return out, mask
 
@@ -231,6 +266,11 @@ if __name__ == "__main__":
     # read NMR data
     dic, data = ng.pipe.read(args["<data>"])
     udic = ng.pipe.guess_udic(dic,data)
+    dims = [0,1,2]
+    planes, f1_dim, f2_dim = dims
+    uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
+    uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
+    uc_dics = {"f1":uc_f1,"f2":uc_f2}
     # sum planes for initial fit
     # summed_planes = data.sum(axis=0)
     # for saving data
@@ -253,13 +293,20 @@ if __name__ == "__main__":
     names = []
     indices = []
     assign = []
+    clustids = []
     # iterate over groups of peaks
     for name, group in groups:
         #  max cluster size
         if len(group) <= max_cluster_size:
             # fits sum of all planes first
             # first, mask = fit_first_plane(group, summed_planes, plot=True)
-            first, mask = fit_first_plane(group, data[0], x_radius, y_radius, plot=args.get("--show"))
+            plot = args.get("--plot")
+            if os.path.exists(plot) and os.path.isdir(plot):
+                pass
+            else:
+                os.mkdir(plot)
+
+            first, mask = fit_first_plane(group, data[0], x_radius, y_radius, uc_dics, plot=plot, show=args.get("--show"))
             # fix sigma center and fraction parameters
             to_fix = ["sigma", "center", "fraction"]
             #to_fix = ["center", "fraction"]
@@ -314,6 +361,7 @@ if __name__ == "__main__":
                     fractions.extend(frac)
                     names.extend(name)
                     assign.extend(group["ASS"])
+                    clustids.extend(group["CLUSTID"])
 
                     # print(plane.fit_report())
             #exit()
@@ -331,7 +379,8 @@ if __name__ == "__main__":
                 # "sigma_x_err": np.ravel(sigma_x_errs),
                 "sigma_y": np.ravel(center_ys),
                 # "sigma_y_err": np.ravel(sigma_y_errs),
-                "fractions": np.ravel(fractions),
+                "fraction": np.ravel(fractions),
+                "clustid": np.ravel(clustids)
             }
         )
         #  get peak numbers

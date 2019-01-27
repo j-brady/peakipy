@@ -24,7 +24,7 @@
 
    Examples:
        read_peaklist.py test.tab
-       read_peaklist.py test.a2 test.ft2 --a2
+       read_peaklist.py test.a2 test.ft2 --a2 --pthres=1e5 --noise=1e4 --dims=0,2,1
 
    Description:
       
@@ -345,7 +345,9 @@ def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=
     return df 
 
 def to_fuda(df):
-    pass
+    groups = df.groupby("CLUSTID")
+    with open("params.fuda","w") as f:
+    
 
 if __name__ == "__main__":
     args = docopt(__doc__)

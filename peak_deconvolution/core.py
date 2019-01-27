@@ -8,6 +8,11 @@ from lmfit import Model
 log2 = log(2)
 s2pi = sqrt(2*pi)
 spi = sqrt(pi)
+
+π = pi
+#√π = sqrt(π)
+#√2π =  sqrt(2*π)
+
 s2 = sqrt(2.0)
 tiny = 1.e-13
 
@@ -17,7 +22,7 @@ def gaussian(x, amplitude=1.0, center=0.0, sigma=1.0):
     gaussian(x, amplitude, center, sigma) =
         (amplitude/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
     """
-    return (amplitude/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+    return (amplitude/(sqrt(2*π)*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
 
 
 def lorentzian(x, amplitude=1.0, center=0.0, sigma=1.0):
@@ -25,7 +30,7 @@ def lorentzian(x, amplitude=1.0, center=0.0, sigma=1.0):
     lorentzian(x, amplitude, center, sigma) =
         (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
     """
-    return (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+    return (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (π*sigma)
 
 
 def pvoigt2d(XY,amplitude=1.0, center_x=0.5,center_y=0.5, sigma_x=1.0,sigma_y=1.0, fraction=0.5):
@@ -194,43 +199,6 @@ def get_params(params,name):
     return ps, ps_err, names
 
 
-#class Peak():
-#    """ Define a peak
-#
-#        Arguments:
-#            -- center_x
-#            -- center_y
-#            -- amplitude
-#            -- prefix
-#
-#    """
-#    def __init__(self,center_x,center_y,amplitude,prefix):
-#        self.center_x = center_x
-#        self.center_y = center_y
-#        self.amplitude = amplitude
-#        self.prefix = prefix
-#
-#    def param_dict(self):
-#        """ Make dict of parameter names using prefix """
-#        str_form = lambda x: "%s%s"%(self.prefix,str(x))
-#        par_dict = {str_form("center_x"):self.center_x,
-#                    str_form("center_y"):self.center_y,
-#                    str_form("amplitude"):self.amplitude,
-#                    str_form("fraction"):0.5}
-#        return par_dict
-#
-#    def mask(self,data,r_x,r_y):
-#        # data is spectrum containing peak
-#        a, b = self.center_y, self.center_x
-#        n_y, n_x = data.shape
-#        y,x = np.ogrid[-a:n_y-a, -b:n_x-b]
-#        # create circular mask
-#        mask = x**2./r_x**2. + y**2./r_y**2. <= 1.0
-#        return mask
-#
-#    def __str__(self):
-#        return "Peak: x=%d, y=%d, amp=%.1f, fraction=%.1f, prefix=%s"% \
-#               (self.center_x,self.center_y,self.amplitude,0.5,self.prefix)
 
 
 class Peak():
