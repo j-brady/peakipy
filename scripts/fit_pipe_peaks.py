@@ -52,7 +52,7 @@ from peak_deconvolution.core import (
 )
 
 
-def make_param_dict(peaks):
+def make_param_dict(peaks, lineshape="PV"):
     """ Make dict of parameter names using prefix """
 
     param_dict = {}
@@ -63,20 +63,26 @@ def make_param_dict(peaks):
         # using exact value of points (i.e decimal)
         param_dict[str_form("center_x")] = peak.X_AXISf
         param_dict[str_form("center_y")] = peak.Y_AXISf
-        param_dict[str_form("sigma_x")] = peak.XW/2.
-        param_dict[str_form("sigma_y")] = peak.YW/2.
+        param_dict[str_form("sigma_x")] = peak.XW / 2.0
+        param_dict[str_form("sigma_y")] = peak.YW / 2.0
         param_dict[str_form("amplitude")] = peak.HEIGHT
-        param_dict[str_form("fraction")] = 0.5
+        if lineshape == "G":
+            param_dict[str_form("fraction")] = 0.0
+        elif lineshape == "L":
+            param_dict[str_form("fraction")] = 1.0
+        else:
+            param_dict[str_form("fraction")] = 0.5
 
     return param_dict
 
 
-def make_models(model, peaks):
+def make_models(model, peaks, lineshape="PV"):
     """ Make composite models for multiple peaks
 
         Arguments:
             -- models
             -- peaks: list of Peak objects [<Peak1>,<Peak2>,...]
+            -- lineshape: PV/G/L
 
         Returns:
             -- mod: Composite model containing all peaks
@@ -88,7 +94,7 @@ def make_models(model, peaks):
         # make model for first peak
         mod = Model(model, prefix="_%d_" % peaks.INDEX)
         # add parameters
-        param_dict = make_param_dict(peaks)
+        param_dict = make_param_dict(peaks, lineshape=lineshape)
         p_guess = mod.make_params(**param_dict)
 
     elif len(peaks) > 1:
@@ -98,16 +104,16 @@ def make_models(model, peaks):
         for index, peak in remaining_peaks:
             mod += Model(model, prefix="_%d_" % peak.INDEX)
 
-        param_dict = make_param_dict(peaks)
+        param_dict = make_param_dict(peaks, lineshape=lineshape)
         p_guess = mod.make_params(**param_dict)
         # add Peak params to p_guess
 
-    update_params(p_guess, param_dict)
+    update_params(p_guess, param_dict, lineshape=lineshape)
 
     return mod, p_guess
 
 
-def update_params(params, param_dict):
+def update_params(params, param_dict, lineshape="PV"):
     """ Update lmfit parameters with values from Peak
 
         Arguments:
@@ -123,7 +129,7 @@ def update_params(params, param_dict):
     for k, v in param_dict.items():
         params[k].value = v
         print("update", k, v)
-        #if "center" in k:
+        # if "center" in k:
         #    params[k].min = v - 2.5
         #    params[k].max = v + 2.5
         #    print(
@@ -142,10 +148,17 @@ def update_params(params, param_dict):
             params[k].min = 0.0
             params[k].max = 1.0
 
-    #return params
+            if lineshape == "G":
+                params[k].vary = False
+            elif lineshape == "L":
+                params[k].vary = False
+
+    # return params
 
 
-def fit_first_plane(group, data, x_radius, y_radius, uc_dics, plot=True, show=True):
+def fit_first_plane(
+    group, data, x_radius, y_radius, uc_dics, lineshape="PV", plot=True, show=True
+):
     """
         Arguments:
 
@@ -162,7 +175,7 @@ def fit_first_plane(group, data, x_radius, y_radius, uc_dics, plot=True, show=Tr
     """
 
     mask = np.zeros(data.shape, dtype=bool)
-    mod, p_guess = make_models(pvoigt2d, group)
+    mod, p_guess = make_models(pvoigt2d, group, lineshape=lineshape)
     # print(p_guess)
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
@@ -219,27 +232,27 @@ def fit_first_plane(group, data, x_radius, y_radius, uc_dics, plot=True, show=Tr
         Z_lab = []
         Y_lab = []
         X_lab = []
-        for k,v in out.params.valuesdict().items():
+        for k, v in out.params.valuesdict().items():
 
             if "amplitude" in k:
-                Z_lab.append(v)   
+                Z_lab.append(v)
                 # get prefix
                 labs.append(k.split("_")[1])
             elif "center_x" in k:
-                X_lab.append(uc_dics["f2"].ppm(v))   
+                X_lab.append(uc_dics["f2"].ppm(v))
             elif "center_y" in k:
-                Y_lab.append(uc_dics["f1"].ppm(v))   
+                Y_lab.append(uc_dics["f1"].ppm(v))
 
-        for l,x,y,z in zip(labs, X_lab, Y_lab, Z_lab):  
-            print(l,x,y,z)
-            ax.text(x,y,z,l,None)
+        for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
+            print(l, x, y, z)
+            ax.text(x, y, z, l, None)
 
         name = group.CLUSTID.iloc[0]
         if show:
-            plt.savefig(plot_path/f"{name}.png",dpi=300)
+            plt.savefig(plot_path / f"{name}.png", dpi=300)
             plt.show()
         else:
-            plt.savefig(plot_path/f"{name}.png",dpi=300)
+            plt.savefig(plot_path / f"{name}.png", dpi=300)
         #    print(p_guess)
     return out, mask
 
@@ -247,6 +260,7 @@ def fit_first_plane(group, data, x_radius, y_radius, uc_dics, plot=True, show=Tr
 if __name__ == "__main__":
     args = docopt(__doc__)
     max_cluster_size = args.get("--max_cluster_size")
+    lineshape = args.get("--lineshape")
     if max_cluster_size == "None":
         max_cluster_size = 1000
     else:
@@ -261,16 +275,16 @@ if __name__ == "__main__":
     groups = peaks.groupby("CLUSTID")
     # vcpmg = np.genfromtxt("vclist")
     # need to make these definable on a per peak basis
-    #x_radius = 6
-    #y_radius = 5
+    # x_radius = 6
+    # y_radius = 5
     # read NMR data
     dic, data = ng.pipe.read(args["<data>"])
-    udic = ng.pipe.guess_udic(dic,data)
-    dims = [0,1,2]
+    udic = ng.pipe.guess_udic(dic, data)
+    dims = [0, 1, 2]
     planes, f1_dim, f2_dim = dims
     uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
     uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
-    uc_dics = {"f1":uc_f1,"f2":uc_f2}
+    uc_dics = {"f1": uc_f1, "f2": uc_f2}
     # sum planes for initial fit
     # summed_planes = data.sum(axis=0)
     # for saving data
@@ -306,11 +320,20 @@ if __name__ == "__main__":
             else:
                 os.mkdir(plot)
 
-            first, mask = fit_first_plane(group, data[0], x_radius, y_radius, uc_dics, plot=plot, show=args.get("--show"))
+            first, mask = fit_first_plane(
+                group,
+                data[0],
+                x_radius,
+                y_radius,
+                uc_dics,
+                lineshape=lineshape,
+                plot=plot,
+                show=args.get("--show"),
+            )
             # fix sigma center and fraction parameters
             to_fix = ["sigma", "center", "fraction"]
-            #to_fix = ["center", "fraction"]
-            
+            # to_fix = ["center", "fraction"]
+
             fix_params(first.params, to_fix)
 
             # r_sq = r_square(summed_planes[mask], first.residual)
@@ -364,7 +387,7 @@ if __name__ == "__main__":
                     clustids.extend(group["CLUSTID"])
 
                     # print(plane.fit_report())
-            #exit()
+            # exit()
         df = pd.DataFrame(
             {
                 "names": np.ravel(names),
@@ -380,7 +403,7 @@ if __name__ == "__main__":
                 "sigma_y": np.ravel(center_ys),
                 # "sigma_y_err": np.ravel(sigma_y_errs),
                 "fraction": np.ravel(fractions),
-                "clustid": np.ravel(clustids)
+                "clustid": np.ravel(clustids),
             }
         )
         #  get peak numbers

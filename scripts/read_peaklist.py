@@ -126,6 +126,7 @@ sparky_to_pipe = {
     # "": "MEMCNT"
 }
 
+
 def clusters(data, locations, pthres, nthres, d_struc=None, l_struc=None, ndil=0):
     """
     Perform cluster analysis of peak locations.
@@ -202,7 +203,7 @@ def read_analysis(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndi
     # print(new_columns)
     pipe_columns = dict(zip(df.columns, new_columns))
     df = df.rename(index=str, columns=pipe_columns)
-    #df["CLUSTID"] = np.arange(1, len(df) + 1)
+    # df["CLUSTID"] = np.arange(1, len(df) + 1)
 
     dic, data = ng.pipe.read(data)
     udic = ng.pipe.guess_udic(dic, data)
@@ -215,11 +216,11 @@ def read_analysis(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndi
     print(dic["FDF%dSW" % 3])
     # calculate points per hertz
     #  number of points / SW
-    #pt_per_hz_f2dim = data.shape[f2_dim] / dic["FDF%dSW" % f2_dim]
-    #pt_per_hz_f1dim = data.shape[f1_dim] / dic["FDF%dSW" % f1_dim]  #  this needs checking
+    # pt_per_hz_f2dim = data.shape[f2_dim] / dic["FDF%dSW" % f2_dim]
+    # pt_per_hz_f1dim = data.shape[f1_dim] / dic["FDF%dSW" % f1_dim]  #  this needs checking
     pt_per_hz_f2dim = udic[f2_dim]["size"] / udic[f2_dim]["sw"]
     pt_per_hz_f1dim = udic[f1_dim]["size"] / udic[f1_dim]["sw"]
-    print("Points per hz f1 = %s, f2 = %s"%(pt_per_hz_f1dim,pt_per_hz_f2dim))
+    print("Points per hz f1 = %s, f2 = %s" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
     uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
     uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
 
@@ -229,9 +230,9 @@ def read_analysis(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndi
     # decimal point value
     df["X_AXISf"] = df.X_PPM.apply(lambda x: uc_f2.f(x, "ppm"))
     df["Y_AXISf"] = df.Y_PPM.apply(lambda x: uc_f1.f(x, "ppm"))
-    #print(df["XW_HZ"].head())
-    #print(df["YW_HZ"].head())
-    #print(uc_f2("10 Hz"))
+    # print(df["XW_HZ"].head())
+    # print(df["YW_HZ"].head())
+    # print(uc_f2("10 Hz"))
 
     df.XW_HZ.replace("None", "20.0", inplace=True)
     df.YW_HZ.replace("None", "20.0", inplace=True)
@@ -245,8 +246,8 @@ def read_analysis(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndi
     df["XW"] = df.XW_HZ.apply(lambda x: x * pt_per_hz_f2dim)
     df["YW"] = df.YW_HZ.apply(lambda x: x * pt_per_hz_f1dim)
     # makes an assignment column
-    df["ASS"] = df.apply(lambda i: "".join([i["Assign F1"],i["Assign F2"]]),axis=1)
-    #df["HEIGHT"] = df.apply(lambda i: data[0][i.Y_AXIS,i.X_AXIS],axis=1) 
+    df["ASS"] = df.apply(lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1)
+    # df["HEIGHT"] = df.apply(lambda i: data[0][i.Y_AXIS,i.X_AXIS],axis=1)
     # cluster peaks using scipy.ndimage.label from nmrglue
     df["CLUSTID"] = clusters(
         data[0],
@@ -255,10 +256,12 @@ def read_analysis(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndi
         nthres=nthres,
         ndil=ndil,
     )
-    # renumber "0" clusters
+    #  renumber "0" clusters
     max_clustid = df["CLUSTID"].max()
-    n_of_zeros = len(df[df["CLUSTID"]==0]["CLUSTID"])
-    df.loc[df[df["CLUSTID"]==0].index,"CLUSTID"] = np.arange(max_clustid+1,n_of_zeros+max_clustid+1,dtype=int)
+    n_of_zeros = len(df[df["CLUSTID"] == 0]["CLUSTID"])
+    df.loc[df[df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+        max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+    )
 
     return df
 
@@ -278,13 +281,18 @@ def read_pipe(path):
 
 
 def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=0):
-    df = pd.read_csv(path,skiprows=2,delim_whitespace=True,names=["ASS","Y_PPM","X_PPM","VOLUME","HEIGHT","YW_HZ","XW_HZ"])
+    df = pd.read_csv(
+        path,
+        skiprows=2,
+        delim_whitespace=True,
+        names=["ASS", "Y_PPM", "X_PPM", "VOLUME", "HEIGHT", "YW_HZ", "XW_HZ"],
+    )
     print(df.columns)
     print(df.head())
-    #new_columns = [analysis_to_pipe.get(i, i) for i in df.columns]
+    # new_columns = [analysis_to_pipe.get(i, i) for i in df.columns]
     ## print(new_columns)
-    #pipe_columns = dict(zip(df.columns, new_columns))
-    #df = df.rename(index=str, columns=pipe_columns)
+    # pipe_columns = dict(zip(df.columns, new_columns))
+    # df = df.rename(index=str, columns=pipe_columns)
     ##df["CLUSTID"] = np.arange(1, len(df) + 1)
 
     dic, data = ng.pipe.read(data)
@@ -295,7 +303,7 @@ def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=
     print(" ".join(udic[i]["label"] for i in range(ndim)))
     print(ndim, data.shape)
     planes, f1_dim, f2_dim = dims
-    #print(dic["FDF%dSW" % 3])
+    # print(dic["FDF%dSW" % 3])
 
     uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
     uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
@@ -304,15 +312,14 @@ def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=
     df["Y_AXIS"] = df.Y_PPM.apply(lambda i: uc_f1(i, "ppm"))
     df["X_AXISf"] = df.X_PPM.apply(lambda i: uc_f2.f(i, "ppm"))
     df["Y_AXISf"] = df.Y_PPM.apply(lambda i: uc_f1.f(i, "ppm"))
-    #print(df["XW_HZ"].head())
-    #print(df["YW_HZ"].head())
-    #print(uc_f1("10 Hz"))
+    # print(df["XW_HZ"].head())
+    # print(df["YW_HZ"].head())
+    # print(uc_f1("10 Hz"))
 
     df.XW_HZ.replace("None", "20.0", inplace=True)
     df.YW_HZ.replace("None", "20.0", inplace=True)
     df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
     df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
-
 
     df["XW_HZ"] = df.XW_HZ.apply(lambda x: float(x))
     df["YW_HZ"] = df.YW_HZ.apply(lambda x: float(x))
@@ -321,14 +328,14 @@ def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=
     #  number of points / SW
     pt_per_hz_f2dim = udic[f2_dim]["size"] / udic[f2_dim]["sw"]
     pt_per_hz_f1dim = udic[f1_dim]["size"] / udic[f1_dim]["sw"]
-    #pt_per_hz_f2dim = data.shape[f2_dim] / dic["FDF%dSW" % f2_dim]
-    #pt_per_hz_f1dim = data.shape[f1_dim] / dic["FDF%dSW" % f1_dim]  #  this needs checking
+    # pt_per_hz_f2dim = data.shape[f2_dim] / dic["FDF%dSW" % f2_dim]
+    # pt_per_hz_f1dim = data.shape[f1_dim] / dic["FDF%dSW" % f1_dim]  #  this needs checking
     #  convert Hz lw to points
     df["XW"] = df.XW_HZ.apply(lambda x: x * pt_per_hz_f2dim)
     df["YW"] = df.YW_HZ.apply(lambda x: x * pt_per_hz_f1dim)
     # cluster peaks using scipy.ndimage.label from nmrglue
-    df["INDEX"] = np.arange(len(df.X_PPM),dtype=int)
-    df["HEIGHT"] = df.apply(lambda i: data[0][i.Y_AXIS,i.X_AXIS],axis=1)
+    df["INDEX"] = np.arange(len(df.X_PPM), dtype=int)
+    df["HEIGHT"] = df.apply(lambda i: data[0][i.Y_AXIS, i.X_AXIS], axis=1)
 
     df["CLUSTID"] = clusters(
         data[0],
@@ -337,17 +344,21 @@ def read_sparky(path, data, dims, noise=5e4, pthres=20 * 5e4, nthres=None, ndil=
         nthres=nthres,
         ndil=ndil,
     )
-    # renumber "0" clusters
+    #  renumber "0" clusters
     max_clustid = df["CLUSTID"].max()
-    n_of_zeros = len(df[df["CLUSTID"]==0]["CLUSTID"])
-    df.loc[df[df["CLUSTID"]==0].index,"CLUSTID"] = np.arange(max_clustid+1,n_of_zeros+max_clustid+1,dtype=int)
+    n_of_zeros = len(df[df["CLUSTID"] == 0]["CLUSTID"])
+    df.loc[df[df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+        max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+    )
 
-    return df 
+    return df
+
 
 def to_fuda(df):
     groups = df.groupby("CLUSTID")
-    with open("params.fuda","w") as f:
-    
+    with open("params.fuda", "w") as f:
+        pass
+
 
 if __name__ == "__main__":
     args = docopt(__doc__)
