@@ -2,30 +2,30 @@
 """ Read NMRPipe/Analysis peaklist into pandas dataframe
 
     Usage:
-        read_peaklist.py <peaklist> <data> [options]
+        read_peaklist.py <peaklist> <data> (--a2|--sparky|--pipe) [options]
 
     Arguments:
         <peaklist>  Analysis2/Sparky/NMRPipe peak list (see below)
         <data>      2D or pseudo3D NMRPipe data
 
+        --a2        Analysis peaklist as input
+        --sparky    Sparky peaklist as input
+        --pipe      NMRPipe peaklist as input
+
     Options:
         -h --help  Show this screen
         --version  Show version
  
-        --noise=<noise>     Noise of spectrum [default: 5e4]
-        --pthres=<pthres>   Positive peakpick threshold [default: 10e5]
-        --nthres=<nthres>   Negative peakpick threshold [default: None]
-        --ndil=<ndil>       Number of iterations for ndimage.binary_dilation [default: 0]
+        --noise=<noise>        Noise of spectrum [default: 5e4]
+        --pthres=<pthres>      Positive peakpick threshold [default: 10e5]
+        --nthres=<nthres>      Negative peakpick threshold [default: None]
+        --ndil=<ndil>          Number of iterations for ndimage.binary_dilation [default: 0]
         
-        --dims=<planes,F1,F2>    Order of dimensions [default: 0,1,2]
+        --dims=<planes,F1,F2>  Order of dimensions [default: 0,1,2]
 
-        --a2      Analysis peaklist as input
-        --sparky  Sparky peaklist as input
-        --pipe    NMRPipe peaklist as input
-
-        --outfmt=<csv/pkl>  Format of output peaklist [default: "pkl"]
+        --outfmt=<csv/pkl>     Format of output peaklist [default: "pkl"]
  
-        --show    Show the clusters on the spectrum color coded
+        --show                 Show the clusters on the spectrum color coded
 
     Examples:
         read_peaklist.py test.tab

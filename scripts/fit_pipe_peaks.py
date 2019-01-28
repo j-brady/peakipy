@@ -17,8 +17,8 @@
 
         --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
-        --x_radius=<points>                    x_radius in points for fit mask [default: 6]
-        --y_radius=<points>                    y_radius in points for fit mask [default: 5]
+        --x_radius=<points>                    x_radius in ppm for fit mask [default: 0.05]
+        --y_radius=<points>                    y_radius in ppm for fit mask [default: 0.5]
         --min_rsq=<float>                      minimum R2 required to accept fit [default: 0.85]
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
 
@@ -29,13 +29,13 @@
                                                fits for each peak
 
     ToDo: 
-        1. per peak R2, fit first summed spec (may need to adjust start params for this)
+        1. per peak R^2, fit first summed spec (may need to adjust start params for this)
         2. currently x/y_radius has to be in int points since it is used to index
         3. decide clusters based on lw?
         4. add vclist data to output?
         5. add threshold to R2 so that you just give an error for the fit and suggest reselecting the group.
         6. estimate lw since fit lw seems to be ~0.5 of estimate from analysis (may throw off fit ).
-        7. convert scales to ppm
+        7. estimate peak height 
 
 
 """
@@ -139,9 +139,9 @@ def update_params(params, param_dict, lineshape="PV"):
     for k, v in param_dict.items():
         params[k].value = v
         print("update", k, v)
-        # if "center" in k:
-        #    params[k].min = v - 2.5
-        #    params[k].max = v + 2.5
+        #if "center" in k:
+        #    params[k].min = v - 10
+        #    params[k].max = v + 10
         #    print(
         #        "setting limit of %s, min = %.3e, max = %.3e"
         #        % (k, params[k].min, params[k].max)
@@ -223,6 +223,11 @@ def fit_first_plane(
         ax = fig.add_subplot(111, projection="3d")
         Z_plot = data.copy()
         Z_plot[~mask] = np.nan
+        # convert to ints may need tweeking
+        min_x = int(np.floor(min_x))
+        max_x = int(np.ceil(max_x))
+        min_y = int(np.floor(min_y))
+        max_y = int(np.ceil(max_y))
         X_plot = uc_dics["f2"].ppm(X[min_y - 1 : max_y, min_x - 1 : max_x])
         Y_plot = uc_dics["f1"].ppm(Y[min_y - 1 : max_y, min_x - 1 : max_x])
 
@@ -276,8 +281,8 @@ if __name__ == "__main__":
     else:
         max_cluster_size = int(max_cluster_size)
 
-    x_radius = int(args.get("--x_radius"))
-    y_radius = int(args.get("--y_radius"))
+    x_radius = float(args.get("--x_radius"))
+    y_radius = float(args.get("--y_radius"))
     min_rsq = float(args.get("--min_rsq"))
     print("Using ", args)
     log = open("log.txt", "a")
@@ -309,9 +314,17 @@ if __name__ == "__main__":
     dims = args.get("--dims")
     dims = [int(i) for i in dims.split(",")]
     planes, f1_dim, f2_dim = dims
+    udic = ng.pipe.guess_udic(dic, data) 
     uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
     uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
     uc_dics = {"f1": uc_f1, "f2": uc_f2}
+
+    # convert radii from ppm to points
+    pt_per_ppm_f1 = udic[f1_dim]["size"]/(udic[f1_dim]["sw"]/udic[f1_dim]["obs"])
+    pt_per_ppm_f2 = udic[f2_dim]["size"]/(udic[f2_dim]["sw"]/udic[f2_dim]["obs"])
+    x_radius = x_radius * pt_per_ppm_f2
+    y_radius = y_radius * pt_per_ppm_f1 
+    print(x_radius,y_radius)
     # sum planes for initial fit
     # summed_planes = data.sum(axis=0)
     # for saving data
