@@ -167,7 +167,7 @@ def update_params(params, param_dict, lineshape="PV"):
 
 
 def fit_first_plane(
-    group, data, x_radius, y_radius, uc_dics, lineshape="PV", plot=True, show=True
+    group, data, x_radius, y_radius, uc_dics, lineshape="PV", plot=None, show=True
 ):
     """
         Arguments:
@@ -212,7 +212,7 @@ def fit_first_plane(
     XY_slices = [X.copy()[mask], Y.copy()[mask]]
     out = mod.fit(peak_slices, XY=XY_slices, params=p_guess)
 
-    if plot is not "None":
+    if plot != None:
         plot_path = Path(plot)
         Zsim = mod.eval(XY=XY, params=out.params)
         print(report_fit(out.params))
@@ -282,7 +282,7 @@ if __name__ == "__main__":
     print("Using ", args)
     log = open("log.txt", "a")
     #
-    peaklist = params.get("<peaklist>")
+    peaklist = args.get("<peaklist>")
     if os.path.splitext(peaklist)[-1] == ".csv":
         peaks = pd.read_csv(peaklist)
     else:
@@ -290,6 +290,15 @@ if __name__ == "__main__":
 
     # peaks = pd.read_pickle(args["<peaklist>"])
     groups = peaks.groupby("CLUSTID")
+
+    plot = args.get("--plot")
+    if plot == "None":
+        plot = None
+    else:
+        if os.path.exists(plot) and os.path.isdir(plot):
+            pass
+        else:
+            os.mkdir(plot)
     # vcpmg = np.genfromtxt("vclist")
     # need to make these definable on a per peak basis
     # x_radius = 6
@@ -332,11 +341,6 @@ if __name__ == "__main__":
         if len(group) <= max_cluster_size:
             # fits sum of all planes first
             # first, mask = fit_first_plane(group, summed_planes, plot=True)
-            plot = args.get("--plot")
-            if os.path.exists(plot) and os.path.isdir(plot):
-                pass
-            else:
-                os.mkdir(plot)
 
             first, mask = fit_first_plane(
                 group,
