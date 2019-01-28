@@ -1,20 +1,20 @@
 """ Functions for NMR peak deconvolution """
 
 import numpy as np
-from numpy import sqrt,log,pi,exp
+from numpy import sqrt, log, pi, exp
 from lmfit import Model
 
 # constants
 log2 = log(2)
-s2pi = sqrt(2*pi)
+s2pi = sqrt(2 * pi)
 spi = sqrt(pi)
 
 π = pi
-#√π = sqrt(π)
-#√2π =  sqrt(2*π)
+# √π = sqrt(π)
+# √2π =  sqrt(2*π)
 
 s2 = sqrt(2.0)
-tiny = 1.e-13
+tiny = 1.0e-13
 
 
 def gaussian(x, amplitude=1.0, center=0.0, sigma=1.0):
@@ -22,7 +22,9 @@ def gaussian(x, amplitude=1.0, center=0.0, sigma=1.0):
     gaussian(x, amplitude, center, sigma) =
         (amplitude/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
     """
-    return (amplitude/(sqrt(2*π)*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+    return (amplitude / (sqrt(2 * π) * sigma)) * exp(
+        -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
+    )
 
 
 def lorentzian(x, amplitude=1.0, center=0.0, sigma=1.0):
@@ -30,10 +32,18 @@ def lorentzian(x, amplitude=1.0, center=0.0, sigma=1.0):
     lorentzian(x, amplitude, center, sigma) =
         (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
     """
-    return (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (π*sigma)
+    return (amplitude / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
 
-def pvoigt2d(XY,amplitude=1.0, center_x=0.5,center_y=0.5, sigma_x=1.0,sigma_y=1.0, fraction=0.5):
+def pvoigt2d(
+    XY,
+    amplitude=1.0,
+    center_x=0.5,
+    center_y=0.5,
+    sigma_x=1.0,
+    sigma_y=1.0,
+    fraction=0.5,
+):
     """ 2D pseudo-voigt model
 
         Arguments:
@@ -46,23 +56,25 @@ def pvoigt2d(XY,amplitude=1.0, center_x=0.5,center_y=0.5, sigma_x=1.0,sigma_y=1.
             -- fraction: fraction of lorenztian in fit
 
         Returns:
-            -- flattened array of Z values (use Z.reshape(X.shape) for recover)
+            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
-    x,y = XY
-    sigma_gx = sigma_x / sqrt(2*log2)
-    sigma_gy = sigma_y / sqrt(2*log2)
+    x, y = XY
+    sigma_gx = sigma_x / sqrt(2 * log2)
+    sigma_gy = sigma_y / sqrt(2 * log2)
     # fraction same for both dimensions
     # super position of gaussian and lorentzian
     # then convoluted for x y
-    pv_x = ((1-fraction)*gaussian(x, amplitude, center_x, sigma_gx) +
-            fraction*lorentzian(x, amplitude, center_x, sigma_x))
-    pv_y = ((1-fraction)*gaussian(y, amplitude, center_y, sigma_gy) +
-            fraction*lorentzian(y, amplitude, center_y, sigma_y))
+    pv_x = (1 - fraction) * gaussian(
+        x, amplitude, center_x, sigma_gx
+    ) + fraction * lorentzian(x, amplitude, center_x, sigma_x)
+    pv_y = (1 - fraction) * gaussian(
+        y, amplitude, center_y, sigma_gy
+    ) + fraction * lorentzian(y, amplitude, center_y, sigma_y)
     return pv_x * pv_y
 
 
-def make_mask(data,c_x,c_y,r_x,r_y):
+def make_mask(data, c_x, c_y, r_x, r_y):
     """ Create and elliptical mask
 
         ToDo:
@@ -82,13 +94,13 @@ def make_mask(data,c_x,c_y,r_x,r_y):
     """
     a, b = c_y, c_x
     n_y, n_x = data.shape
-    y, x = np.ogrid[-a:n_y-a, -b:n_x-b]
-    mask = x**2./r_x**2. + y**2./r_y**2. <= 1.
+    y, x = np.ogrid[-a : n_y - a, -b : n_x - b]
+    mask = x ** 2.0 / r_x ** 2.0 + y ** 2.0 / r_y ** 2.0 <= 1.0
     return mask
 
 
 # ERROR CALCULATION
-def r_square(data,residuals):
+def r_square(data, residuals):
     """ Calculate R^2 value for fit
 
         Arguments:
@@ -98,9 +110,9 @@ def r_square(data,residuals):
         Returns:
             R^2 value
     """
-    SS_tot = np.sum((data-data.mean())**2.)
-    SS_res = np.sum(residuals**2.)
-    r2 = 1 - SS_res/SS_tot
+    SS_tot = np.sum((data - data.mean()) ** 2.0)
+    SS_res = np.sum(residuals ** 2.0)
+    r2 = 1 - SS_res / SS_tot
     return r2
 
 
@@ -120,17 +132,23 @@ def update_params(params, peaks):
     """
     for peak in peaks:
         print(peak)
-        for k,v in peak.param_dict().items():
+        for k, v in peak.param_dict().items():
             params[k].value = v
             print("update", k, v)
             if "center" in k:
-                params[k].min = v-3
-                params[k].max = v+3
-                print("setting limit of %s, min = %.3e, max = %.3e" % (k, params[k].min, params[k].max))
+                params[k].min = v - 3
+                params[k].max = v + 3
+                print(
+                    "setting limit of %s, min = %.3e, max = %.3e"
+                    % (k, params[k].min, params[k].max)
+                )
             elif "sigma" in k:
                 params[k].min = 0.0
                 params[k].max = 1e6
-                print("setting limit of %s, min = %.3e, max = %.3e" % (k, params[k].min, params[k].max))
+                print(
+                    "setting limit of %s, min = %.3e, max = %.3e"
+                    % (k, params[k].min, params[k].max)
+                )
             elif "fraction" in k:
                 # fix weighting between 0 and 1
                 params[k].min = 0.0
@@ -149,13 +167,13 @@ def make_models(model, peaks):
             -- p_guess: params for composite model with starting values
 
     """
-    if len(peaks)<2:
+    if len(peaks) < 2:
         # make model for first peak
         mod = Model(model, prefix=peaks[0].prefix)
         # add parameters
         p_guess = mod.make_params(**peaks[0].param_dict())
 
-    elif len(peaks)>1:
+    elif len(peaks) > 1:
         # make model for first peak
         mod = Model(model, prefix=peaks[0].prefix)
 
@@ -169,7 +187,7 @@ def make_models(model, peaks):
     return mod, p_guess
 
 
-def fix_params(params,to_fix):
+def fix_params(params, to_fix):
     """ Set parameters to fix
 
         Arguments:
@@ -187,7 +205,7 @@ def fix_params(params,to_fix):
     return params
 
 
-def get_params(params,name):
+def get_params(params, name):
     ps = []
     ps_err = []
     names = []
@@ -199,12 +217,17 @@ def get_params(params,name):
     return ps, ps_err, names
 
 
-
-
-class Peak():
-
-
-    def __init__(self,center_x,center_y,amplitude,prefix="",sigma_x=1.0,sigma_y=1.0,assignment="None"):
+class Peak:
+    def __init__(
+        self,
+        center_x,
+        center_y,
+        amplitude,
+        prefix="",
+        sigma_x=1.0,
+        sigma_y=1.0,
+        assignment="None",
+    ):
         """ Peak class 
             
             Data structure for nmrpeak
@@ -214,30 +237,40 @@ class Peak():
         self.sigma_x = sigma_x
         self.sigma_y = sigma_y
         self.amplitude = amplitude
-        self.prefix = prefix 
+        self.prefix = prefix
         self.assignment = assignment
-                      
+
     def param_dict(self):
         """ Make dict of parameter names using prefix """
-        str_form = lambda x: "%s%s"%(self.prefix,str(x))
-        par_dict = {str_form("center_x"):self.center_x,
-                    str_form("center_y"):self.center_y,
-                    str_form("sigma_x"):self.sigma_x,
-                    str_form("sigma_y"):self.sigma_y,
-                    str_form("amplitude"):self.amplitude,
-                    str_form("fraction"):0.5}
+        str_form = lambda x: "%s%s" % (self.prefix, str(x))
+        par_dict = {
+            str_form("center_x"): self.center_x,
+            str_form("center_y"): self.center_y,
+            str_form("sigma_x"): self.sigma_x,
+            str_form("sigma_y"): self.sigma_y,
+            str_form("amplitude"): self.amplitude,
+            str_form("fraction"): 0.5,
+        }
         return par_dict
 
-    def mask(self,data,r_x,r_y):
+    def mask(self, data, r_x, r_y):
         # data is spectrum containing peak
         a, b = self.center_y, self.center_x
         n_y, n_x = data.shape
-        y,x = np.ogrid[-a:n_y-a, -b:n_x-b]
+        y, x = np.ogrid[-a : n_y - a, -b : n_x - b]
         # create circular mask
-        mask = x**2./r_x**2. + y**2./r_y**2. <= 1.0
+        mask = x ** 2.0 / r_x ** 2.0 + y ** 2.0 / r_y ** 2.0 <= 1.0
         return mask
 
     def __str__(self):
-        return "Peak: x=%.1f, y=%.1f, amp=%.1f, fraction=%.1f, prefix=%s, assignment=%s"%\
-                (self.center_x,self.center_y,self.amplitude,0.5,self.prefix,self.assignment)
-
+        return (
+            "Peak: x=%.1f, y=%.1f, amp=%.1f, fraction=%.1f, prefix=%s, assignment=%s"
+            % (
+                self.center_x,
+                self.center_y,
+                self.amplitude,
+                0.5,
+                self.prefix,
+                self.assignment,
+            )
+        )

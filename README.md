@@ -17,10 +17,19 @@ With setup.py you will need python3.6 or greater installed.
 ```bash
 cd peak_deconvolution; python setup.py install
 ```
+## Inputs
+
+1. First you need a peak list
+
+## Outputs
+
+1. Pandas DataFrame containing fitted intensities/linewidths/centers etc.
+
 
 ## Pseudo-Voigt model
 
 Fraction parameter is fraction of Lorentzian lineshape.
+
 
 ## To do
 

@@ -4,19 +4,29 @@
     Usage:
         fit_pipe_peaks.py <peaklist> <data> <output> [options]
 
+    Arguments:
+        <peaklist>  peaklist output from read_peaklist.py
+        <data>      2D or pseudo3D NMRPipe data (single file)  
+        <output>    output peaklist "<output>.csv" will output CSV
+                    format file, "<output>.tab" will give a tab delimited output
+                    while "<output>.pkl" results in Pandas pickle of DataFrame
+
     Options:
         -h --help  Show this page
         -v --version Show version
 
+        --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
-        --x_radius=<points>  x_radius in points for fit mask [default: 6]
-        --y_radius=<points>  y_radius in points for fit mask [default: 5]
-        --min_rsq=<float>  minimum R2 required to accept fit [default: 0.85]
-        --lineshape=<G/L/PV>  lineshape to fit [default: PV]
+        --x_radius=<points>                    x_radius in points for fit mask [default: 6]
+        --y_radius=<points>                    y_radius in points for fit mask [default: 5]
+        --min_rsq=<float>                      minimum R2 required to accept fit [default: 0.85]
+        --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
 
-        --plot=<dir>  Whether to plot wireframe fits for each peak (saved into <dir>) [default: None]
-        --show  Whether to show wireframe fits for each peak
+        --plot=<dir>                           Whether to plot wireframe fits for each peak 
+                                               (saved into <dir>) [default: None]
 
+        --show                                 Whether to show (using plt.show()) wireframe
+                                               fits for each peak
 
     ToDo: 
         1. per peak R2, fit first summed spec (may need to adjust start params for this)
@@ -271,7 +281,14 @@ if __name__ == "__main__":
     min_rsq = float(args.get("--min_rsq"))
     print("Using ", args)
     log = open("log.txt", "a")
-    peaks = pd.read_pickle(args["<peaklist>"])
+    #
+    peaklist = params.get("<peaklist>")
+    if os.path.splitext(peaklist)[-1] == ".csv":
+        peaks = pd.read_csv(peaklist)
+    else:
+        peaks = pd.read_pickle(peaklist)
+
+    # peaks = pd.read_pickle(args["<peaklist>"])
     groups = peaks.groupby("CLUSTID")
     # vcpmg = np.genfromtxt("vclist")
     # need to make these definable on a per peak basis
@@ -280,7 +297,8 @@ if __name__ == "__main__":
     # read NMR data
     dic, data = ng.pipe.read(args["<data>"])
     udic = ng.pipe.guess_udic(dic, data)
-    dims = [0, 1, 2]
+    dims = args.get("--dims")
+    dims = [int(i) for i in dims.split(",")]
     planes, f1_dim, f2_dim = dims
     uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
     uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
@@ -406,10 +424,23 @@ if __name__ == "__main__":
                 "clustid": np.ravel(clustids),
             }
         )
-        #  get peak numbers
+        # get peak numbers
         df["number"] = df.names.apply(lambda x: int(x.split("_")[1]))
+        #  convert values to ppm
+        df["center_x_ppm"] = df.center_x.apply(lambda x: uc_f2.ppm(x))
+        df["center_y_ppm"] = df.center_y.apply(lambda x: uc_f1.ppm(x))
+        df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: uc_f2.ppm(x))
+        df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: uc_f1.ppm(x))
         # df.to_pickle("fits.pkl")
-        df.to_pickle(args["<output>"])
+        #
+        output = args["<output>"]
+        extension = os.path.splitext(output)[-1]
+        if extension == ".csv":
+            df.to_csv(output)
+        elif extension == ".tab":
+            df.to_csv(output, sep="\t")
+        else:
+            df.to_pickle(output)
 
     # indices = np.vstack(
 

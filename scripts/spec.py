@@ -161,7 +161,7 @@ if __name__ == "__main__":
             uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
             uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
             uc_f3 = ng.pipe.make_uc(dic, data, dim=f3)
-            # need to make more robust
+            #  need to make more robust
             ppm_f1 = uc_f2.ppm_scale()
             ppm_f2 = uc_f3.ppm_scale()
 
@@ -173,9 +173,9 @@ if __name__ == "__main__":
 
             # x and y are set to f2 and f1
             f1, f2 = f2, f3
-            #elif f1 == 1:
+            # elif f1 == 1:
             #    data = data[:,0,:]
-            #else:
+            # else:
             #    data = data[:,:,0]
 
         # plot parameters
@@ -241,17 +241,22 @@ if __name__ == "__main__":
 
     if params.get("clusters"):
         import pandas as pd
-        clusters = pd.read_pickle(params.get("clusters"))
+
+        peaklist = params.get("clusters")
+        if os.path.splitext(peaklist)[-1] == ".csv":
+            clusters = pd.read_csv(peaklist)
+        else:
+            clusters = pd.read_pickle(peaklist)
         groups = clusters.groupby("CLUSTID")
         for ind, group in groups:
-            if len(group)==1:
+            if len(group) == 1:
                 plt.plot(group.X_PPM, group.Y_PPM, "ko", markersize=2)
             else:
-                plt.plot(group.X_PPM, group.Y_PPM, "o",markersize=2)
+                plt.plot(group.X_PPM, group.Y_PPM, "o", markersize=2)
 
     if params.get("outname") and (type(params.get("outname")) == list):
         for i in params.get("outname"):
-            plt.savefig(i, bbox_inches="tight",dpi=300)
+            plt.savefig(i, bbox_inches="tight", dpi=300)
     else:
         plt.savefig(params.get("outname", "test.pdf"), bbox_inches="tight")
     plt.show()

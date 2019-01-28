@@ -1,56 +1,61 @@
 #!/usr/bin/env python3
-"""Read NMRPipe/Analysis peaklist into pandas dataframe
+""" Read NMRPipe/Analysis peaklist into pandas dataframe
 
-   Usage:
-       read_peaklist.py <peaklist> 
-       read_peaklist.py <peaklist> <data> [options]
+    Usage:
+        read_peaklist.py <peaklist> <data> [options]
 
-   Options:
-       -h --help  Show this screen
-       --version  Show version
+    Arguments:
+        <peaklist>  Analysis2/Sparky/NMRPipe peak list (see below)
+        <data>      2D or pseudo3D NMRPipe data
 
-       --noise=<noise>     Noise of spectrum [default: 5e4]
-       --pthres=<pthres>   Positive peakpick threshold [default: 10e5]
-       --nthres=<nthres>   Negative peakpick threshold [default: None]
-       --ndil=<ndil>       Number of iterations for ndimage.binary_dilation [default: 0]
-       
-       --dims=<planes,dim2,dim1>    Order of dimensions [default: 0,1,2]
+    Options:
+        -h --help  Show this screen
+        --version  Show version
+ 
+        --noise=<noise>     Noise of spectrum [default: 5e4]
+        --pthres=<pthres>   Positive peakpick threshold [default: 10e5]
+        --nthres=<nthres>   Negative peakpick threshold [default: None]
+        --ndil=<ndil>       Number of iterations for ndimage.binary_dilation [default: 0]
+        
+        --dims=<planes,F1,F2>    Order of dimensions [default: 0,1,2]
 
-       --a2      Analysis peaklist as input
-       --sparky  Sparky peaklist as input
-       --pipe    NMRPipe peaklist as input
+        --a2      Analysis peaklist as input
+        --sparky  Sparky peaklist as input
+        --pipe    NMRPipe peaklist as input
 
-       --show    Show the clusters on the spectrum color coded
+        --outfmt=<csv/pkl>  Format of output peaklist [default: "pkl"]
+ 
+        --show    Show the clusters on the spectrum color coded
 
-   Examples:
-       read_peaklist.py test.tab
-       read_peaklist.py test.a2 test.ft2 --a2 --pthres=1e5 --noise=1e4 --dims=0,2,1
+    Examples:
+        read_peaklist.py test.tab
+        read_peaklist.py test.a2 test.ft2 --a2 --pthres=1e5 --noise=1e4 --dims=0,2,1
 
-   Description:
+    Description:
       
-      NMRPipe column headers:
+       NMRPipe column headers:
 
-          INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT 
+           INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT 
       
-      Are mapped onto analysis peak list
+       Are mapped onto analysis peak list
 
-          'Number', '#', 'Position F1', 'Position F2', 'Sampled None',
-          'Assign F1', 'Assign F2', 'Assign F3', 'Height', 'Volume',
-          'Line Width F1 (Hz)', 'Line Width F2 (Hz)', 'Line Width F3 (Hz)',
-           'Merit', 'Details', 'Fit Method', 'Vol. Method'
+           'Number', '#', 'Position F1', 'Position F2', 'Sampled None',
+           'Assign F1', 'Assign F2', 'Assign F3', 'Height', 'Volume',
+           'Line Width F1 (Hz)', 'Line Width F2 (Hz)', 'Line Width F3 (Hz)',
+            'Merit', 'Details', 'Fit Method', 'Vol. Method'
 
-      Or sparky peaklist
+       Or sparky peaklist
 
-            Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
+             Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
 
-      Clusters or peaks are selected
+       Clusters or peaks are selected
 
-      Standard NMRPipe clustering used or my peak clustering
+       Standard NMRPipe clustering used or my peak clustering
 
-    ToDo:
-        1. allow decimal values for point positions of peaks
-        2. figure out whether points start from 0...
-
+     ToDo:
+         1. allow decimal values for point positions of peaks
+         2. figure out whether points start from 0...
+ 
 """
 import os
 
@@ -364,7 +369,6 @@ if __name__ == "__main__":
     args = docopt(__doc__)
     filename = args["<peaklist>"]
     print(os.path.splitext(filename)[0])
-    outname = os.path.splitext(filename)[0] + ".pkl"
     # print(args)
 
     if args.get("--nthres") == "None":
@@ -413,7 +417,14 @@ if __name__ == "__main__":
 
         data = read_pipe(filename)
     print(data.head())
-    data.to_pickle(outname)
+    outfmt = args.get("--outfmt","pkl")
+    outname = os.path.splitext(filename)[0] 
+    if outfmt == "csv":
+        outname = outname + ".csv"
+        data.to_csv(outname)
+    else:
+        outname = outname + ".pkl"
+        data.to_pickle(outname)
 
     yaml = f"""
     ##########################################################################################################
