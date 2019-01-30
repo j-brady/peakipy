@@ -35,6 +35,8 @@ Fraction parameter is fraction of Lorentzian lineshape.
 
 1. Add function to read_peaklist.py that allows output to FuDA format parameter file
 
-2. Add flag to define lineshapes
+2. starting amplitude is not close to fitted amplitude need to sort this out
 
-3. starting amplitude is not close to fitted amplitude need to sort this out
+3. add flag to include vclist to output dataframe
+
+4. output lw as sigma_g for Gaussian model

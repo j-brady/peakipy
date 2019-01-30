@@ -62,7 +62,7 @@ from peak_deconvolution.core import (
 )
 
 
-def make_param_dict(peaks, lineshape="PV"):
+def make_param_dict(peaks, data, lineshape="PV"):
     """ Make dict of parameter names using prefix """
 
     param_dict = {}
@@ -75,7 +75,14 @@ def make_param_dict(peaks, lineshape="PV"):
         param_dict[str_form("center_y")] = peak.Y_AXISf
         param_dict[str_form("sigma_x")] = peak.XW / 2.0
         param_dict[str_form("sigma_y")] = peak.YW / 2.0
-        param_dict[str_form("amplitude")] = peak.HEIGHT
+        # estimate peak volume
+        amplitude_est = data[
+            int(peak.Y_AXIS) - int(peak.YW) : int(peak.Y_AXIS) + int(peak.YW) + 1,
+            int(peak.X_AXIS) - int(peak.XW) : int(peak.X_AXIS) + int(peak.XW) + 1,
+        ].sum()
+        param_dict[str_form("amplitude")] = np.sqrt(
+            amplitude_est
+        )  # since A is sqrt of actual amplitude
         if lineshape == "G":
             param_dict[str_form("fraction")] = 0.0
         elif lineshape == "L":
@@ -86,7 +93,7 @@ def make_param_dict(peaks, lineshape="PV"):
     return param_dict
 
 
-def make_models(model, peaks, lineshape="PV"):
+def make_models(model, peaks, data, lineshape="PV"):
     """ Make composite models for multiple peaks
 
         Arguments:
@@ -104,7 +111,7 @@ def make_models(model, peaks, lineshape="PV"):
         # make model for first peak
         mod = Model(model, prefix="_%d_" % peaks.INDEX)
         # add parameters
-        param_dict = make_param_dict(peaks, lineshape=lineshape)
+        param_dict = make_param_dict(peaks, data, lineshape=lineshape)
         p_guess = mod.make_params(**param_dict)
 
     elif len(peaks) > 1:
@@ -114,7 +121,7 @@ def make_models(model, peaks, lineshape="PV"):
         for index, peak in remaining_peaks:
             mod += Model(model, prefix="_%d_" % peak.INDEX)
 
-        param_dict = make_param_dict(peaks, lineshape=lineshape)
+        param_dict = make_param_dict(peaks, data, lineshape=lineshape)
         p_guess = mod.make_params(**param_dict)
         # add Peak params to p_guess
 
@@ -139,7 +146,7 @@ def update_params(params, param_dict, lineshape="PV"):
     for k, v in param_dict.items():
         params[k].value = v
         print("update", k, v)
-        #if "center" in k:
+        # if "center" in k:
         #    params[k].min = v - 10
         #    params[k].max = v + 10
         #    print(
@@ -185,7 +192,7 @@ def fit_first_plane(
     """
 
     mask = np.zeros(data.shape, dtype=bool)
-    mod, p_guess = make_models(pvoigt2d, group, lineshape=lineshape)
+    mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape)
     # print(p_guess)
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
@@ -260,7 +267,7 @@ def fit_first_plane(
 
         for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
             print(l, x, y, z)
-            ax.text(x, y, z, l, None)
+            ax.text(x, y, (z ** 2.0), l, None)
 
         name = group.CLUSTID.iloc[0]
         if show:
@@ -314,19 +321,24 @@ if __name__ == "__main__":
     dims = args.get("--dims")
     dims = [int(i) for i in dims.split(",")]
     planes, f1_dim, f2_dim = dims
-    udic = ng.pipe.guess_udic(dic, data) 
+    udic = ng.pipe.guess_udic(dic, data)
     uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
     uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
     uc_dics = {"f1": uc_f1, "f2": uc_f2}
 
+    # ppm per point
+    ppm_per_pt_f1 = (udic[f1_dim]["sw"] / udic[f1_dim]["obs"]) / udic[f1_dim]["size"]
+    ppm_per_pt_f2 = (udic[f2_dim]["sw"] / udic[f2_dim]["obs"]) / udic[f2_dim]["size"]
+
     # convert radii from ppm to points
-    pt_per_ppm_f1 = udic[f1_dim]["size"]/(udic[f1_dim]["sw"]/udic[f1_dim]["obs"])
-    pt_per_ppm_f2 = udic[f2_dim]["size"]/(udic[f2_dim]["sw"]/udic[f2_dim]["obs"])
+    pt_per_ppm_f1 = udic[f1_dim]["size"] / (udic[f1_dim]["sw"] / udic[f1_dim]["obs"])
+    pt_per_ppm_f2 = udic[f2_dim]["size"] / (udic[f2_dim]["sw"] / udic[f2_dim]["obs"])
+
     x_radius = x_radius * pt_per_ppm_f2
-    y_radius = y_radius * pt_per_ppm_f1 
-    print(x_radius,y_radius)
+    y_radius = y_radius * pt_per_ppm_f1
+    print(x_radius, y_radius)
     # sum planes for initial fit
-    # summed_planes = data.sum(axis=0)
+    summed_planes = data.sum(axis=0)
     # for saving data
     amps = []
     amp_errs = []
@@ -357,7 +369,8 @@ if __name__ == "__main__":
 
             first, mask = fit_first_plane(
                 group,
-                data[0],
+                # data[0],
+                summed_planes,
                 x_radius,
                 y_radius,
                 uc_dics,
@@ -371,8 +384,8 @@ if __name__ == "__main__":
 
             fix_params(first.params, to_fix)
 
-            # r_sq = r_square(summed_planes[mask], first.residual)
-            r_sq = r_square(data[0][mask], first.residual)
+            r_sq = r_square(summed_planes[mask], first.residual)
+            # r_sq = r_square(data[0][mask], first.residual)
             if r_sq <= min_rsq:
                 failed_ass = "\n".join(i for i in group.ASS)
                 error = f"Fit failed for {name} with R2 or {r_sq}"
@@ -427,15 +440,15 @@ if __name__ == "__main__":
             {
                 "names": np.ravel(names),
                 "assign": np.ravel(assign),
-                "amp": np.ravel(amps),
+                "amp": np.ravel(amps) ** 2.0,
                 "amp_err": np.ravel(amp_errs),
                 "center_x": np.ravel(center_xs),
                 # "center_x_err": np.ravel(center_x_errs),
                 "center_y": np.ravel(center_ys),
                 # "center_y_err": np.ravel(center_y_errs),
-                "sigma_x": np.ravel(center_xs),
+                "sigma_x": np.ravel(sigma_xs),
                 # "sigma_x_err": np.ravel(sigma_x_errs),
-                "sigma_y": np.ravel(center_ys),
+                "sigma_y": np.ravel(sigma_ys),
                 # "sigma_y_err": np.ravel(sigma_y_errs),
                 "fraction": np.ravel(fractions),
                 "clustid": np.ravel(clustids),
@@ -443,13 +456,31 @@ if __name__ == "__main__":
         )
         # get peak numbers
         df["number"] = df.names.apply(lambda x: int(x.split("_")[1]))
+        #  convert sigmas to fwhm
+        # need errors
+        if lineshape == "PV":
+            # fwhm = 2*sigma
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+        elif lineshape == "G":
+            # fwhm = 2*sigma * sqrt(2*ln2)
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.3548)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.3548)
+        else:
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x)
+
         #  convert values to ppm
         df["center_x_ppm"] = df.center_x.apply(lambda x: uc_f2.ppm(x))
         df["center_y_ppm"] = df.center_y.apply(lambda x: uc_f1.ppm(x))
-        df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: uc_f2.ppm(x))
-        df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: uc_f1.ppm(x))
+        df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * ppm_per_pt_f2)
+        df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * ppm_per_pt_f1)
+        df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * ppm_per_pt_f2)
+        df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
+        df["amp_err"] = df.apply(
+            lambda x: 2.0 * (x.amp_err / np.sqrt(x.amp)) * x.amp, axis=1
+        )
         # df.to_pickle("fits.pkl")
-        #
         output = args["<output>"]
         extension = os.path.splitext(output)[-1]
         if extension == ".csv":
