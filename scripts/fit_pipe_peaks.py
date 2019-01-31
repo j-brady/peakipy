@@ -30,13 +30,9 @@
 
     ToDo: 
         1. per peak R^2, fit first summed spec (may need to adjust start params for this)
-        2. currently x/y_radius has to be in int points since it is used to index
-        3. decide clusters based on lw?
-        4. add vclist data to output?
-        5. add threshold to R2 so that you just give an error for the fit and suggest reselecting the group.
-        6. estimate lw since fit lw seems to be ~0.5 of estimate from analysis (may throw off fit ).
-        7. estimate peak height 
-
+        2. decide clusters based on lw?
+        3. add vclist data to output?
+        4. add threshold to R2 so that you just give an error for the fit and suggest reselecting the group.
 
 """
 import os
@@ -53,8 +49,6 @@ from docopt import docopt
 
 from peak_deconvolution.core import (
     pvoigt2d,
-    update_params,
-    make_models,
     fix_params,
     get_params,
     r_square,
@@ -69,7 +63,7 @@ def make_param_dict(peaks, data, lineshape="PV"):
 
     for index, peak in peaks.iterrows():
 
-        str_form = lambda x: "_%s_%s" % (peak.INDEX, x)
+        str_form = lambda x: "%s%s" % (to_prefix(peak.ASS), x)
         # using exact value of points (i.e decimal)
         param_dict[str_form("center_x")] = peak.X_AXISf
         param_dict[str_form("center_y")] = peak.Y_AXISf
@@ -80,9 +74,14 @@ def make_param_dict(peaks, data, lineshape="PV"):
             int(peak.Y_AXIS) - int(peak.YW) : int(peak.Y_AXIS) + int(peak.YW) + 1,
             int(peak.X_AXIS) - int(peak.XW) : int(peak.X_AXIS) + int(peak.XW) + 1,
         ].sum()
-        param_dict[str_form("amplitude")] = np.sqrt(
-            amplitude_est
-        )  # since A is sqrt of actual amplitude
+
+        # in case of negative amplitudes
+        if amplitude_est < 0.:
+            amplitude_est = -1. * np.sqrt(abs(amplitude_est))
+        else:
+            amplitude_est = np.sqrt(amplitude_est)
+            
+        param_dict[str_form("amplitude")] = amplitude_est  # since A is sqrt of actual amplitude
         if lineshape == "G":
             param_dict[str_form("fraction")] = 0.0
         elif lineshape == "L":
@@ -92,6 +91,13 @@ def make_param_dict(peaks, data, lineshape="PV"):
 
     return param_dict
 
+def to_prefix(x):
+    prefix = "_"+x
+    to_replace = [[" ",""],["{","_"],["}","_"],["[","_"],["]","_"]]
+    for p in to_replace:
+        prefix = prefix.replace(*p)
+    print("prefix",prefix)
+    return prefix + "_" 
 
 def make_models(model, peaks, data, lineshape="PV"):
     """ Make composite models for multiple peaks
@@ -109,7 +115,7 @@ def make_models(model, peaks, data, lineshape="PV"):
     """
     if len(peaks) == 1:
         # make model for first peak
-        mod = Model(model, prefix="_%d_" % peaks.INDEX)
+        mod = Model(model, prefix="%s" % to_prefix(peaks.ASS.iloc[0]))
         # add parameters
         param_dict = make_param_dict(peaks, data, lineshape=lineshape)
         p_guess = mod.make_params(**param_dict)
@@ -117,9 +123,9 @@ def make_models(model, peaks, data, lineshape="PV"):
     elif len(peaks) > 1:
         # make model for first peak
         first_peak, *remaining_peaks = peaks.iterrows()
-        mod = Model(model, prefix="_%d_" % first_peak[1].INDEX)
+        mod = Model(model, prefix="%s" % to_prefix(first_peak[1].ASS))
         for index, peak in remaining_peaks:
-            mod += Model(model, prefix="_%d_" % peak.INDEX)
+            mod += Model(model, prefix="%s" % to_prefix(peak.ASS))
 
         param_dict = make_param_dict(peaks, data, lineshape=lineshape)
         p_guess = mod.make_params(**param_dict)
@@ -238,7 +244,9 @@ def fit_first_plane(
         X_plot = uc_dics["f2"].ppm(X[min_y - 1 : max_y, min_x - 1 : max_x])
         Y_plot = uc_dics["f1"].ppm(Y[min_y - 1 : max_y, min_x - 1 : max_x])
 
-        ax.plot_wireframe(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x])
+        ax.plot_wireframe(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x],color="k")
+        #ax.contour3D(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x],cmap='viridis')
+
         ax.set_xlabel("F2 ppm")
         ax.set_ylabel("F1 ppm")
         ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
@@ -248,6 +256,7 @@ def fit_first_plane(
             Zsim[min_y - 1 : max_y, min_x - 1 : max_x],
             color="r",
             linestyle="--",
+            label="fit",
         )
         # Annotate plots
         labs = []
@@ -259,15 +268,19 @@ def fit_first_plane(
             if "amplitude" in k:
                 Z_lab.append(v)
                 # get prefix
-                labs.append(k.split("_")[1])
+                labs.append(" ".join(k.split("_")[:-1]))
             elif "center_x" in k:
                 X_lab.append(uc_dics["f2"].ppm(v))
             elif "center_y" in k:
                 Y_lab.append(uc_dics["f1"].ppm(v))
+        # this is dumb as !£$@
+        Z_lab = [data[int(round(uc_dics["f1"](y,"ppm"))),int(round(uc_dics["f2"](x,"ppm")))] for x,y in zip(X_lab,Y_lab)]
 
         for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
-            print(l, x, y, z)
-            ax.text(x, y, (z ** 2.0), l, None)
+            #print(l, x, y, z)
+            ax.text(x, y, z*1.2, l, None)
+
+        plt.legend()
 
         name = group.CLUSTID.iloc[0]
         if show:
@@ -338,7 +351,11 @@ if __name__ == "__main__":
     y_radius = y_radius * pt_per_ppm_f1
     print(x_radius, y_radius)
     # sum planes for initial fit
+
+    #summed_planes = rescale_intensity(data.sum(axis=0), in_range=(-1,1))
+    #data = rescale_intensity(data, in_range=(-1,1))
     summed_planes = data.sum(axis=0)
+
     # for saving data
     amps = []
     amp_errs = []
@@ -438,7 +455,7 @@ if __name__ == "__main__":
             # exit()
         df = pd.DataFrame(
             {
-                "names": np.ravel(names),
+                "fit_name": np.ravel(names),
                 "assign": np.ravel(assign),
                 "amp": np.ravel(amps) ** 2.0,
                 "amp_err": np.ravel(amp_errs),
@@ -455,7 +472,7 @@ if __name__ == "__main__":
             }
         )
         # get peak numbers
-        df["number"] = df.names.apply(lambda x: int(x.split("_")[1]))
+        #df["fit_name"] = df.names.apply(lambda x: int(x.split("_")[1]))
         #  convert sigmas to fwhm
         # need errors
         if lineshape == "PV":
@@ -489,256 +506,3 @@ if __name__ == "__main__":
             df.to_csv(output, sep="\t")
         else:
             df.to_pickle(output)
-
-    # indices = np.vstack(
-
-    #    print(amps)
-    #    print(names)
-    #    exit()
-    # else:
-    #    pass
-    # plt.errorbar(vcpmg,np.array(amps),yerr=np.array(amp_errs),fmt="ro")
-    # plt.show()
-    # break
-    # first, *rest = groups
-    # print(first)
-    # print(rest)
-
-
-#    def cpmgfunc(T, ratio):
-#        return np.log(ratio) / -T
-#
-#
-#    def fit(data):
-#        # path = os.path.join(out_path,f)
-#        # data = np.genfromtxt(path,comments="#")
-#        norm = data[:, 1] / data[:, 1][0]
-#        reff = cpmgfunc(T=40e-3, ratio=norm)
-#        errs = norm * np.sqrt(
-#            (data[:, 2] / data[:, 1]) ** 2.0 + (data[:, 2][0] / data[:, 1][0]) ** 2.0
-#        )
-#        # plt.errorbar(vcpmg,norm,yerr=errs,fmt="ro")
-#        plt.errorbar(vcpmg, reff, fmt="ro")
-#        plt.title(path)
-#        plt.ylabel(r"$R_{2}^{eff}(s^{-1})$")
-#        plt.xlabel("$N_{180}$")
-#        # plt.ylim(5,max(reff)+5)
-#        plt.show()
-#
-#
-#    if __name__ == "__main__":
-#
-#        arguments = docopt(__doc__, version="1.0")
-#        print(arguments)
-#
-#        config = yaml.load(open(arguments["<config>"]))
-#        #print(config)
-#
-#        INPUT_DATA = config["data"]
-#
-#        if arguments.get("<peaklist>"):
-#
-#            INPUT_PEAKS = arguments["<peaklist>"]
-#        else:
-#            INPUT_PEAKS = config["peaklist"]
-#
-#        # set up paths
-#        if config.get("dir"):
-#            BASE_DIR = os.path.abspath(config["dir"])
-#        else:
-#            BASE_DIR = os.path.abspath("./")
-#            print("No basedir specified! Using ./ ...")
-#
-#        if config.get("outname"):
-#            OUTPUT_DIR = config["outname"]
-#        else:
-#            OUTPUT_DIR = "out"
-#            print("No outdir specified! Using ./out ...")
-#
-#        OUTPUT_DIR = os.path.join(BASE_DIR, OUTPUT_DIR)
-#        INPUT_PEAKS_PATH = os.path.join(BASE_DIR, INPUT_PEAKS)
-#
-#        with open(INPUT_PEAKS_PATH, "rb") as input_peaks:
-#            peaks = pickle.load(input_peaks)
-#
-#        # dic, data = ng.pipe.read(INPUT_DATA)
-#        # uc_x = ng.pipe.make_uc(dic,data,dim=1)
-#        # uc_y = ng.pipe.make_uc(dic,data,dim=0)
-#        dic, data = ng.pipe.read(INPUT_DATA)
-#        print("Loaded spectrum with shape:", data.shape)
-#        uc_x = ng.pipe.make_uc(dic, data, dim=config.get("x", 2))
-#        uc_y = ng.pipe.make_uc(dic, data, dim=config.get("y", 1))
-#        # print(uc_x("8 ppm"))
-#        # print(uc_y("108 ppm"))
-#        # print(data.shape)
-#        for p in peaks:
-#            p.center_x = uc_x(p.center_x, "PPM")
-#            p.center_y = uc_y(p.center_y, "PPM")
-#            # probably avoid this silliness somehow
-#            p.prefix = (
-#                p.assignment.replace("{", "_")
-#                .replace("}", "_")
-#                .replace("[", "_")
-#                .replace("]", "_")
-#                .replace(",", "_")
-#            )
-#            print(p)
-#
-#        # group_of_peaks = peaks
-#
-#        x_radius = config.get("x_radius")
-#        y_radius = config.get("y_radius")
-#
-#        if INPUT_PEAKS == "singles.pkl":
-#            peaks_ass_df = []
-#            peaks_name_df = []
-#            peaks_amp_df = []
-#            peaks_amp_errs_df = []
-#            for p in peaks:
-#
-#                mod, p_guess = make_models(pvoigt2d, [p])
-#
-#                x = np.arange(1, data.shape[-1] + 1)
-#                y = np.arange(1, data.shape[-2] + 1)
-#                XY = np.meshgrid(x, y)
-#                X, Y = XY
-#                print("X", X.shape, "Y", Y.shape)
-#                # for group in groups_of_peaks:
-#
-#                # fit first plane of data
-#                first, mask = fit_first_plane([p], data[0])
-#                # fix sigma center and fraction parameters
-#                to_fix = ["sigma", "center", "fraction"]
-#                fix_params(first.params, to_fix)
-#                # get amplitudes and errors fitted from first plane
-#                # amp, amp_err, name = get_params(first.params,"amplitude")
-#                amps = []
-#                amp_errs = []
-#                names = []
-#                # fit all plane amplitudes while fixing sigma/center/fraction
-#                # refitting first plane reduces the error
-#                for d in data:
-#                    first.fit(data=d[mask], params=first.params)
-#                    print(first.fit_report())
-#                    print("R^2 = ", r_square(d[mask], first.residual))
-#                    amp, amp_err, name = get_params(first.params, "amplitude")
-#                    amps.append(amp)
-#                    amp_errs.append(amp_err)
-#                    names.append(name)
-#                #    print(plane.fit_report())
-#
-#                amps = np.vstack(amps)
-#                names = np.vstack(names)
-#                amp_errs = np.vstack(amp_errs)
-#
-#                peaks_name_df.append(names.ravel())
-#                peaks_ass_df.append(p.assignment)
-#                peaks_amp_df.append(amps.ravel())
-#                peaks_amp_errs_df.append(amp_errs.ravel())
-#                print(names, amps)
-#
-#            df = pd.DataFrame({"assignment":peaks_ass_df,"name":peaks_name_df,"amp":peaks_amp_df,"amp_errs":peaks_amp_errs_df})
-#            df.to_pickle("single_fits.pkl")
-#            df.to_pickle("single_fits.csv")
-#                # plot fits
-#                #for i in range(len(amps[0])):
-#                #    A = amps[:, i]
-#                #    x = np.array(np.genfromtxt("vclist"))
-#                #    # mod = ExponentialModel()
-#                #    # pars = mod.guess(A,x=x)
-#                #    # out = mod.fit(A,pars, x=x)
-#                #    x_sort = np.argsort(x)
-#                #    fig = plt.figure()
-#                #    ax = fig.add_subplot(111)
-#                #    # ax.plot(x[x_sort],out.best_fit[x_sort],"--")
-#
-#                #    T = 20e-3
-#                #    norm = A / A[0]
-#                #    reff = np.log(norm) / -T
-#                #    # reff_err = norm*np.sqrt((data[:,2]/data[:,1])**2.+(data[:,2][0]/data[:,1][0])**2.)
-#                #    # ax.errorbar(x, A, yerr=amp_errs[:, i], fmt="ro", label=names[0, i])
-#                #    ax.errorbar(x[1:], reff[1:], fmt="ro", label=names[0, i])
-#
-#                #    # ax.errorbar(x, A, yerr=amp_errs[:, i], fmt="ro", label=names[0, i])
-#                #    ax.set_title(names[0, i])
-#                #    ax.legend()
-#                #    plt.show()
-#
-#        elif INPUT_PEAKS == "group.pkl":
-#
-#            mod, p_guess = make_models(pvoigt2d, peaks)
-#
-#            x = np.arange(1, data.shape[-1] + 1)
-#            y = np.arange(1, data.shape[-2] + 1)
-#            XY = np.meshgrid(x, y)
-#            X, Y = XY
-#            print("X", X.shape, "Y", Y.shape)
-#            # for group in groups_of_peaks:
-#
-#            # fit first plane of data
-#            first, mask = fit_first_plane(peaks, data[0])
-#            # fix sigma center and fraction parameters
-#            to_fix = ["sigma", "center", "fraction"]
-#            fix_params(first.params, to_fix)
-#            # get amplitudes and errors fitted from first plane
-#            # amp, amp_err, name = get_params(first.params,"amplitude")
-#            amps = []
-#            amp_errs = []
-#            names = []
-#            # fit all plane amplitudes while fixing sigma/center/fraction
-#            # refitting first plane reduces the error
-#            for d in data:
-#                first.fit(data=d[mask], params=first.params)
-#                print(first.fit_report())
-#                print("R^2 = ", r_square(d[mask], first.residual))
-#                amp, amp_err, name = get_params(first.params, "amplitude")
-#                amps.append(amp)
-#                amp_errs.append(amp_err)
-#                names.append(name)
-#            #    print(plane.fit_report())
-#            amps = np.vstack(amps)
-#            names = np.vstack(names)
-#            amp_errs = np.vstack(amp_errs)
-#            print(names, amps)
-#            # plot fits
-#            for i in range(len(amps[0])):
-#                A = amps[:, i]
-#                x = np.array(np.genfromtxt("vclist"))
-#                # mod = ExponentialModel()
-#                # pars = mod.guess(A,x=x)
-#                # out = mod.fit(A,pars, x=x)
-#                x_sort = np.argsort(x)
-#                fig = plt.figure()
-#                ax = fig.add_subplot(111)
-#                # ax.plot(x[x_sort],out.best_fit[x_sort],"--")
-#                T = 40e-3
-#                norm = A / A[0]
-#                reff = np.log(norm) / -T
-#                # reff_err = norm*np.sqrt((data[:,2]/data[:,1])**2.+(data[:,2][0]/data[:,1][0])**2.)
-#                # ax.errorbar(x, A, yerr=amp_errs[:, i], fmt="ro", label=names[0, i])
-#                ax.errorbar(x[1:], reff[1:], fmt="ro", label=names[0, i])
-#                ax.set_title(names[0, i])
-#                ax.legend()
-#                plt.show()
-#
-#        # class Index(object):
-#        #    ind = 0
-#        #
-#        #    def no(self, event):
-#        #        pass
-#        #        plt.close()
-#        #
-#        #    def yes(self, event):
-#        #        self.ind += 1
-#        #        print(self.ind)
-#        #        plt.close()
-#        ##
-#        # callback = Index()
-#        # plt.figure(figsize=(1,1))
-#        # axprev = plt.axes([0.05, 0.05, 0.45, 0.75])
-#        # axnext = plt.axes([0.5, 0.05, 0.45, 0.75])
-#        # bnext = Button(axnext, 'No')
-#        # bnext.on_clicked(callback.no)
-#        # bprev = Button(axprev, 'Yes')
-#        # bprev.on_clicked(callback.yes)
-#        # plt.show()
