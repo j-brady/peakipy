@@ -457,7 +457,7 @@ if __name__ == "__main__":
             {
                 "fit_name": np.ravel(names),
                 "assign": np.ravel(assign),
-                "amp": np.ravel(amps) ** 2.0,
+                "amp": np.ravel(amps),
                 "amp_err": np.ravel(amp_errs),
                 "center_x": np.ravel(center_xs),
                 # "center_x_err": np.ravel(center_x_errs),
@@ -494,9 +494,12 @@ if __name__ == "__main__":
         df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * ppm_per_pt_f1)
         df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * ppm_per_pt_f2)
         df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
+        #print(df.iloc[3014:3018].amp_err)
+        df.fillna(value=np.nan,inplace=True)
         df["amp_err"] = df.apply(
-            lambda x: 2.0 * (x.amp_err / np.sqrt(x.amp)) * x.amp, axis=1
+            lambda x: 2.0 * (x.amp_err / x.amp) * x.amp**2., axis=1
         )
+        df["amp"] = df.amp.apply(lambda x: x**2.)
         # df.to_pickle("fits.pkl")
         output = args["<output>"]
         extension = os.path.splitext(output)[-1]
