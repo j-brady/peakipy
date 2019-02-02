@@ -1,8 +1,16 @@
 """ Functions for NMR peak deconvolution """
 
+import os
 import numpy as np
+import nmrglue as ng
+import matplotlib.pyplot as plt
+import pandas as pd
+
+from pathlib import Path
 from numpy import sqrt, log, pi, exp
-from lmfit import Model
+from lmfit import Model, report_fit
+from mpl_toolkits.mplot3d import Axes3D
+
 
 # constants
 log2 = log(2)
@@ -116,77 +124,6 @@ def r_square(data, residuals):
     return r2
 
 
-# FUNCTIONS FOR DEALING WITH PARAMETERS
-def update_params(params, peaks):
-    """ Update lmfit parameters with values from Peak
-
-        Arguments:
-             -- params: lmfit parameter object
-             -- peaks: list of Peak objects that parameters correspond to
-
-        ToDo:
-             -- deal with boundaries
-             -- currently positions in points
-             --
-
-    """
-    for peak in peaks:
-        print(peak)
-        for k, v in peak.param_dict().items():
-            params[k].value = v
-            print("update", k, v)
-            if "center" in k:
-                params[k].min = v - 3
-                params[k].max = v + 3
-                print(
-                    "setting limit of %s, min = %.3e, max = %.3e"
-                    % (k, params[k].min, params[k].max)
-                )
-            elif "sigma" in k:
-                params[k].min = 0.0
-                params[k].max = 1e6
-                print(
-                    "setting limit of %s, min = %.3e, max = %.3e"
-                    % (k, params[k].min, params[k].max)
-                )
-            elif "fraction" in k:
-                # fix weighting between 0 and 1
-                params[k].min = 0.0
-                params[k].max = 1.0
-
-
-def make_models(model, peaks):
-    """ Make composite models for multiple peaks
-
-        Arguments:
-            -- models
-            -- peaks: list of Peak objects [<Peak1>,<Peak2>,...]
-
-        Returns:
-            -- mod: Composite model containing all peaks
-            -- p_guess: params for composite model with starting values
-
-    """
-    if len(peaks) < 2:
-        # make model for first peak
-        mod = Model(model, prefix=peaks[0].prefix)
-        # add parameters
-        p_guess = mod.make_params(**peaks[0].param_dict())
-
-    elif len(peaks) > 1:
-        # make model for first peak
-        mod = Model(model, prefix=peaks[0].prefix)
-
-        for i in peaks[1:]:
-            mod += Model(model, prefix=i.prefix)
-
-        p_guess = mod.make_params()
-        # add Peak params to p_guess
-        update_params(p_guess, peaks)
-
-    return mod, p_guess
-
-
 def fix_params(params, to_fix):
     """ Set parameters to fix
 
@@ -217,60 +154,257 @@ def get_params(params, name):
     return ps, ps_err, names
 
 
-class Peak:
-    def __init__(
-        self,
-        center_x,
-        center_y,
-        amplitude,
-        prefix="",
-        sigma_x=1.0,
-        sigma_y=1.0,
-        assignment="None",
-    ):
-        """ Peak class 
-            
-            Data structure for nmrpeak
-        """
-        self.center_x = center_x
-        self.center_y = center_y
-        self.sigma_x = sigma_x
-        self.sigma_y = sigma_y
-        self.amplitude = amplitude
-        self.prefix = prefix
-        self.assignment = assignment
+def make_param_dict(peaks, data, lineshape="PV"):
+    """ Make dict of parameter names using prefix """
 
-    def param_dict(self):
-        """ Make dict of parameter names using prefix """
-        str_form = lambda x: "%s%s" % (self.prefix, str(x))
-        par_dict = {
-            str_form("center_x"): self.center_x,
-            str_form("center_y"): self.center_y,
-            str_form("sigma_x"): self.sigma_x,
-            str_form("sigma_y"): self.sigma_y,
-            str_form("amplitude"): self.amplitude,
-            str_form("fraction"): 0.5,
-        }
-        return par_dict
+    param_dict = {}
 
-    def mask(self, data, r_x, r_y):
-        # data is spectrum containing peak
-        a, b = self.center_y, self.center_x
-        n_y, n_x = data.shape
-        y, x = np.ogrid[-a : n_y - a, -b : n_x - b]
-        # create circular mask
-        mask = x ** 2.0 / r_x ** 2.0 + y ** 2.0 / r_y ** 2.0 <= 1.0
-        return mask
+    for index, peak in peaks.iterrows():
 
-    def __str__(self):
-        return (
-            "Peak: x=%.1f, y=%.1f, amp=%.1f, fraction=%.1f, prefix=%s, assignment=%s"
-            % (
-                self.center_x,
-                self.center_y,
-                self.amplitude,
-                0.5,
-                self.prefix,
-                self.assignment,
+        str_form = lambda x: "%s%s" % (to_prefix(peak.ASS), x)
+        # using exact value of points (i.e decimal)
+        param_dict[str_form("center_x")] = peak.X_AXISf
+        param_dict[str_form("center_y")] = peak.Y_AXISf
+        param_dict[str_form("sigma_x")] = peak.XW / 2.0
+        param_dict[str_form("sigma_y")] = peak.YW / 2.0
+        # estimate peak volume
+        amplitude_est = data[
+            int(peak.Y_AXIS) - int(peak.YW) : int(peak.Y_AXIS) + int(peak.YW) + 1,
+            int(peak.X_AXIS) - int(peak.XW) : int(peak.X_AXIS) + int(peak.XW) + 1,
+        ].sum()
+
+        # in case of negative amplitudes
+        if amplitude_est < 0.0:
+            amplitude_est = -1.0 * np.sqrt(abs(amplitude_est))
+        else:
+            amplitude_est = np.sqrt(amplitude_est)
+
+        param_dict[
+            str_form("amplitude")
+        ] = amplitude_est  # since A is sqrt of actual amplitude
+        if lineshape == "G":
+            param_dict[str_form("fraction")] = 0.0
+        elif lineshape == "L":
+            param_dict[str_form("fraction")] = 1.0
+        else:
+            param_dict[str_form("fraction")] = 0.5
+
+    return param_dict
+
+
+def to_prefix(x):
+    prefix = "_" + x
+    to_replace = [[" ", ""], ["{", "_"], ["}", "_"], ["[", "_"], ["]", "_"]]
+    for p in to_replace:
+        prefix = prefix.replace(*p)
+    print("prefix", prefix)
+    return prefix + "_"
+
+
+def make_models(model, peaks, data, lineshape="PV"):
+    """ Make composite models for multiple peaks
+
+        Arguments:
+            -- models
+            -- peaks: list of Peak objects [<Peak1>,<Peak2>,...]
+            -- lineshape: PV/G/L
+
+        Returns:
+            -- mod: Composite model containing all peaks
+            -- p_guess: params for composite model with starting values
+
+        Maybe add mask making to this function
+    """
+    if len(peaks) == 1:
+        # make model for first peak
+        mod = Model(model, prefix="%s" % to_prefix(peaks.ASS.iloc[0]))
+        # add parameters
+        param_dict = make_param_dict(peaks, data, lineshape=lineshape)
+        p_guess = mod.make_params(**param_dict)
+
+    elif len(peaks) > 1:
+        # make model for first peak
+        first_peak, *remaining_peaks = peaks.iterrows()
+        mod = Model(model, prefix="%s" % to_prefix(first_peak[1].ASS))
+        for index, peak in remaining_peaks:
+            mod += Model(model, prefix="%s" % to_prefix(peak.ASS))
+
+        param_dict = make_param_dict(peaks, data, lineshape=lineshape)
+        p_guess = mod.make_params(**param_dict)
+        # add Peak params to p_guess
+
+    update_params(p_guess, param_dict, lineshape=lineshape)
+
+    return mod, p_guess
+
+
+def update_params(params, param_dict, lineshape="PV"):
+    """ Update lmfit parameters with values from Peak
+
+        Arguments:
+             -- params: lmfit parameter object
+             -- peaks: list of Peak objects that parameters correspond to
+
+        ToDo:
+             -- deal with boundaries
+             -- currently positions in points
+             --
+
+    """
+    for k, v in param_dict.items():
+        params[k].value = v
+        print("update", k, v)
+        # if "center" in k:
+        #    params[k].min = v - 10
+        #    params[k].max = v + 10
+        #    print(
+        #        "setting limit of %s, min = %.3e, max = %.3e"
+        #        % (k, params[k].min, params[k].max)
+        #    )
+        if "sigma" in k:
+            params[k].min = 0.0
+            params[k].max = 1e4
+            print(
+                "setting limit of %s, min = %.3e, max = %.3e"
+                % (k, params[k].min, params[k].max)
             )
+        elif "fraction" in k:
+            # fix weighting between 0 and 1
+            params[k].min = 0.0
+            params[k].max = 1.0
+
+            if lineshape == "G":
+                params[k].vary = False
+            elif lineshape == "L":
+                params[k].vary = False
+
+    # return params
+
+
+def fit_first_plane(
+    group,
+    data,
+    x_radius,
+    y_radius,
+    uc_dics,
+    noise=None,
+    lineshape="PV",
+    plot=None,
+    show=True,
+):
+    """
+        Arguments:
+
+            group -- pandas data from containing group of peaks
+            data  -- 
+            x_radius 
+            y_radius
+            uc_dics -- unit conversion dics
+            plot -- if True show wireframe plots
+
+        To do:
+            add model selection
+    
+    """
+
+    mask = np.zeros(data.shape, dtype=bool)
+    mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape)
+    # print(p_guess)
+    # get initial peak centers
+    cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
+    cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
+
+    for index, peak in group.iterrows():
+        #  minus 1 from X_AXIS and Y_AXIS to center peaks in mask
+        # print(peak.X_AXIS,peak.Y_AXIS,row.HEIGHT)
+        mask += make_mask(data, peak.X_AXISf, peak.Y_AXISf, x_radius, y_radius)
+        # print(peak)
+
+    # needs checking since this may not center peaks
+    max_x, min_x = int(round(max(cen_x))) + x_radius, int(round(min(cen_x))) - x_radius
+    max_y, min_y = int(round(max(cen_y))) + y_radius, int(round(min(cen_y))) - y_radius
+
+    peak_slices = data.copy()[mask]
+
+    # must be a better way to make the meshgrid
+    x = np.arange(1, data.shape[-1] + 1)
+    y = np.arange(1, data.shape[-2] + 1)
+    XY = np.meshgrid(x, y)
+    X, Y = XY
+
+    XY_slices = [X.copy()[mask], Y.copy()[mask]]
+    out = mod.fit(
+        peak_slices, XY=XY_slices, params=p_guess
+    )  # , weights=weights[mask].ravel())
+
+    if plot != None:
+        plot_path = Path(plot)
+        Zsim = mod.eval(XY=XY, params=out.params)
+        print(report_fit(out.params))
+        Zsim[~mask] = np.nan
+
+        # plotting
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        Z_plot = data.copy()
+        Z_plot[~mask] = np.nan
+        # convert to ints may need tweeking
+        min_x = int(np.floor(min_x))
+        max_x = int(np.ceil(max_x))
+        min_y = int(np.floor(min_y))
+        max_y = int(np.ceil(max_y))
+        X_plot = uc_dics["f2"].ppm(X[min_y - 1 : max_y, min_x - 1 : max_x])
+        Y_plot = uc_dics["f1"].ppm(Y[min_y - 1 : max_y, min_x - 1 : max_x])
+
+        ax.plot_wireframe(
+            X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x], color="k"
         )
+        # ax.contour3D(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x],cmap='viridis')
+
+        ax.set_xlabel("F2 ppm")
+        ax.set_ylabel("F1 ppm")
+        ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
+        ax.plot_wireframe(
+            X_plot,
+            Y_plot,
+            Zsim[min_y - 1 : max_y, min_x - 1 : max_x],
+            color="r",
+            linestyle="--",
+            label="fit",
+        )
+        # Annotate plots
+        labs = []
+        Z_lab = []
+        Y_lab = []
+        X_lab = []
+        for k, v in out.params.valuesdict().items():
+            if "amplitude" in k:
+                Z_lab.append(v)
+                # get prefix
+                labs.append(" ".join(k.split("_")[:-1]))
+            elif "center_x" in k:
+                X_lab.append(uc_dics["f2"].ppm(v))
+            elif "center_y" in k:
+                Y_lab.append(uc_dics["f1"].ppm(v))
+        #  this is dumb as !£$@
+        Z_lab = [
+            data[
+                int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
+            ]
+            for x, y in zip(X_lab, Y_lab)
+        ]
+
+        for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
+            # print(l, x, y, z)
+            ax.text(x, y, z * 1.4, l, None)
+
+        plt.legend()
+
+        name = group.CLUSTID.iloc[0]
+        if show:
+            plt.savefig(plot_path / f"{name}.png", dpi=300)
+            plt.show()
+        else:
+            plt.savefig(plot_path / f"{name}.png", dpi=300)
+        #    print(p_guess)
+    return out, mask

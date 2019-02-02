@@ -1,0 +1,26 @@
+
+    ##########################################################################################################
+    #  This first block is global parameters which can be overridden by adding the desired argument          #
+    #  to your list of spectra. One exception is "colors" which if set in global params overrides the        #
+    #  color option set for individual spectra as the colors will now cycle through the chosen matplotlib    #
+    #  colormap                                                                                              #
+    ##########################################################################################################
+
+    cs: 3000000.0                     # contour start
+    contour_num: 10                 # number of contours
+    contour_factor: 1.2             # contour factor
+    colors: tab20                    # must be matplotlib.cm colormap
+
+    outname: ["clusters.pdf","clusters.png"] # either single value or list of output names
+    ncol: 1 #  tells matplotlib how many columns to give the figure legend - if not set defaults to 2
+    clusters: peaks.pkl
+    dims: [0, 1, 2]
+
+    # Here is where your list of spectra to plot goes
+    spectra:
+
+            - fname: test1.ft2
+              label: ""
+              contour_num: 20
+              linewidths: 0.1
+    

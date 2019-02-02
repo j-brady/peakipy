@@ -417,8 +417,8 @@ if __name__ == "__main__":
 
         data = read_pipe(filename)
     print(data.head())
-    outfmt = args.get("--outfmt","pkl")
-    outname = os.path.splitext(filename)[0] 
+    outfmt = args.get("--outfmt", "pkl")
+    outname = os.path.splitext(filename)[0]
     if outfmt == "csv":
         outname = outname + ".csv"
         data.to_csv(outname)

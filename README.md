@@ -55,6 +55,9 @@ Initial parameters for FWHM,
 
 Fraction parameter is fraction of Lorentzian lineshape.
 
+## Test data
+
+To test the program for yourself cd into the test dir and 
 
 ## To do
 
@@ -63,3 +66,7 @@ Fraction parameter is fraction of Lorentzian lineshape.
 2. add flag to include vclist to output dataframe
 
 3. Normalize peaks
+
+4. Multiprocessor
+
+5. Script to check fits and add column with x_radius and y_radius so that you can edit the parameters and rerun specific fits.
