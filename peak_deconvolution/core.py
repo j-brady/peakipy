@@ -194,7 +194,7 @@ def make_param_dict(peaks, data, lineshape="PV"):
 
 def to_prefix(x):
     prefix = "_" + x
-    to_replace = [[" ", ""], ["{", "_"], ["}", "_"], ["[", "_"], ["]", "_"]]
+    to_replace = [[" ", ""], ["{", "_"], ["}", "_"], ["[", "_"], ["]", "_"],["-",""],["/","or"],["?","maybe"],["\\",""]]
     for p in to_replace:
         prefix = prefix.replace(*p)
     print("prefix", prefix)
@@ -254,14 +254,14 @@ def update_params(params, param_dict, lineshape="PV"):
     for k, v in param_dict.items():
         params[k].value = v
         print("update", k, v)
-        # if "center" in k:
-        #    params[k].min = v - 10
-        #    params[k].max = v + 10
-        #    print(
-        #        "setting limit of %s, min = %.3e, max = %.3e"
-        #        % (k, params[k].min, params[k].max)
-        #    )
-        if "sigma" in k:
+        if "center" in k:
+            params[k].min = v - 5
+            params[k].max = v + 5
+            print(
+                "setting limit of %s, min = %.3e, max = %.3e"
+                % (k, params[k].min, params[k].max)
+            )
+        elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
             print(

@@ -126,6 +126,10 @@ print(x_radius, y_radius)
 
 # summed_planes = rescale_intensity(data.sum(axis=0), in_range=(-1,1))
 # data = rescale_intensity(data, in_range=(-1,1))
+# rearrange data if dims not in standard order
+if dims != [0,1,2]:
+    data = np.transpose(data,dims)
+
 summed_planes = data.sum(axis=0)
 
 # make weights for fit
@@ -290,9 +294,7 @@ for name, group in groups:
     df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
     # print(df.iloc[3014:3018].amp_err)
     df.fillna(value=np.nan, inplace=True)
-    df["amp_err"] = df.apply(
-        lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1
-    )
+    df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
     df["amp"] = df.amp.apply(lambda x: x ** 2.0)
     # df.to_pickle("fits.pkl")
     output = args["<output>"]

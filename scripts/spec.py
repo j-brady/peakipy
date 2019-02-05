@@ -94,6 +94,15 @@ def make_yaml_file(name, yaml_file=yaml_file):
         new_yaml_file.write(yaml_file)
 
 
+def onpick(event):
+    thisline = event.artist
+    xdata = thisline.get_xdata()
+    ydata = thisline.get_ydata()
+    ind = event.ind
+    points = tuple(zip(xdata[ind], ydata[ind]))
+    print("onpick points:", points)
+
+
 if __name__ == "__main__":
     arguments = docopt(__doc__, version="Spec 0.1")
     if arguments["make"]:
@@ -250,13 +259,16 @@ if __name__ == "__main__":
         groups = clusters.groupby("CLUSTID")
         for ind, group in groups:
             if len(group) == 1:
-                plt.plot(group.X_PPM, group.Y_PPM, "ko", markersize=2)
+                ax.plot(group.X_PPM, group.Y_PPM, "ko", markersize=2, picker=5)
             else:
-                plt.plot(group.X_PPM, group.Y_PPM, "o", markersize=2)
+                ax.plot(group.X_PPM, group.Y_PPM, "o", markersize=2, picker=5)
 
     if params.get("outname") and (type(params.get("outname")) == list):
         for i in params.get("outname"):
             plt.savefig(i, bbox_inches="tight", dpi=300)
     else:
         plt.savefig(params.get("outname", "test.pdf"), bbox_inches="tight")
+
+    fig.canvas.mpl_connect("pick_event", onpick)
+    # line, = ax.plot(np.random.rand(100), 'o', picker=5)  # 5 points tolerance
     plt.show()
