@@ -6,7 +6,7 @@
     #  colormap                                                                                              #
     ##########################################################################################################
 
-    cs: 2000000.0                     # contour start
+    cs: 2316031.0                     # contour start
     contour_num: 10                 # number of contours
     contour_factor: 1.2             # contour factor
     colors: tab20                    # must be matplotlib.cm colormap

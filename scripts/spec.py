@@ -166,7 +166,8 @@ if __name__ == "__main__":
             ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()  # max,min
 
         elif ndim == 3:
-            f1, f2, f3 = params.get("dims", [0, 1, 2])
+            dims = params.get("dims", [0, 1, 2])
+            f1, f2, f3 = dims
             uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
             uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
             uc_f3 = ng.pipe.make_uc(dic, data, dim=f3)
@@ -177,9 +178,11 @@ if __name__ == "__main__":
             ppm_f1_0, ppm_f1_1 = uc_f2.ppm_limits()  # max,min
             ppm_f2_0, ppm_f2_1 = uc_f3.ppm_limits()  # max,min
 
-            if f1 == 0:
-                data = data[f1]
-
+            #if f1 == 0:
+            #    data = data[f1]
+            if dims != [1,2,3]:
+                data = np.transpose(data, dims) 
+            data = data[0]
             # x and y are set to f2 and f1
             f1, f2 = f2, f3
             # elif f1 == 1:
