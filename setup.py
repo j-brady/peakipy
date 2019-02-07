@@ -2,6 +2,9 @@ import os
 from glob import glob
 from distutils.core import setup
 
+if os.path.exists("build"):
+    os.system("rm -r build")
+
 scripts = glob("scripts/*.py")
 [os.system(f"chmod +x {script}") for script in scripts]
 

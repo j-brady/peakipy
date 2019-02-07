@@ -385,19 +385,7 @@ if __name__ == "__main__":
     dims = [int(i) for i in dims.split(",")]
     pipe_ft_file = args.get("<data>")
     if args.get("--a2"):
-        #data = read_analysis(
-        #    filename,
-        #    pipe_ft_file,
-        #    dims,
-        #    pthres=pthres,
-        #    nthres=nthres,
-        #    noise=noise,
-        #    ndil=ndil,
-        #    clust2=clust2,
-        #    c2thres=c2thres,
-        #    clust3=clust3,
-        #    clust3_args=clust3_args,
-        #)
+
         peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims)
         #peaks.adaptive_clusters(block_size=151,offset=0)
         peaks.clusters(thres=pthres, **clust_args, l_struc=None)
@@ -405,19 +393,12 @@ if __name__ == "__main__":
         pthres = peaks.get_pthres() 
 
     elif args.get("--sparky"):
-        #data = read_sparky(
-        #    filename,
-        #    pipe_ft_file,
-        #    dims,
-        #    pthres=args.get("--pthres"),
-        #    nthres=args.get("--nthres"),
-        #    noise=noise,
-        #    ndil=ndil,
-        #)
+
         peaks = Peaklist(filename, pipe_ft_file, fmt="sparky", dims=dims)
-        peaks.clusters(thres=pthres, **clust3_args, l_struc=None)
+        peaks.clusters(thres=pthres, **clust_args, l_struc=None)
         data = peaks.get_df()
         pthres = peaks.get_pthres() 
+
     else:
 
         data = read_pipe(filename)
