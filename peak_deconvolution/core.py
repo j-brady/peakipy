@@ -1,12 +1,9 @@
 """ Functions for NMR peak deconvolution """
-
-import os
-import numpy as np
-import nmrglue as ng
-import matplotlib.pyplot as plt
-import pandas as pd
-
 from pathlib import Path
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 from numpy import sqrt, log, pi, exp
 from lmfit import Model, report_fit
 from mpl_toolkits.mplot3d import Axes3D
@@ -197,7 +194,7 @@ def to_prefix(x):
     to_replace = [[" ", ""], ["{", "_"], ["}", "_"], ["[", "_"], ["]", "_"],["-",""],["/","or"],["?","maybe"],["\\",""]]
     for p in to_replace:
         prefix = prefix.replace(*p)
-    print("prefix", prefix)
+    #print("prefix", prefix)
     return prefix + "_"
 
 
@@ -253,21 +250,21 @@ def update_params(params, param_dict, lineshape="PV"):
     """
     for k, v in param_dict.items():
         params[k].value = v
-        print("update", k, v)
+        #print("update", k, v)
         if "center" in k:
             params[k].min = v - 5
             params[k].max = v + 5
-            print(
-                "setting limit of %s, min = %.3e, max = %.3e"
-                % (k, params[k].min, params[k].max)
-            )
+            #print(
+            #    "setting limit of %s, min = %.3e, max = %.3e"
+            #    % (k, params[k].min, params[k].max)
+            #)
         elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
-            print(
-                "setting limit of %s, min = %.3e, max = %.3e"
-                % (k, params[k].min, params[k].max)
-            )
+            #print(
+            #    "setting limit of %s, min = %.3e, max = %.3e"
+            #    % (k, params[k].min, params[k].max)
+            #)
         elif "fraction" in k:
             # fix weighting between 0 and 1
             params[k].min = 0.0
@@ -363,7 +360,7 @@ def fit_first_plane(
 
         ax.set_xlabel("F2 ppm")
         ax.set_ylabel("F1 ppm")
-        ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
+        #ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
         ax.plot_wireframe(
             X_plot,
             Y_plot,

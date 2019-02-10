@@ -4,3 +4,4 @@ build
 *.pyc
 defaultProject
 __pycache__
+*.png

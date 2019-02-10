@@ -48,60 +48,66 @@ from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 
-from peak_deconvolution.core import (
-    fix_params,
-    get_params,
-    r_square,
-    fit_first_plane,
-)
+from peak_deconvolution.core import fix_params, get_params, r_square, fit_first_plane
+
 
 args = docopt(__doc__)
+
 max_cluster_size = args.get("--max_cluster_size")
-lineshape = args.get("--lineshape")
 if max_cluster_size == "None":
     max_cluster_size = 1000
 else:
     max_cluster_size = int(max_cluster_size)
 
+lineshape = args.get("--lineshape")
+# f2 radius in ppm for mask
 x_radius = float(args.get("--x_radius"))
+# f1 radius in ppm for mask
 y_radius = float(args.get("--y_radius"))
+# prob get rid for this
 min_rsq = float(args.get("--min_rsq"))
 print("Using ", args)
 log = open("log.txt", "a")
 
+# path to peaklist
 peaklist = Path(args.get("<peaklist>"))
+
+# determine filetype
 if peaklist.suffix == ".csv":
     peaks = pd.read_csv(peaklist)
 else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
 
-# peaks = pd.read_pickle(args["<peaklist>"])
+# group peaks based on CLUSTID
 groups = peaks.groupby("CLUSTID")
 
+# plot results or not
 plot = args.get("--plot")
 if plot == "None":
     plot = None
 else:
     plot = Path(plot)
-    plot.mkdir(parents=True,exist_ok=True)
+    plot.mkdir(parents=True, exist_ok=True)
 
+# read vclist - currently not working
 vclist = args.get("--vclist")
-print("vclist",vclist)
+print("vclist", vclist)
 if vclist == "None":
     add_vclist = False
-else: 
+else:
     vclist = np.genfromtxt(vclist)
     add_vclist = True
 
-# vcpmg = np.genfromtxt("vclist")
 # read NMR data
 dic, data = ng.pipe.read(args["<data>"])
 udic = ng.pipe.guess_udic(dic, data)
+# dimensions
 dims = args.get("--dims")
 dims = [int(i) for i in dims.split(",")]
 planes, f1_dim, f2_dim = dims
 udic = ng.pipe.guess_udic(dic, data)
+# make unit conversion dicts
 uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
 uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
 uc_dics = {"f1": uc_f1, "f2": uc_f2}
@@ -110,37 +116,20 @@ uc_dics = {"f1": uc_f1, "f2": uc_f2}
 ppm_per_pt_f1 = (udic[f1_dim]["sw"] / udic[f1_dim]["obs"]) / udic[f1_dim]["size"]
 ppm_per_pt_f2 = (udic[f2_dim]["sw"] / udic[f2_dim]["obs"]) / udic[f2_dim]["size"]
 
-# convert radii from ppm to points
-pt_per_ppm_f1 = (
-    1.0 / ppm_per_pt_f1
-)  
-pt_per_ppm_f2 = (
-    1.0 / ppm_per_pt_f2
-)  
+# point per ppm
+pt_per_ppm_f1 = 1.0 / ppm_per_pt_f1
+pt_per_ppm_f2 = 1.0 / ppm_per_pt_f2
 
-# set x_radius and y_radius to points
+# convert radii from ppm to points
 x_radius = x_radius * pt_per_ppm_f2
 y_radius = y_radius * pt_per_ppm_f1
 
-# data = rescale_intensity(data, in_range=(-1,1))
-# rearrange data if dims not in standard order
-if dims != [0,1,2]:
-    data = np.transpose(data,dims)
+#  rearrange data if dims not in standard order
+if dims != [0, 1, 2]:
+    data = np.transpose(data, dims)
 
 # sum planes for initial fit
 summed_planes = data.sum(axis=0)
-
-# make weights for fit
-#noise = args.get("--noise")
-#if noise == "None":
-#    weights = None
-#    print("You did not provide a noise estimate!")
-#
-#else:
-#    weights = np.empty(summed_planes.shape)
-#    weights[:, :] = float(noise) ** 2.0
-#    weight = float(noise) ** 2.0
-# print(weights)
 
 # for saving data
 amps = []
@@ -163,14 +152,13 @@ names = []
 indices = []
 assign = []
 clustids = []
-#vclists = []
+# vclists = []
 
 # iterate over groups of peaks
 for name, group in groups:
     #  max cluster size
     if len(group) <= max_cluster_size:
         # fits sum of all planes first
-        # first, mask = fit_first_plane(group, summed_planes, plot=True)
         first, mask = fit_first_plane(
             group,
             summed_planes,
@@ -188,41 +176,10 @@ for name, group in groups:
         # to_fix = ["center", "fraction"]
         fix_params(first.params, to_fix)
 
-        #r_sq = r_square(summed_planes[mask], first.residual)
-        #print("R^2 = ", r_sq)
-        # print(first.residual,np.sum(first.residual**2.)/(28*25e8))
-        # print(np.corrcoef(summed_planes[mask].ravel(),first.best_fit))
-        # plt.plot(first.residual.ravel())
-        # plt.show()
-        # exit()
-        # chi_sq = chi_square(first.residual, weights[mask].ravel())
-        # r_sq = r_square(data[0][mask], first.residual)
-        # print("Chi square = ",chi_sq)
-        #if r_sq <= min_rsq:
-        #    failed_ass = "\n".join(i for i in group.ASS)
-        #    error = f"Fit failed for {name} with R2 or {r_sq}"
-        #    print(error)
-        #    log.write("\n--------------------------------------\n")
-        #    log.write(f"{error}\n")
-        #    log.write(f"{failed_ass}\n")
-        #    log.write("\n--------------------------------------\n")
-
-        #else:
-            # get amplitudes and errors fitted from first plane
-            # amp, amp_err, name = get_params(first.params,"amplitude")
-
-            # fit all plane amplitudes while fixing sigma/center/fraction
-            # refitting first plane reduces the error
         for d in data:
-            first.fit(
-                data=d[mask], params=first.params
-            )  # noise=weights[mask].ravel())
-            #print(first.fit_report())
-            #r_sq = r_square(d[mask], first.residual)
-            # chi_sq = chi_square(first.residual, weight)
+            first.fit(data=d[mask], params=first.params)  # noise=weights[mask].ravel())
+            # print(first.fit_report())
 
-            #print("R^2 = ", r_sq)
-            # print("X^2 = ", chi_sq)
             amp, amp_err, name = get_params(first.params, "amplitude")
             cen_x, cen_x_err, name = get_params(first.params, "center_x")
             cen_y, cen_y_err, name = get_params(first.params, "center_y")
@@ -246,42 +203,42 @@ for name, group in groups:
             sigma_y_errs.extend(sig_y_err)
 
             fractions.extend(frac)
-            # get prefix for fit
-            names.extend([i.replace("fraction","") for i in name])
+            #  get prefix for fit
+            names.extend([i.replace("fraction", "") for i in name])
             assign.extend(group["ASS"])
             clustids.extend(group["CLUSTID"])
-            
-            #if add_vclist:
+
+            # if add_vclist:
             #    vclists.extend(vclist)
 
-                # print(plane.fit_report())
-        # exit()
+            # print(plane.fit_report())
+
 df_dic = {
-        "fit_prefix": np.ravel(names),
-        "assignment": np.ravel(assign),
-        "amp": np.ravel(amps),
-        "amp_err": np.ravel(amp_errs),
-        "center_x": np.ravel(center_xs),
-        # "center_x_err": np.ravel(center_x_errs),
-        "center_y": np.ravel(center_ys),
-        # "center_y_err": np.ravel(center_y_errs),
-        "sigma_x": np.ravel(sigma_xs),
-        # "sigma_x_err": np.ravel(sigma_x_errs),
-        "sigma_y": np.ravel(sigma_ys),
-        # "sigma_y_err": np.ravel(sigma_y_errs),
-        "fraction": np.ravel(fractions),
-        "clustid": np.ravel(clustids),
-        #"vclist": np.ravel(vclists)
-    }
+    "fit_prefix": np.ravel(names),
+    "assignment": np.ravel(assign),
+    "amp": np.ravel(amps),
+    "amp_err": np.ravel(amp_errs),
+    "center_x": np.ravel(center_xs),
+    # "center_x_err": np.ravel(center_x_errs),
+    "center_y": np.ravel(center_ys),
+    # "center_y_err": np.ravel(center_y_errs),
+    "sigma_x": np.ravel(sigma_xs),
+    # "sigma_x_err": np.ravel(sigma_x_errs),
+    "sigma_y": np.ravel(sigma_ys),
+    # "sigma_y_err": np.ravel(sigma_y_errs),
+    "fraction": np.ravel(fractions),
+    "clustid": np.ravel(clustids),
+    # "vclist": np.ravel(vclists)
+}
 
 # remove vclist if not using
-#if not add_vclist:
+# if not add_vclist:
 #    df_dic.pop("vclist")
 
-# make dataframe
+#  make dataframe
 df = pd.DataFrame(df_dic)
 
-#  convert sigmas to fwhm based on the model used to fit 
+#  convert sigmas to fwhm based on the model used to fit
 if lineshape == "PV":
     # fwhm = 2*sigma
     df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
@@ -306,7 +263,8 @@ df.fillna(value=np.nan, inplace=True)
 # calculate errors and square amplitudes
 df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
 df["amp"] = df.amp.apply(lambda x: x ** 2.0)
-# df.to_pickle("fits.pkl")
+
+#  output data
 output = Path(args["<output>"])
 suffix = output.suffix
 if suffix == ".csv":

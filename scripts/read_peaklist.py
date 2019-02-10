@@ -62,6 +62,7 @@
  
 """
 import os
+from pathlib import Path
 
 import yaml
 import pandas as pd
@@ -71,7 +72,7 @@ import nmrglue as ng
 from scipy import ndimage
 from nmrglue.analysis.peakpick import clusters
 from docopt import docopt
-from skimage.morphology import  square, closing, opening, disk, rectangle
+from skimage.morphology import square, closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
 
@@ -139,7 +140,6 @@ sparky_to_pipe = {
 }
 
 
-
 class Peaklist:
     """ Read analysis or sparky peak list and convert to NMRPipe-ish format also find peak clusters
      
@@ -166,7 +166,7 @@ class Peaklist:
 
     """
 
-    def __init__(self, path, data, fmt="a2", dims=[0,1,2]):
+    def __init__(self, path, data, fmt="a2", dims=[0, 1, 2]):
         self.fmt = fmt
         self.path = path
 
@@ -180,10 +180,9 @@ class Peaklist:
             self.df = self._read_pipe()
 
         else:
-            raise(TypeError, "I don't know this format")
+            raise (TypeError, "I don't know this format")
 
-        
-        # read pipe data
+        #  read pipe data
         dic, self.data = ng.pipe.read(data)
         udic = ng.pipe.guess_udic(dic, self.data)
         ndim = udic["ndim"]
@@ -192,7 +191,6 @@ class Peaklist:
         print(" ".join(udic[i]["label"] for i in range(ndim)))
         print(ndim, self.data.shape)
         planes, f1_dim, f2_dim = dims
-        #print(dic["FDF%dSW" % 3])
         # calculate points per hertz
         # number of points / SW
         pt_per_hz_f2dim = udic[f2_dim]["size"] / udic[f2_dim]["sw"]
@@ -201,7 +199,7 @@ class Peaklist:
         uc_f2 = ng.pipe.make_uc(dic, self.data, dim=f2_dim)
         uc_f1 = ng.pipe.make_uc(dic, self.data, dim=f1_dim)
 
-        # int point value 
+        # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: uc_f2(x, "ppm"))
         self.df["Y_AXIS"] = self.df.Y_PPM.apply(lambda x: uc_f1(x, "ppm"))
         # decimal point value
@@ -220,11 +218,12 @@ class Peaklist:
         self.df["YW"] = self.df.YW_HZ.apply(lambda x: x * pt_per_hz_f1dim)
         # makes an assignment column
         if self.fmt == "a2":
-            self.df["ASS"] = self.df.apply(lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1)
+            self.df["ASS"] = self.df.apply(
+                lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
+            )
 
-        if dims != [0,1,2]:
+        if dims != [0, 1, 2]:
             data = np.transpose(data, dims)
-
 
     def _read_analysis(self):
         df = pd.read_table(self.path, delimiter="\t")
@@ -235,7 +234,6 @@ class Peaklist:
         df = df.rename(index=str, columns=pipe_columns)
         # df["CLUSTID"] = np.arange(1, len(df) + 1)
         return df
-
 
     def _read_sparky(self):
 
@@ -248,7 +246,6 @@ class Peaklist:
 
         return df
 
-
     def _read_pipe(self):
         to_skip = 0
         with open(self.path) as f:
@@ -259,9 +256,10 @@ class Peaklist:
                     break
                 else:
                     to_skip += 1
-        df = pd.read_table(self.path, skiprows=to_skip, names=columns, delim_whitespace=True)
+        df = pd.read_table(
+            self.path, skiprows=to_skip, names=columns, delim_whitespace=True
+        )
         return df
-
 
     def clusters(self, thres=None, struc_el="square", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks 
@@ -275,7 +273,7 @@ class Peaklist:
         ndil: int
             number of iterations of ndimage.binary_dilation function if set to 0 then function not used
 
-        """ 
+        """
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
         if thres == None:
@@ -283,7 +281,9 @@ class Peaklist:
         else:
             self.thresh = thres
 
-        thresh_data = np.bitwise_or(self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh)
+        thresh_data = np.bitwise_or(
+            self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
+        )
 
         if struc_el == "disk":
             radius = struc_size[0]
@@ -322,8 +322,10 @@ class Peaklist:
 
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
-        binary_adaptive = threshold_adaptive(self.data[0], block_size=block_size, offset=offset)
-        
+        binary_adaptive = threshold_adaptive(
+            self.data[0], block_size=block_size, offset=offset
+        )
+
         labeled_array, num_features = ndimage.label(binary_adaptive, l_struc)
         # print(labeled_array, num_features)
 
@@ -335,7 +337,6 @@ class Peaklist:
         self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
             max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
         )
-
 
     def get_df(self):
         return self.df
@@ -352,9 +353,8 @@ def to_fuda(df):
 
 if __name__ == "__main__":
     args = docopt(__doc__)
-    filename = args["<peaklist>"]
-    print(os.path.splitext(filename)[0])
-    # print(args)
+    filename = Path(args["<peaklist>"])
+    # print(filename.stem)
 
     if args.get("--nthres") == "None":
         args["--nthres"] = None
@@ -371,40 +371,36 @@ if __name__ == "__main__":
     pthres = args.get("--pthres")
     nthres = args.get("--nthres")
     print(args)
-    #clust2 = args.get("--clust2")
-    #c2thres = float(args.get("--c2thres"))
-    #clust3 = args.get("--clust3")
-    #if clust3:
-    #   dic, data = ng.pipe.read(args.get("<data>"))
-    #   pthres = threshold_otsu(data[0])
 
-    clust_args = {'struc_el':args.get('--struc_el'),
-                   'struc_size':eval(args.get('--struc_size'))}
-    # c2thres = float(args.get("--"))
+    clust_args = {
+        "struc_el": args.get("--struc_el"),
+        "struc_size": eval(args.get("--struc_size")),
+    }
+
     dims = args.get("--dims")
     dims = [int(i) for i in dims.split(",")]
     pipe_ft_file = args.get("<data>")
     if args.get("--a2"):
 
         peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims)
-        #peaks.adaptive_clusters(block_size=151,offset=0)
+        # peaks.adaptive_clusters(block_size=151,offset=0)
         peaks.clusters(thres=pthres, **clust_args, l_struc=None)
         data = peaks.get_df()
-        pthres = peaks.get_pthres() 
+        pthres = peaks.get_pthres()
 
     elif args.get("--sparky"):
 
         peaks = Peaklist(filename, pipe_ft_file, fmt="sparky", dims=dims)
         peaks.clusters(thres=pthres, **clust_args, l_struc=None)
         data = peaks.get_df()
-        pthres = peaks.get_pthres() 
+        pthres = peaks.get_pthres()
 
     else:
 
         data = read_pipe(filename)
     print(data.head())
     outfmt = args.get("--outfmt", "pkl")
-    outname = os.path.splitext(filename)[0]
+    outname = filename.stem
     if outfmt == "csv":
         outname = outname + ".csv"
         data.to_csv(outname)
