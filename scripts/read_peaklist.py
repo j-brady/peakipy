@@ -75,6 +75,7 @@ from docopt import docopt
 from skimage.morphology import square, closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
+from peak_deconvolution.core import make_mask 
 
 # Read peak list and output into pandas dataframe for fitting peaks
 # make column in dataframe for group identities
@@ -195,6 +196,11 @@ class Peaklist:
         # number of points / SW
         pt_per_hz_f2dim = udic[f2_dim]["size"] / udic[f2_dim]["sw"]
         pt_per_hz_f1dim = udic[f1_dim]["size"] / udic[f1_dim]["sw"]
+
+        self.pt_per_ppm_f2 = udic[f2_dim]["size"] / (udic[f2_dim]["sw"] / udic[f2_dim]["obs"])
+        self.pt_per_ppm_f1 = udic[f1_dim]["size"] / (udic[f1_dim]["sw"] / udic[f1_dim]["obs"])
+
+        
         print("Points per hz f1 = %s, f2 = %s" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
         uc_f2 = ng.pipe.make_uc(dic, self.data, dim=f2_dim)
         uc_f1 = ng.pipe.make_uc(dic, self.data, dim=f1_dim)
@@ -221,7 +227,14 @@ class Peaklist:
             self.df["ASS"] = self.df.apply(
                 lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
             )
+        
+        # make default values for X and Y radii for fit masks
+        self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + 0.04
+        self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + 0.4
+        self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(lambda x: x * self.pt_per_ppm_f2) 
+        self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(lambda x: x * self.pt_per_ppm_f1) 
 
+        # rearrange dims
         if dims != [0, 1, 2]:
             data = np.transpose(data, dims)
 
@@ -338,6 +351,37 @@ class Peaklist:
             max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
         )
 
+
+    def mask_method(self, x_radius=0.04, y_radius=0.4, l_struc=None):
+        
+
+        self.thresh = threshold_otsu(self.data[0])
+
+        x_radius = self.pt_per_ppm_f2 * x_radius
+        y_radius = self.pt_per_ppm_f1 * y_radius
+
+        mask = np.zeros(self.data[0].shape, dtype=bool)
+
+
+        for ind, peak in self.df.iterrows():
+            mask += make_mask(self.data[0],peak.X_AXISf,peak.Y_AXISf, x_radius, y_radius)
+
+        peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+        labeled_array, num_features = ndimage.label(mask, l_struc)
+
+        self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+
+        #  renumber "0" clusters
+        max_clustid = self.df["CLUSTID"].max()
+        n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
+        self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+            max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+        )
+        import matplotlib.pyplot as plt
+        plt.imshow(mask)
+        plt.show()
+
+
     def get_df(self):
         return self.df
 
@@ -385,8 +429,10 @@ if __name__ == "__main__":
         peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims)
         # peaks.adaptive_clusters(block_size=151,offset=0)
         peaks.clusters(thres=pthres, **clust_args, l_struc=None)
+        #peaks.mask_method(x_radius=0.04,y_radius=0.25)
         data = peaks.get_df()
         pthres = peaks.get_pthres()
+
 
     elif args.get("--sparky"):
 

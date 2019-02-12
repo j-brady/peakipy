@@ -314,10 +314,12 @@ def fit_first_plane(
     for index, peak in group.iterrows():
         #  minus 1 from X_AXIS and Y_AXIS to center peaks in mask
         # print(peak.X_AXIS,peak.Y_AXIS,row.HEIGHT)
-        mask += make_mask(data, peak.X_AXISf, peak.Y_AXISf, x_radius, y_radius)
+        mask += make_mask(data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS)
         # print(peak)
 
     # needs checking since this may not center peaks
+    x_radius = group.X_RADIUS.max()
+    y_radius = group.Y_RADIUS.max()
     max_x, min_x = int(round(max(cen_x))) + x_radius, int(round(min(cen_x))) - x_radius
     max_y, min_y = int(round(max(cen_y))) + y_radius, int(round(min(cen_y))) - y_radius
 
