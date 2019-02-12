@@ -104,7 +104,7 @@ def callback(attrname, old, new):
     df.loc[selectionIndex,"Edited"] = True
 
     selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
-    print(list(selected_df))
+    #print(list(selected_df))
     source.data = {col: df[col] for col in df.columns}
 
 def get_contour_data(data, levels, **kwargs):

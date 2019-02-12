@@ -5,3 +5,4 @@ build
 defaultProject
 __pycache__
 *.png
+*.bak
