@@ -68,22 +68,10 @@ def save_peaks(event):
         df.to_pickle(to_save)
 
 
-def update():
+def select_callback(attrname, old, new):
 
-    current = df
-    
-    current["X_RADIUS"] = slider_X_RADIUS.value * pt_per_ppm_f2
-    current["Y_RADIUS"] = slider_Y_RADIUS.value * pt_per_ppm_f1
-    current["X_RADIUS_PPM"] = slider_X_RADIUS.value
-    current["Y_RADIUS_PPM"] = slider_Y_RADIUS.value
-
-    current["X_DIAMETER_PPM"] = current["X_RADIUS_PPM"] * 2.0
-    current["Y_DIAMETER_PPM"] = current["Y_RADIUS_PPM"] * 2.0
-    current["X_DIAMETER"] = current["X_RADIUS"] * 2.0
-    current["Y_DIAMETER"] = current["Y_RADIUS"] * 2.0
-
-    source.data = {col: current[col] for col in current.columns}
-
+    selectionIndex=source.selected.indices
+    current = df.iloc[selectionIndex]
 
 def callback(attrname, old, new):
 
@@ -106,6 +94,7 @@ def callback(attrname, old, new):
     selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
     #print(list(selected_df))
     source.data = {col: df[col] for col in df.columns}
+
 
 def get_contour_data(data, levels, **kwargs):
     cs = plt.contour(data, levels, **kwargs)
@@ -140,6 +129,12 @@ def get_contour_data(data, levels, **kwargs):
 
     source = ColumnDataSource(data={'xs': xs, 'ys': ys, 'line_color': col,'xt':xt,'yt':yt,'text':text})
     return source
+
+
+def update_contour(attrname, old, new):
+    new_cs = eval(contour_start.value)
+    cl = new_cs * contour_factor ** np.arange(contour_num)
+    spec_source.data = get_contour_data(data[0], cl, extent=extent).data
 
 args = docopt(__doc__)
 path = Path(args.get('<peaklist>'))
@@ -225,9 +220,9 @@ spec_source = get_contour_data(data[0],cl,extent=extent)
 p.multi_line(xs='xs', ys='ys', line_color='line_color', source=spec_source)
 #contour_num = Slider(title="contour number", value=20, start=1, end=50,step=1)
 #contour_start = Slider(title="contour start", value=100000, start=1000, end=10000000,step=1000)
-#contour_start = TextInput(value="6", title="Contour level (10^x):")
+contour_start = TextInput(value="%.2e"%thres, title="Contour level:")
 #contour_factor = Slider(title="contour factor", value=1.20, start=1., end=2.,step=0.05)
-
+contour_start.on_change("value", update_contour)
 #for w in [contour_num,contour_start,contour_factor]:
 #    w.on_change("value",update_contour)
 
@@ -297,10 +292,12 @@ data_table = DataTable(
     source=source, columns=columns, editable=True, fit_columns=True, width=600
 )
 
-source.selected.on_change('indices', callback)
+# callback for adding 
+#source.selected.on_change('indices', callback)
+source.selected.on_change('indices', select_callback)
 
 # controls = column(slider, button)
-controls = column(row(slider_X_RADIUS, slider_Y_RADIUS), row(fit_button, column(savefilename,button)))
+controls = column(row(slider_X_RADIUS, slider_Y_RADIUS), row(column(contour_start, fit_button), column(savefilename,button)))
 
 curdoc().add_root(row(p, column(data_table, controls)))
 # curdoc().title = "Export CSV"
