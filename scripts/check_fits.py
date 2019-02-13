@@ -277,8 +277,8 @@ selected_columns = [
     "Y_PPM",
     "X_RADIUS_PPM",
     "Y_RADIUS_PPM",
-    "X_AXISf",
-    "Y_AXISf",
+    "XW_HZ",
+    "YW_HZ",
     "VOL",
     "Edited",
 ]

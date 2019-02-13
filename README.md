@@ -51,7 +51,7 @@ Clustered peaks are colour coded. Singlet peaks are black. If you want to edit t
 read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --show --outfmt=csv
 ```
 
-If the automatic clustering is not satisfactory you can manually adjust clusters and fitting mask radii using `run_check_fits.py`.
+If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using `run_check_fits.py`.
 
 ```bash
 run_check_fits.py <peaklist> <nmrdata>
@@ -59,9 +59,10 @@ run_check_fits.py <peaklist> <nmrdata>
 
 ![Using run_check_fits.py](images/bokeh.png)
 
-Select the cluster you are interested in using the table and double click to edit the cluster numbers. Once a set of peaks is selected you can manually adjust their X and Y radii for fitting
+Select the cluster you are interested in using the table and double click to edit the cluster numbers. Once a set of peaks is selected you can manually adjust their starting parameters for fitting (including the X and Y radii for the fitting mask)
 
 ![Example fit](images/fit.png)
+
 
 ## Protocol
 
@@ -93,6 +94,10 @@ The fit minimises the residuals of the functions in each dimension
 
 
 Fraction parameter is fraction of Lorentzian lineshape.
+
+The linewidth for a Gaussian is
+
+![G_lw](images/equations/G_lw.tex.png)
 
 ## Test data
 

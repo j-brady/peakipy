@@ -79,9 +79,6 @@ else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
 
-# group peaks based on CLUSTID
-groups = peaks.groupby("CLUSTID")
-
 # plot results or not
 plot = args.get("--plot")
 if plot == "None":
@@ -120,6 +117,14 @@ ppm_per_pt_f2 = (udic[f2_dim]["sw"] / udic[f2_dim]["obs"]) / udic[f2_dim]["size"
 pt_per_ppm_f1 = 1.0 / ppm_per_pt_f1
 pt_per_ppm_f2 = 1.0 / ppm_per_pt_f2
 
+# point per Hz
+pt_per_hz_f1 = udic[f1_dim]["size"] / udic[f1_dim]["sw"] 
+pt_per_hz_f2 = udic[f2_dim]["size"] / udic[f2_dim]["sw"] 
+
+# convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
+peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
+peaks["YW"] = peaks.YW_HZ * pt_per_hz_f1
+
 # convert radii from ppm to points
 x_radius = x_radius * pt_per_ppm_f2
 y_radius = y_radius * pt_per_ppm_f1
@@ -153,6 +158,9 @@ indices = []
 assign = []
 clustids = []
 # vclists = []
+
+# group peaks based on CLUSTID
+groups = peaks.groupby("CLUSTID")
 
 # iterate over groups of peaks
 for name, group in groups:
