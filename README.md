@@ -37,7 +37,7 @@ First you need a peak list either Sparky or Analysis2 format.
 Here is an example of how to run read_peaklist.py
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --show --outfmt=csv
+read_peaklist.py peaks.sparky test.ft2 --sparky --show --outfmt=csv
 ```
 
 This will convert your peaklist to into a `pandas DataFrame` and use `threshold_otsu` from `scikit-learn` to determine a cutoff for selecting overlapping peaks.

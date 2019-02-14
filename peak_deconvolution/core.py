@@ -371,6 +371,8 @@ def fit_first_plane(
             linestyle="--",
             label="fit",
         )
+        ax.invert_xaxis()
+        ax.invert_yaxis()
         # Annotate plots
         labs = []
         Z_lab = []

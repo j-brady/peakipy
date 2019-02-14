@@ -124,6 +124,11 @@ pt_per_hz_f2 = udic[f2_dim]["size"] / udic[f2_dim]["sw"]
 # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
 peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
 peaks["YW"] = peaks.YW_HZ * pt_per_hz_f1
+# convert peak positions from ppm to points in case they were adjusted running run_check_fits.py
+peaks["X_AXIS"] = peaks.X_PPM.apply(lambda x: uc_f2(x, "PPM"))
+peaks["Y_AXIS"] = peaks.Y_PPM.apply(lambda x: uc_f1(x, "PPM"))
+peaks["X_AXISf"] = peaks.X_PPM.apply(lambda x: uc_f2.f(x, "PPM"))
+peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
 
 # convert radii from ppm to points
 x_radius = x_radius * pt_per_ppm_f2
