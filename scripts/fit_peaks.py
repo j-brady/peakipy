@@ -2,7 +2,7 @@
 """Fit and deconvolute NMR peaks
 
     Usage:
-        fit_pipe_peaks.py <peaklist> <data> <output> [options]
+        fit_peaks.py <peaklist> <data> <output> [options]
 
     Arguments:
         <peaklist>  peaklist output from read_peaklist.py

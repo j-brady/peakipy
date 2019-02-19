@@ -23,14 +23,80 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from skimage.filters import threshold_otsu
+from skimage.morphology import binary_dilation
+
 from bokeh.events import ButtonClick
 from bokeh.layouts import row, column
 from bokeh.models import ColumnDataSource
-from bokeh.models.widgets import Slider, Button, DataTable, TableColumn, TextInput
+from bokeh.models.widgets import Slider, Button, DataTable, TableColumn, TextInput, RadioButtonGroup
 from bokeh.plotting import figure
 from bokeh.io import curdoc
-from bokeh.palettes import PuBuGn9
+from bokeh.palettes import PuBuGn9, Category20
 
+
+def clusters(df, data, thres=None, struc_el="square", struc_size=(3,), l_struc=None):
+    """ Find clusters of peaks 
+
+    Need to update these docs.
+
+    thres : float
+        threshold for signals above which clusters are selected
+    ndil: int
+        number of iterations of ndimage.binary_dilation function if set to 0 then function not used
+    """
+    peaks = [[y, x] for y, x in zip(df.Y_AXIS, df.X_AXIS)]
+
+    if thres == None:
+        thresh = threshold_otsu(data[0])
+    else:
+        thresh = thres
+
+    thresh_data = np.bitwise_or(
+        data[0] < (thresh * -1.0), data[0] > thresh
+    )
+
+    if struc_el == "disk":
+        radius = struc_size[0]
+        radius = radius / 2.0
+        print(f"using disk with {radius}")
+        closed_data = closing(thresh_data, disk(radius))
+
+    elif struc_el == "square":
+        width = struc_size[0]
+        print(f"using square with {width}")
+        closed_data = closing(thresh_data, square(width))
+
+    elif struc_el == "rectangle":
+        width, height = struc_size
+        print(f"using rectangle with {width} and {height}")
+        data = closing(data, rectangle(width, height))
+
+    else:
+        print(f"Not using any closing function")
+
+    labeled_array, num_features = ndimage.label(thresh_data, l_struc)
+    # print(labeled_array, num_features)
+
+    df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+
+    #  renumber "0" clusters
+    max_clustid = df["CLUSTID"].max()
+    n_of_zeros = len(df[df["CLUSTID"] == 0]["CLUSTID"])
+    df.loc[df[df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+        max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+    )
+
+    return df
+
+
+
+def update_memcnt(df):
+    for ind, group in df.groupby("CLUSTID"):
+        df.loc[group.index, "MEMCNT"] = len(group)
+
+    df["color"] = df.apply(lambda x: Category20[20][int(x.CLUSTID)%20] if x.MEMCNT>1 else "black", axis=1)
+    source.data = {col: df[col] for col in df.columns}
+    return df 
 
 def fit_selected(event):
 
@@ -43,12 +109,13 @@ def fit_selected(event):
     df.loc[selectionIndex,"X_DIAMETER_PPM"] = current["X_RADIUS_PPM"] * 2.0
     df.loc[selectionIndex,"Y_DIAMETER_PPM"] = current["Y_RADIUS_PPM"] * 2.0
     
-    df.loc[selectionIndex,"Edited"] = True
-
     selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
 
     selected_df.to_csv("~tmp.csv")
-    os.system(f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show")
+
+    lineshape = lineshapes[radio_button_group.active]
+    print("Using LS = ",lineshape)
+    os.system(f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape}")
 
 
 def save_peaks(event):
@@ -69,9 +136,14 @@ def save_peaks(event):
 
 
 def select_callback(attrname, old, new):
-
+    #print("Calling Select Callback")
     selectionIndex=source.selected.indices
     current = df.iloc[selectionIndex]
+
+    # update memcnt
+    update_memcnt(df)
+
+
 
 def callback(attrname, old, new):
 
@@ -90,6 +162,7 @@ def callback(attrname, old, new):
     
     # set edited rows to True
     df.loc[selectionIndex,"Edited"] = True
+
 
     selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
     #print(list(selected_df))
@@ -158,7 +231,11 @@ if "Edited" in df.columns:
     pass
 else:
     df["Edited"] = np.zeros(len(df),dtype=bool)
-    df["color"] = df.Edited.apply(lambda x: 'red' if x else 'black')
+#    df["color"] = df.Edited.apply(lambda x: 'red' if x else 'black')
+
+df["color"] = df.apply(lambda x: Category20[20][int(x.CLUSTID)%20] if x.MEMCNT>1 else "black", axis=1)
+
+#print(df["color"])
 
 # make datasource
 source = ColumnDataSource(data=dict())
@@ -233,7 +310,7 @@ p.ellipse(
     width="X_DIAMETER_PPM",
     height="Y_DIAMETER_PPM",
     source=source,
-    fill_color="black",
+    fill_color="color",
     fill_alpha=0.1,
     line_dash="dotted",
     line_color="red",
@@ -246,7 +323,7 @@ p.circle(
         color="color",
 )
 # plot cluster numbers
-p.text(x="X_PPM", y="Y_PPM", text="CLUSTID", source=source)
+p.text(x="X_PPM", y="Y_PPM", text="CLUSTID", text_color="color",source=source)
 
 # configure sliders
 slider_X_RADIUS = Slider(
@@ -265,6 +342,11 @@ button = Button(label="Save", button_type="success")
 button.on_event(ButtonClick, save_peaks)
 # call fit_peaks.py
 fit_button = Button(label="Fit selected", button_type="primary")
+radio_button_group = RadioButtonGroup(
+labels=["PV", "G", "L"], active=0)
+lineshapes = {0:"PV",1:"G",2:"L"}
+
+
 # not sure this is needed
 selected_df = df.copy()
 
@@ -281,6 +363,7 @@ selected_columns = [
     "YW_HZ",
     "VOL",
     "Edited",
+    "MEMCNT"
 ]
 
 columns = [
@@ -297,7 +380,8 @@ data_table = DataTable(
 source.selected.on_change('indices', select_callback)
 
 # controls = column(slider, button)
-controls = column(row(slider_X_RADIUS, slider_Y_RADIUS), row(column(contour_start, fit_button), column(savefilename,button)))
+controls = column(row(slider_X_RADIUS, slider_Y_RADIUS), row(column(contour_start, fit_button, radio_button_group), column(savefilename,button)))
+#widgetbox(radio_button_group)
 
 curdoc().add_root(row(p, column(data_table, controls)))
 # curdoc().title = "Export CSV"

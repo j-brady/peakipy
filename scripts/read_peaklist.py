@@ -329,6 +329,12 @@ class Peaklist:
             max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
         )
 
+        # count how many peaks per cluster
+        self.df["MEMCNT"] = np.zeros(len(self.df),dtype=int)
+        for ind, group in self.df.groupby("CLUSTID"):
+            self.df.loc[group.index,"MEMCNT"] = len(group)
+
+
     def adaptive_clusters(self, block_size, offset, l_struc=None):
 
         self.thresh = threshold_otsu(self.data[0])
