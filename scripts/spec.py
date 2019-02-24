@@ -224,8 +224,8 @@ if __name__ == "__main__":
                 alpha=0.5,
             )
 
-        # hack for legend
-        ax.plot([], [], c=colors, label=label)
+        ## hack for legend
+        #ax.plot([], [], c=colors, label=label)
 
     # plt.xlim(ppm_f2_0, ppm_f2_1)
     ax.invert_xaxis()
@@ -237,9 +237,9 @@ if __name__ == "__main__":
     ax.invert_yaxis()
     ax.set_ylabel(udic[f1]["label"] + " ppm")
 
-    plt.legend(
-        loc="upper center", bbox_to_anchor=(0.5, 1.20), ncol=params.get("ncol", 2)
-    )
+    #plt.legend(
+    #    loc="upper center", bbox_to_anchor=(0.5, 1.20), ncol=params.get("ncol", 2)
+    #)
     # plt.tight_layout()
     #  add a list of outfiles
     y = 0.025

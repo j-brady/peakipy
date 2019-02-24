@@ -19,7 +19,6 @@
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
         --x_radius=<ppm>                       x_radius in ppm for fit mask [default: 0.05]
         --y_radius=<ppm>                       y_radius in ppm for fit mask [default: 0.5]
-        --min_rsq=<float>                      minimum R2 required to accept fit [default: 0.85]
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
 
         --plot=<dir>                           Whether to plot wireframe fits for each peak 
@@ -48,7 +47,7 @@ from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 
-from peak_deconvolution.core import fix_params, get_params, r_square, fit_first_plane
+from peak_deconvolution.core import fix_params, get_params, rmsd, fit_first_plane
 
 
 args = docopt(__doc__)
@@ -64,10 +63,8 @@ lineshape = args.get("--lineshape")
 x_radius = float(args.get("--x_radius"))
 # f1 radius in ppm for mask
 y_radius = float(args.get("--y_radius"))
-# prob get rid for this
-min_rsq = float(args.get("--min_rsq"))
 print("Using ", args)
-log = open("log.txt", "a")
+log = open("log.txt", "w")
 
 # path to peaklist
 peaklist = Path(args.get("<peaklist>"))
@@ -274,8 +271,8 @@ df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
 # Fill nan values
 df.fillna(value=np.nan, inplace=True)
 # calculate errors and square amplitudes
-df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
-df["amp"] = df.amp.apply(lambda x: x ** 2.0)
+#df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
+#df["amp"] = df.amp.apply(lambda x: x ** 2.0)
 
 #  output data
 output = Path(args["<output>"])

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from numpy import sqrt, log, pi, exp
 from lmfit import Model, report_fit
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.cm import viridis
 
 
 # constants
@@ -40,6 +41,44 @@ def lorentzian(x, amplitude=1.0, center=0.0, sigma=1.0):
     return (amplitude / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
 
+#def pvoigt2d(
+#    XY,
+#    amplitude=1.0,
+#    center_x=0.5,
+#    center_y=0.5,
+#    sigma_x=1.0,
+#    sigma_y=1.0,
+#    fraction=0.5,
+#):
+#    """ 2D pseudo-voigt model
+#
+#        Arguments:
+#            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+#            -- amplitude: peak amplitude (gaussian and lorentzian)
+#            -- center_x: position of peak in x
+#            -- center_y: position of peak in y
+#            -- sigma_x: linewidth in x
+#            -- sigma_y: linewidth in y
+#            -- fraction: fraction of lorenztian in fit
+#
+#        Returns:
+#            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+#
+#    """
+#    x, y = XY
+#    sigma_gx = sigma_x / sqrt(2 * log2)
+#    sigma_gy = sigma_y / sqrt(2 * log2)
+#    # fraction same for both dimensions
+#    # super position of gaussian and lorentzian
+#    # then convoluted for x y
+#    pv_x = (1 - fraction) * gaussian(
+#        x, amplitude, center_x, sigma_gx
+#    ) + fraction * lorentzian(x, amplitude, center_x, sigma_x)
+#    pv_y = (1 - fraction) * gaussian(
+#        y, amplitude, center_y, sigma_gy
+#    ) + fraction * lorentzian(y, amplitude, center_y, sigma_y)
+#    return pv_x * pv_y
+
 def pvoigt2d(
     XY,
     amplitude=1.0,
@@ -64,6 +103,23 @@ def pvoigt2d(
             -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
+    def gaussian(x, center=0.0, sigma=1.0):
+        """Return a 1-dimensional Gaussian function.
+        gaussian(x, amplitude, center, sigma) =
+            (amplitude/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+        """
+        return (1.0 / (sqrt(2 * π) * sigma)) * exp(
+            -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
+        )
+
+
+    def lorentzian(x, center=0.0, sigma=1.0):
+        """Return a 1-dimensional Lorentzian function.
+        lorentzian(x, amplitude, center, sigma) =
+            (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+        """
+        return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
+
     x, y = XY
     sigma_gx = sigma_x / sqrt(2 * log2)
     sigma_gy = sigma_y / sqrt(2 * log2)
@@ -71,12 +127,12 @@ def pvoigt2d(
     # super position of gaussian and lorentzian
     # then convoluted for x y
     pv_x = (1 - fraction) * gaussian(
-        x, amplitude, center_x, sigma_gx
-    ) + fraction * lorentzian(x, amplitude, center_x, sigma_x)
+        x, center_x, sigma_gx
+    ) + fraction * lorentzian(x, center_x, sigma_x)
     pv_y = (1 - fraction) * gaussian(
-        y, amplitude, center_y, sigma_gy
-    ) + fraction * lorentzian(y, amplitude, center_y, sigma_y)
-    return pv_x * pv_y
+        y, center_y, sigma_gy
+    ) + fraction * lorentzian(y, center_y, sigma_y)
+    return amplitude * pv_x * pv_y
 
 
 def make_mask(data, c_x, c_y, r_x, r_y):
@@ -120,6 +176,8 @@ def r_square(data, residuals):
     r2 = 1 - SS_res / SS_tot
     return r2
 
+def rmsd(residuals):
+    return np.sqrt(np.sum(residuals ** 2.)/ len(residuals))
 
 def fix_params(params, to_fix):
     """ Set parameters to fix
@@ -170,11 +228,11 @@ def make_param_dict(peaks, data, lineshape="PV"):
             int(peak.X_AXIS) - int(peak.XW) : int(peak.X_AXIS) + int(peak.XW) + 1,
         ].sum()
 
-        # in case of negative amplitudes
-        if amplitude_est < 0.0:
-            amplitude_est = -1.0 * np.sqrt(abs(amplitude_est))
-        else:
-            amplitude_est = np.sqrt(amplitude_est)
+        ## in case of negative amplitudes
+        #if amplitude_est < 0.0:
+        #    amplitude_est = -1.0 * np.sqrt(abs(amplitude_est))
+        #else:
+        #    amplitude_est = np.sqrt(amplitude_est)
 
         param_dict[
             str_form("amplitude")
@@ -335,6 +393,7 @@ def fit_first_plane(
     out = mod.fit(
         peak_slices, XY=XY_slices, params=p_guess
     )  # , weights=weights[mask].ravel())
+    #print(p_guess)
 
     if plot != None:
         plot_path = Path(plot)
@@ -354,20 +413,28 @@ def fit_first_plane(
         max_y = int(np.ceil(max_y))
         X_plot = uc_dics["f2"].ppm(X[min_y - 1 : max_y, min_x - 1 : max_x])
         Y_plot = uc_dics["f1"].ppm(Y[min_y - 1 : max_y, min_x - 1 : max_x])
+        Z_plot = Z_plot[min_y - 1 : max_y, min_x - 1 : max_x]
+        Zsim = Zsim[min_y - 1 : max_y, min_x - 1 : max_x]
 
+        # plot residuals
+        residuals = np.sqrt((Z_plot-Zsim)**2.)
+        contf = ax.contourf(X_plot,Y_plot,residuals,100,zdir='z',cmap=viridis, alpha=0.75)
+
+        # plot raw data
         ax.plot_wireframe(
-            X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x], color="k"
+            X_plot, Y_plot, Z_plot, color="k"
         )
         # ax.contour3D(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x],cmap='viridis')
 
         ax.set_xlabel("F2 ppm")
         ax.set_ylabel("F1 ppm")
         #ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
+        #cmap = [tuple(i) for i in viridis(np.ravel(np.sqrt((Z_plot-Zsim)**2.)))]
         ax.plot_wireframe(
             X_plot,
             Y_plot,
-            Zsim[min_y - 1 : max_y, min_x - 1 : max_x],
-            color="r",
+            Zsim,
+            colors='r',
             linestyle="--",
             label="fit",
         )
@@ -399,6 +466,7 @@ def fit_first_plane(
             # print(l, x, y, z)
             ax.text(x, y, z * 1.4, l, None)
 
+        plt.colorbar(contf)
         plt.legend()
 
         name = group.CLUSTID.iloc[0]

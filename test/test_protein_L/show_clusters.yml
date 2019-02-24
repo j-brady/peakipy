@@ -14,7 +14,7 @@
 
     outname: ["clusters.pdf","clusters.png"] # either single value or list of output names
     ncol: 1 #  tells matplotlib how many columns to give the figure legend - if not set defaults to 2
-    clusters: peaks.csv
+    clusters: peaks.pkl
     dims: [0, 1, 2]
 
     # Here is where your list of spectra to plot goes

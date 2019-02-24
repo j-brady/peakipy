@@ -8,7 +8,7 @@
         <peaklist>  Analysis2/Sparky/NMRPipe peak list (see below)
         <data>      2D or pseudo3D NMRPipe data
 
-        --a2        Analysis peaklist as input
+        --a2        Analysis peaklist as input (tab delimited)
         --sparky    Sparky peaklist as input
         --pipe      NMRPipe peaklist as input
 
@@ -16,24 +16,20 @@
         -h --help  Show this screen
         --version  Show version
  
-        --noise=<noise>        Noise of spectrum [default: 5e4]
-        --pthres=<pthres>      Positive peakpick threshold [default: None]
-        --nthres=<nthres>      Negative peakpick threshold [default: None]
+        --thres=<thres>       peakpick threshold [default: None]
 
-        --ndil=<ndil>          Number of iterations for ndimage.binary_dilation [default: 0]
-        --clust
         --struc_el=<str>       [default: square]
         --struc_size=<float>   [default: (3,)]
 
         --dims=<planes,F1,F2>  Order of dimensions [default: 0,1,2]
 
-        --outfmt=<csv/pkl>     Format of output peaklist [default: "pkl"]
+        --outfmt=<csv/pkl>     Format of output peaklist [default: "csv"]
  
         --show                 Show the clusters on the spectrum color coded
 
     Examples:
         read_peaklist.py test.tab
-        read_peaklist.py test.a2 test.ft2 --a2 --pthres=1e5 --noise=1e4 --dims=0,2,1
+        read_peaklist.py test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
 
     Description:
       
@@ -52,27 +48,20 @@
 
              Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
 
-       Clusters or peaks are selected
+       Clusters of peaks are selected
 
-       Standard NMRPipe clustering used or my peak clustering
 
-     ToDo:
-         1. allow decimal values for point positions of peaks
-         2. figure out whether points start from 0...
- 
 """
 import os
 from pathlib import Path
 
-import yaml
 import pandas as pd
 import numpy as np
 import nmrglue as ng
 
-from scipy import ndimage
-from nmrglue.analysis.peakpick import clusters
 from docopt import docopt
-from skimage.morphology import square, closing, opening, disk, rectangle
+from scipy import ndimage
+from skimage.morphology import square, binary_closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
 from peak_deconvolution.core import make_mask 
@@ -239,13 +228,12 @@ class Peaklist:
             data = np.transpose(data, dims)
 
     def _read_analysis(self):
+
         df = pd.read_table(self.path, delimiter="\t")
         new_columns = [analysis_to_pipe.get(i, i) for i in df.columns]
-        # print(df.columns)
-        # print(new_columns)
         pipe_columns = dict(zip(df.columns, new_columns))
         df = df.rename(index=str, columns=pipe_columns)
-        # df["CLUSTID"] = np.arange(1, len(df) + 1)
+
         return df
 
     def _read_sparky(self):
@@ -277,14 +265,19 @@ class Peaklist:
     def clusters(self, thres=None, struc_el="square", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks 
 
-        Need to update these docs.
+        thres : float
+            threshold for positive signals above which clusters are selected. If None then
+            threshold_otsu is used
 
-        pthres : float
-            threshold for positive signals above which clusters are selected
-        nthres : float
-            negative peak threshold if None then only positive peaks used
-        ndil: int
-            number of iterations of ndimage.binary_dilation function if set to 0 then function not used
+        struc_el: str 
+            'square'|'disk'|'rectangle'
+            structuring element for binary_closing of thresholded data can be square, disc or rectangle
+
+        struc_size: tuple
+            size/dimensions of structuring element
+            for square and disk first element of tuple is used (for disk value corresponds to diameter)
+            for rectangle, tuple corresponds to (width,height).
+
 
         """
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
@@ -293,7 +286,8 @@ class Peaklist:
             self.thresh = threshold_otsu(self.data[0])
         else:
             self.thresh = thres
-
+        
+        # get positive and negative 
         thresh_data = np.bitwise_or(
             self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
         )
@@ -302,22 +296,23 @@ class Peaklist:
             radius = struc_size[0]
             radius = radius / 2.0
             print(f"using disk with {radius}")
-            closed_data = closing(thresh_data, disk(radius))
+            closed_data = binary_closing(thresh_data, disk(radius))
 
         elif struc_el == "square":
             width = struc_size[0]
             print(f"using square with {width}")
-            closed_data = closing(thresh_data, square(width))
+            closed_data = binary_closing(thresh_data, square(width))
 
         elif struc_el == "rectangle":
             width, height = struc_size
             print(f"using rectangle with {width} and {height}")
-            data = closing(data, rectangle(width, height))
+            closed_data = binary_closing(data, rectangle(width, height))
 
         else:
             print(f"Not using any closing function")
+            closed_data = data
 
-        labeled_array, num_features = ndimage.label(thresh_data, l_struc)
+        labeled_array, num_features = ndimage.label(closed_data, l_struc)
         # print(labeled_array, num_features)
 
         self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
@@ -391,7 +386,7 @@ class Peaklist:
     def get_df(self):
         return self.df
 
-    def get_pthres(self):
+    def get_thres(self):
         return self.thresh
 
 
@@ -406,21 +401,13 @@ if __name__ == "__main__":
     filename = Path(args["<peaklist>"])
     # print(filename.stem)
 
-    if args.get("--nthres") == "None":
-        args["--nthres"] = None
+    if args.get("--thres") == "None":
+        args["--thres"] = None
     else:
-        args["--nthres"] = eval(args["--nthres"])
+        args["--thres"] = eval(args["--thres"])
 
-    if args.get("--pthres") == "None":
-        args["--pthres"] = None
-    else:
-        args["--pthres"] = eval(args["--pthres"])
-
-    noise = eval(args.get("--noise"))
-    ndil = int(args.get("--ndil"))
-    pthres = args.get("--pthres")
-    nthres = args.get("--nthres")
-    print(args)
+    thres = args.get("--thres")
+    print("Using arguments:", args)
 
     clust_args = {
         "struc_el": args.get("--struc_el"),
@@ -434,24 +421,24 @@ if __name__ == "__main__":
 
         peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims)
         # peaks.adaptive_clusters(block_size=151,offset=0)
-        peaks.clusters(thres=pthres, **clust_args, l_struc=None)
+        peaks.clusters(thres=thres, **clust_args, l_struc=None)
         #peaks.mask_method(x_radius=0.04,y_radius=0.25)
         data = peaks.get_df()
-        pthres = peaks.get_pthres()
+        thres = peaks.get_thres()
 
 
     elif args.get("--sparky"):
 
         peaks = Peaklist(filename, pipe_ft_file, fmt="sparky", dims=dims)
-        peaks.clusters(thres=pthres, **clust_args, l_struc=None)
+        peaks.clusters(thres=thres, **clust_args, l_struc=None)
         data = peaks.get_df()
-        pthres = peaks.get_pthres()
+        thres = peaks.get_thres()
 
     else:
 
         data = read_pipe(filename)
     print(data.head())
-    outfmt = args.get("--outfmt", "pkl")
+    outfmt = args.get("--outfmt", "csv")
     outname = filename.stem
     if outfmt == "csv":
         outname = outname + ".csv"
@@ -468,7 +455,7 @@ if __name__ == "__main__":
     #  colormap                                                                                              #
     ##########################################################################################################
 
-    cs: {pthres}                     # contour start
+    cs: {thres}                     # contour start
     contour_num: 10                 # number of contours
     contour_factor: 1.2             # contour factor
     colors: tab20                    # must be matplotlib.cm colormap
