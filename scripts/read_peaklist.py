@@ -5,27 +5,32 @@
         read_peaklist.py <peaklist> <data> (--a2|--sparky|--pipe) [options]
 
     Arguments:
-        <peaklist>  Analysis2/Sparky/NMRPipe peak list (see below)
-        <data>      2D or pseudo3D NMRPipe data
+        <peaklist>                Analysis2/Sparky/NMRPipe peak list (see below)
+        <data>                    2D or pseudo3D NMRPipe data
 
-        --a2        Analysis peaklist as input (tab delimited)
-        --sparky    Sparky peaklist as input
-        --pipe      NMRPipe peaklist as input
+        --a2                      Analysis peaklist as input (tab delimited)
+        --sparky                  Sparky peaklist as input
+        --pipe                    NMRPipe peaklist as input
 
     Options:
-        -h --help  Show this screen
-        --version  Show version
+        -h --help                 Show this screen
+        --version                 Show version
  
-        --thres=<thres>       peakpick threshold [default: None]
+        --thres=<thres>           Threshold for making binary mask that is used for peak clustering [default: None]
+                                  If set to None then threshold_otsu from scikit-image is used to determine threshold
 
-        --struc_el=<str>       [default: square]
-        --struc_size=<float>   [default: (3,)]
+        --struc_el=<str>          Structuring element for binary_closing [default: square]
+                                  'square'|'disk'|'rectangle'
 
-        --dims=<planes,F1,F2>  Order of dimensions [default: 0,1,2]
+        --struc_size=<(float,)>   size/dimensions of structuring element [default: (3,)]
+                                  for square and disk first element of tuple is used (for disk value corresponds to diameter)
+                                  for rectangle, tuple corresponds to (width,height).
 
-        --outfmt=<csv/pkl>     Format of output peaklist [default: "csv"]
+        --dims=<planes,F1,F2>     Order of dimensions [default: 0,1,2]
+
+        --outfmt=<csv/pkl>        Format of output peaklist [default: csv]
  
-        --show                 Show the clusters on the spectrum color coded
+        --show                    Show the clusters on the spectrum color coded using matplotlib
 
     Examples:
         read_peaklist.py test.tab
@@ -458,7 +463,7 @@ if __name__ == "__main__":
     cs: {thres}                     # contour start
     contour_num: 10                 # number of contours
     contour_factor: 1.2             # contour factor
-    colors: tab20                    # must be matplotlib.cm colormap
+    colors: tab20                   # must be matplotlib.cm colormap
     show_cs: True
 
     outname: ["clusters.pdf","clusters.png"] # either single value or list of output names

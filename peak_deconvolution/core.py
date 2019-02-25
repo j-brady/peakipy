@@ -105,8 +105,8 @@ def pvoigt2d(
     """
     def gaussian(x, center=0.0, sigma=1.0):
         """Return a 1-dimensional Gaussian function.
-        gaussian(x, amplitude, center, sigma) =
-            (amplitude/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+        gaussian(x, center, sigma) =
+            (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
         """
         return (1.0 / (sqrt(2 * π) * sigma)) * exp(
             -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
@@ -115,8 +115,8 @@ def pvoigt2d(
 
     def lorentzian(x, center=0.0, sigma=1.0):
         """Return a 1-dimensional Lorentzian function.
-        lorentzian(x, amplitude, center, sigma) =
-            (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+        lorentzian(x, center, sigma) =
+            (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
         """
         return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
@@ -339,21 +339,18 @@ def update_params(params, param_dict, lineshape="PV"):
 def fit_first_plane(
     group,
     data,
-    x_radius,
-    y_radius,
     uc_dics,
     noise=None,
     lineshape="PV",
     plot=None,
     show=True,
+    verbose=False,
 ):
     """
         Arguments:
 
             group -- pandas data from containing group of peaks
             data  -- 
-            x_radius 
-            y_radius
             uc_dics -- unit conversion dics
             plot -- if True show wireframe plots
 
@@ -393,12 +390,14 @@ def fit_first_plane(
     out = mod.fit(
         peak_slices, XY=XY_slices, params=p_guess
     )  # , weights=weights[mask].ravel())
+    if verbose:
+        print(out.fit_report())
     #print(p_guess)
 
     if plot != None:
         plot_path = Path(plot)
         Zsim = mod.eval(XY=XY, params=out.params)
-        print(report_fit(out.params))
+        #print(report_fit(out.params))
         Zsim[~mask] = np.nan
 
         # plotting
@@ -476,4 +475,6 @@ def fit_first_plane(
         else:
             plt.savefig(plot_path / f"{name}.png", dpi=300)
         #    print(p_guess)
+        # close plot
+        plt.close()
     return out, mask

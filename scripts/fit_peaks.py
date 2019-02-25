@@ -5,11 +5,11 @@
         fit_peaks.py <peaklist> <data> <output> [options]
 
     Arguments:
-        <peaklist>  peaklist output from read_peaklist.py
-        <data>      2D or pseudo3D NMRPipe data (single file)  
-        <output>    output peaklist "<output>.csv" will output CSV
-                    format file, "<output>.tab" will give a tab delimited output
-                    while "<output>.pkl" results in Pandas pickle of DataFrame
+        <peaklist>                             peaklist output from read_peaklist.py
+        <data>                                 2D or pseudo3D NMRPipe data (single file)  
+        <output>                               output peaklist "<output>.csv" will output CSV
+                                               format file, "<output>.tab" will give a tab delimited output
+                                               while "<output>.pkl" results in Pandas pickle of DataFrame
 
     Options:
         -h --help  Show this page
@@ -17,15 +17,16 @@
 
         --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
-        --x_radius=<ppm>                       x_radius in ppm for fit mask [default: 0.05]
-        --y_radius=<ppm>                       y_radius in ppm for fit mask [default: 0.5]
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
+        --fix=<fraction,sigma,center>          Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
         --plot=<dir>                           Whether to plot wireframe fits for each peak 
                                                (saved into <dir>) [default: None]
 
         --show                                 Whether to show (using plt.show()) wireframe
-                                               fits for each peak
+                                               fits for each peak. Only works if --plot is also selected
+
+        --verb                                 Print what's going on
 
         --vclist=<path>                        vclist-like file containing delays will be incorporated into final dataframe [default: None]
 
@@ -59,11 +60,17 @@ else:
     max_cluster_size = int(max_cluster_size)
 
 lineshape = args.get("--lineshape")
+# params to fix
+to_fix = args.get("--fix")
+to_fix = to_fix.split(',')
+verb = args.get("--verb")
+#print(to_fix)
 # f2 radius in ppm for mask
-x_radius = float(args.get("--x_radius"))
-# f1 radius in ppm for mask
-y_radius = float(args.get("--y_radius"))
-print("Using ", args)
+#x_radius = float(args.get("--x_radius"))
+## f1 radius in ppm for mask
+#y_radius = float(args.get("--y_radius"))
+if verb:
+    print("Using ", args)
 log = open("log.txt", "w")
 
 # path to peaklist
@@ -86,7 +93,7 @@ else:
 
 # read vclist - currently not working
 vclist = args.get("--vclist")
-print("vclist", vclist)
+#print("vclist", vclist)
 if vclist == "None":
     add_vclist = False
 else:
@@ -127,9 +134,9 @@ peaks["Y_AXIS"] = peaks.Y_PPM.apply(lambda x: uc_f1(x, "PPM"))
 peaks["X_AXISf"] = peaks.X_PPM.apply(lambda x: uc_f2.f(x, "PPM"))
 peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
 
-# convert radii from ppm to points
-x_radius = x_radius * pt_per_ppm_f2
-y_radius = y_radius * pt_per_ppm_f1
+## convert radii from ppm to points
+#x_radius = x_radius * pt_per_ppm_f2
+#y_radius = y_radius * pt_per_ppm_f1
 
 #  rearrange data if dims not in standard order
 if dims != [0, 1, 2]:
@@ -172,23 +179,31 @@ for name, group in groups:
         first, mask = fit_first_plane(
             group,
             summed_planes,
-            x_radius,
-            y_radius,
             uc_dics,
             lineshape=lineshape,
             plot=plot,
             show=args.get("--show"),
+            verbose=verb
         )
 
         # fix sigma center and fraction parameters
         # could add an option to select params to fix
-        to_fix = ["sigma", "center", "fraction"]
-        # to_fix = ["center", "fraction"]
-        fix_params(first.params, to_fix)
+        if len(to_fix) == 0 or to_fix=="None":
+            if verb:
+                print("Floating all parameters")
+            pass
+        else:
+            to_fix = to_fix
+            if verb:
+                print("Fixing parameters:",to_fix)
+            #to_fix = ["sigma", "center", "fraction"]
+            # to_fix = ["center", "fraction"]
+            fix_params(first.params, to_fix)
 
         for d in data:
             first.fit(data=d[mask], params=first.params)  # noise=weights[mask].ravel())
-            # print(first.fit_report())
+            if verb:
+                print(first.fit_report())
 
             amp, amp_err, name = get_params(first.params, "amplitude")
             cen_x, cen_x_err, name = get_params(first.params, "center_x")
