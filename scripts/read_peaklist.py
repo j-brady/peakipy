@@ -19,12 +19,15 @@
         --thres=<thres>           Threshold for making binary mask that is used for peak clustering [default: None]
                                   If set to None then threshold_otsu from scikit-image is used to determine threshold
 
-        --struc_el=<str>          Structuring element for binary_closing [default: square]
+        --struc_el=<str>          Structuring element for binary_closing [default: disk]
                                   'square'|'disk'|'rectangle'
 
-        --struc_size=<(float,)>   size/dimensions of structuring element [default: (3,)]
+        --struc_size=<(float,)>   size/dimensions of structuring element [default: (5,)]
                                   for square and disk first element of tuple is used (for disk value corresponds to diameter)
                                   for rectangle, tuple corresponds to (width,height).
+
+        --f1radius=<float>        F1 radius in ppm for fit mask [default: 0.4]
+        --f2radius=<float>        F2 radius in ppm for fit mask [default: 0.04]
 
         --dims=<planes,F1,F2>     Order of dimensions [default: 0,1,2]
 
@@ -69,7 +72,7 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
-from peak_deconvolution.core import make_mask 
+from peak_deconvolution.core import make_mask, Pseudo3D 
 
 # Read peak list and output into pandas dataframe for fitting peaks
 # make column in dataframe for group identities
@@ -146,6 +149,8 @@ class Peaklist:
         NMRPipe format data
     fmt : a2|sparky|pipe
     dims: [planes,y,x]
+    radii: [x,y]
+        Mask radii in ppm
 
     
     Methods
@@ -161,7 +166,7 @@ class Peaklist:
 
     """
 
-    def __init__(self, path, data, fmt="a2", dims=[0, 1, 2]):
+    def __init__(self, path, data, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4]):
         self.fmt = fmt
         self.path = path
 
@@ -179,25 +184,17 @@ class Peaklist:
 
         #  read pipe data
         dic, self.data = ng.pipe.read(data)
-        udic = ng.pipe.guess_udic(dic, self.data)
-        ndim = udic["ndim"]
-        # need to sort out dimension attribution since a2 is has fucked dims
-        # get ready for some gaaaarbage, buddy
-        print(" ".join(udic[i]["label"] for i in range(ndim)))
-        print(ndim, self.data.shape)
-        planes, f1_dim, f2_dim = dims
-        # calculate points per hertz
-        # number of points / SW
-        pt_per_hz_f2dim = udic[f2_dim]["size"] / udic[f2_dim]["sw"]
-        pt_per_hz_f1dim = udic[f1_dim]["size"] / udic[f1_dim]["sw"]
-
-        self.pt_per_ppm_f2 = udic[f2_dim]["size"] / (udic[f2_dim]["sw"] / udic[f2_dim]["obs"])
-        self.pt_per_ppm_f1 = udic[f1_dim]["size"] / (udic[f1_dim]["sw"] / udic[f1_dim]["obs"])
-
-        
+        pseudo3D = Pseudo3D(dic, self.data, dims)
+        self.data = pseudo3D.data
+        uc_f1 = pseudo3D.uc_f1
+        uc_f2 = pseudo3D.uc_f2
+        dims = pseudo3D.dims
+        self.data = pseudo3D.data
+        self.pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
+        self.pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
+        pt_per_hz_f2dim = pseudo3D.pt_per_hz_f2
+        pt_per_hz_f1dim = pseudo3D.pt_per_hz_f1
         print("Points per hz f1 = %s, f2 = %s" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
-        uc_f2 = ng.pipe.make_uc(dic, self.data, dim=f2_dim)
-        uc_f1 = ng.pipe.make_uc(dic, self.data, dim=f1_dim)
 
         # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: uc_f2(x, "ppm"))
@@ -223,14 +220,15 @@ class Peaklist:
             )
         
         # make default values for X and Y radii for fit masks
-        self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + 0.04
-        self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + 0.4
+        f2radius, f1radius = radii
+        self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + f2radius
+        self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + f1radius
         self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(lambda x: x * self.pt_per_ppm_f2) 
         self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(lambda x: x * self.pt_per_ppm_f1) 
 
-        # rearrange dims
-        if dims != [0, 1, 2]:
-            data = np.transpose(data, dims)
+        ## rearrange dims
+        #if dims != [0, 1, 2]:
+        #    data = np.transpose(data, dims)
 
     def _read_analysis(self):
 
@@ -410,9 +408,12 @@ if __name__ == "__main__":
         args["--thres"] = None
     else:
         args["--thres"] = eval(args["--thres"])
-
+    
     thres = args.get("--thres")
     print("Using arguments:", args)
+
+    f1radius = float(args.get("--f1radius"))
+    f2radius = float(args.get("--f2radius"))
 
     clust_args = {
         "struc_el": args.get("--struc_el"),
@@ -424,7 +425,7 @@ if __name__ == "__main__":
     pipe_ft_file = args.get("<data>")
     if args.get("--a2"):
 
-        peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims)
+        peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims, radii=[f2radius,f1radius])
         # peaks.adaptive_clusters(block_size=151,offset=0)
         peaks.clusters(thres=thres, **clust_args, l_struc=None)
         #peaks.mask_method(x_radius=0.04,y_radius=0.25)

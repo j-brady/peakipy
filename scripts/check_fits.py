@@ -44,6 +44,8 @@ from bokeh.plotting import figure
 from bokeh.io import curdoc
 from bokeh.palettes import PuBuGn9, Category20
 
+from peak_deconvolution.core import Pseudo3D
+
 
 def clusters(df, data, thres=None, struc_el="square", struc_size=(3,), iterations=1, l_struc=None):
     """ Find clusters of peaks 
@@ -69,19 +71,19 @@ def clusters(df, data, thres=None, struc_el="square", struc_size=(3,), iteration
         radius = struc_size[0]
         radius = radius / 2.0
         print(f"using disk with {radius}")
-        closed_data = binary_closing(thresh_data, disk(radius))
+        closed_data = binary_closing(thresh_data, disk(float(radius)))
         #closed_data = binary_dilation(thresh_data, disk(radius), iterations=iterations)
 
     elif struc_el == "square":
         width = struc_size[0]
         print(f"using square with {width}")
-        closed_data = binary_closing(thresh_data, square(width))
+        closed_data = binary_closing(thresh_data, square(float(width)))
         #closed_data = binary_dilation(thresh_data, square(width), iterations=iterations)
 
     elif struc_el == "rectangle":
         width, height = struc_size
         print(f"using rectangle with {width} and {height}")
-        data = binary_closing(data, rectangle(width, height))
+        data = binary_closing(data, rectangle(float(width), float(height)))
         #closed_data = binary_dilation(thresh_data, rectangle(width, height), iterations=iterations)
 
     else:
@@ -161,8 +163,9 @@ def fit_selected(event):
 
     lineshape = lineshapes[radio_button_group.active]
     print("Using LS = ", lineshape)
+    print(f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}")
     os.system(
-        f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape}"
+        f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}"
     )
 
 
@@ -292,29 +295,39 @@ df["color"] = df.apply(
 source = ColumnDataSource(data=dict())
 source.data = {col: df[col] for col in df.columns}
 
+# get dim numbers
+_dims = args.get("--dims")
+dims = [int(i) for i in _dims.split(",")]
+
 # read pipe data
 data_path = args.get("<data>")
 dic, data = ng.pipe.read(data_path)
+pseudo3D = Pseudo3D(dic, data, dims)
+data = pseudo3D.data
+udic = pseudo3D.udic
 
-udic = ng.pipe.guess_udic(dic, data)
-ndim = udic["ndim"]
-# get dim numbers
-dims = args.get("--dims")
-dims = [int(i) for i in dims.split(",")]
+#udic = ng.pipe.guess_udic(dic, data)
+#ndim = udic["ndim"]
+dims = pseudo3D.dims
 planes, f1, f2 = dims
 # size of f1 and f2 in points
-f2pts = udic[f2]["size"]
-f1pts = udic[f1]["size"]
+#f2pts = udic[f2]["size"]
+#f1pts = udic[f1]["size"]
+f2pts = pseudo3D.f2_size 
+f1pts = pseudo3D.f1_size
+
 #  points per ppm
-pt_per_ppm_f1 = f1pts / (udic[f1]["sw"] / udic[f1]["obs"])
-pt_per_ppm_f2 = f2pts / (udic[f2]["sw"] / udic[f2]["obs"])
+#pt_per_ppm_f1 = f1pts / (udic[f1]["sw"] / udic[f1]["obs"])
+#pt_per_ppm_f2 = f2pts / (udic[f2]["sw"] / udic[f2]["obs"])
+pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1 
+pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
 
 # get ppm limits for ppm scales
-uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
+uc_f1 = pseudo3D.uc_f1 
 ppm_f1 = uc_f1.ppm_scale()
 ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()
 
-uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
+uc_f2 = pseudo3D.uc_f2
 ppm_f2 = uc_f2.ppm_scale()
 ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 
@@ -329,9 +342,9 @@ p = figure(
     ],
 )
 
-# rearrange dims
-if dims != [0, 1, 2]:
-    data = np.transpose(data, dims)
+## rearrange dims
+#if dims != [0, 1, 2]:
+#    data = np.transpose(data, dims)
 
 # plot NMR data
 # p.image(image=[data[0]],
@@ -438,10 +451,11 @@ controls = column(
 # widgetbox(radio_button_group)
 struct_el = Select(
     title="Structuring element:",
-    value="square",
+    value="disk",
     options=["square", "disk", "rectangle", "None"],
 )
-struct_el_size = TextInput(value="3", title="Size(pts):")
+
+struct_el_size = TextInput(value="5", title="Size(pts):")
 #iterations = TextInput(value="1", title="Number of iterations of binary dilation")
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)

@@ -2,9 +2,11 @@
 from pathlib import Path
 
 import numpy as np
+import nmrglue as ng
 import matplotlib.pyplot as plt
 
 from numpy import sqrt, log, pi, exp
+from scipy import stats
 from lmfit import Model, report_fit
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.cm import viridis
@@ -310,8 +312,9 @@ def update_params(params, param_dict, lineshape="PV"):
         params[k].value = v
         #print("update", k, v)
         if "center" in k:
-            params[k].min = v - 5
-            params[k].max = v + 5
+            #params[k].min = v - 5
+            #params[k].max = v + 5
+            pass
             #print(
             #    "setting limit of %s, min = %.3e, max = %.3e"
             #    % (k, params[k].min, params[k].max)
@@ -394,6 +397,24 @@ def fit_first_plane(
         print(out.fit_report())
     #print(p_guess)
 
+    # calculate chi2 
+    Zsim = mod.eval(XY=XY, params=out.params)
+    Zsim[~mask] = np.nan
+    Z_plot = data.copy()
+    Z_plot[~mask] = np.nan
+
+    norm_z = (Z_plot - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
+    norm_sim = (Zsim - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
+    _norm_z = norm_z[~np.isnan(norm_z)]
+    _norm_sim = norm_sim[~np.isnan(norm_sim)]
+    chi2 = np.sum((_norm_z - _norm_sim)**2. / _norm_sim)
+
+    if chi2 < 1:
+        print(f"Cluster {peak.CLUSTID} - chi2={chi2:.3f} - ")
+    else:
+        print(f"Cluster {peak.CLUSTID} - chi2={chi2:.3f} - NEEDS CHECKING")
+    
+
     if plot != None:
         plot_path = Path(plot)
         Zsim = mod.eval(XY=XY, params=out.params)
@@ -415,13 +436,20 @@ def fit_first_plane(
         Z_plot = Z_plot[min_y - 1 : max_y, min_x - 1 : max_x]
         Zsim = Zsim[min_y - 1 : max_y, min_x - 1 : max_x]
 
-        # plot residuals
-        residuals = np.sqrt((Z_plot-Zsim)**2.)
-        contf = ax.contourf(X_plot,Y_plot,residuals,100,zdir='z',cmap=viridis, alpha=0.75)
+        # calculate chi2 
+        norm_z = (Z_plot - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
+        norm_sim = (Zsim - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
+        _norm_z = norm_z[~np.isnan(norm_z)]
+        _norm_sim = norm_sim[~np.isnan(norm_sim)]
+        chi2 = np.sum((_norm_z - _norm_sim)**2. / _norm_sim)
+
+        ax.set_title("$\chi^2$="+f"{chi2:.3f}")
+        #contf = ax.contourf(X_plot,Y_plot,residuals,100,zdir='z',cmap=viridis, alpha=0.75)
 
         # plot raw data
         ax.plot_wireframe(
             X_plot, Y_plot, Z_plot, color="k"
+            #X_plot, Y_plot, norm_z, color="k"
         )
         # ax.contour3D(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x],cmap='viridis')
 
@@ -433,6 +461,7 @@ def fit_first_plane(
             X_plot,
             Y_plot,
             Zsim,
+            #norm_sim,
             colors='r',
             linestyle="--",
             label="fit",
@@ -465,7 +494,7 @@ def fit_first_plane(
             # print(l, x, y, z)
             ax.text(x, y, z * 1.4, l, None)
 
-        plt.colorbar(contf)
+        #plt.colorbar(contf)
         plt.legend()
 
         name = group.CLUSTID.iloc[0]
@@ -478,3 +507,127 @@ def fit_first_plane(
         # close plot
         plt.close()
     return out, mask
+
+class Pseudo3D:
+    """ Read dic, data from NMRGlue and dims from input to create a 
+        Pseudo3D dataset
+
+        Arguments:
+            dic  -- dic from nmrglue.pipe.read
+            data -- data from nmrglue.pipe.read
+            dims -- dimension order i.e [0,1,2]
+                    0 = planes, 1 = f1, 2 = f2
+
+        Methods:
+
+            
+    """
+    def __init__(self, dic, data, dims):
+        # check dimensions
+        self._udic = ng.pipe.guess_udic(dic, data)
+        self._ndim = self._udic['ndim']
+
+        if self._ndim == 1:
+            raise TypeError("NMR Data should be either 2D or 3D")
+
+        elif (self._ndim == 2) and (len(dims)==2):
+            self._f1_dim, self._f2_dim = dims
+            self._planes = 0
+            self._uc_f1 = ng.pipe.make_uc(dic, data, dim=self._f1_dim)
+            self._uc_f2 = ng.pipe.make_uc(dic, data, dim=self._f2_dim)
+            # make data pseudo3d
+            self._data = data.reshape((1, data.shape[0], data.shape[1]))
+            self._dims = [self._planes, self._f1_dim+1, self._f2_dim+1]
+
+        else:
+            self._planes, self._f1_dim, self._f2_dim = dims
+            self._dims = dims
+            self._data = data
+            # make unit conversion dicts
+            self._uc_f2 = ng.pipe.make_uc(dic, data, dim=self._f2_dim)
+            self._uc_f1 = ng.pipe.make_uc(dic, data, dim=self._f1_dim)
+
+        #  rearrange data if dims not in standard order
+        if self._dims != [0, 1, 2]:
+            self._data = np.transpose(data, self._dims)
+
+        self._dic = dic
+
+    @property
+    def uc_f1(self):
+        """ Return unit conversion dict for F1"""
+        return self._uc_f1
+
+    @property
+    def uc_f2(self):
+        """ Return unit conversion dict for F2"""
+        return self._uc_f2
+
+    @property
+    def dims(self):
+        """ Return dimension order """
+        return self._dims
+
+    @property
+    def data(self):
+        """ Return array containing data """
+        return self._data
+
+    @property
+    def dic(self):
+        return self._dic
+
+    @property
+    def udic(self):
+        return self._udic
+
+    @property
+    def ndim(self):
+        return self._ndim
+
+    # size of f1 and f2 in points
+    @property
+    def f2_size(self):
+        """ Return size of f2 dimension in points """
+        return self._udic[self._f2_dim]["size"]
+
+    @property
+    def f1_size(self):
+        """ Return size of f1 dimension in points """
+        return self._udic[self._f1_dim]["size"]
+
+    # points per ppm
+    @property
+    def pt_per_ppm_f1(self):
+        return self.f1_size / (self._udic[self._f1_dim]["sw"] / self._udic[self._f1_dim]["obs"]) 
+
+    @property
+    def pt_per_ppm_f2(self):
+        return self.f2_size / (self._udic[self._f2_dim]["sw"] / self._udic[self._f2_dim]["obs"]) 
+
+    # points per hz 
+    @property
+    def pt_per_hz_f1(self):
+        return self.f1_size / self._udic[self._f1_dim]["sw"] 
+
+    @property
+    def pt_per_hz_f2(self):
+        return self.f2_size / self._udic[self._f2_dim]["sw"]
+
+    # ppm per point
+    @property
+    def ppm_per_pt_f1(self):
+        return 1. / self.pt_per_ppm_f1
+
+    @property
+    def ppm_per_pt_f2(self):
+        return 1. / self.pt_per_ppm_f2
+
+    # get ppm limits for ppm scales
+#    uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
+#    ppm_f1 = uc_f1.ppm_scale()
+#    ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()
+#
+#    uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
+#    ppm_f2 = uc_f2.ppm_scale()
+#    ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()

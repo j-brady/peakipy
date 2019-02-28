@@ -48,8 +48,10 @@ from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 
-from peak_deconvolution.core import fix_params, get_params, rmsd, fit_first_plane
+from peak_deconvolution.core import fix_params, get_params, rmsd, fit_first_plane, Pseudo3D
 
+def norm(data):
+    return (data - np.min(data)) / (np.max(data) - np.min(data))
 
 args = docopt(__doc__)
 
@@ -100,30 +102,32 @@ else:
     vclist = np.genfromtxt(vclist)
     add_vclist = True
 
-# read NMR data
-dic, data = ng.pipe.read(args["<data>"])
-udic = ng.pipe.guess_udic(dic, data)
-# dimensions
+# get dims from command line input
 dims = args.get("--dims")
 dims = [int(i) for i in dims.split(",")]
-planes, f1_dim, f2_dim = dims
-udic = ng.pipe.guess_udic(dic, data)
-# make unit conversion dicts
-uc_f2 = ng.pipe.make_uc(dic, data, dim=f2_dim)
-uc_f1 = ng.pipe.make_uc(dic, data, dim=f1_dim)
-uc_dics = {"f1": uc_f1, "f2": uc_f2}
 
-# ppm per point
-ppm_per_pt_f1 = (udic[f1_dim]["sw"] / udic[f1_dim]["obs"]) / udic[f1_dim]["size"]
-ppm_per_pt_f2 = (udic[f2_dim]["sw"] / udic[f2_dim]["obs"]) / udic[f2_dim]["size"]
+# read NMR data
+dic, data = ng.pipe.read(args["<data>"])
 
-# point per ppm
-pt_per_ppm_f1 = 1.0 / ppm_per_pt_f1
-pt_per_ppm_f2 = 1.0 / ppm_per_pt_f2
+pseudo3D = Pseudo3D(dic, data, dims)
+uc_f1 = pseudo3D.uc_f1
+uc_f2 = pseudo3D.uc_f2
+uc_dics = {"f1":uc_f1, "f2": uc_f2}
+
+dims = pseudo3D.dims
+data = pseudo3D.data
 
 # point per Hz
-pt_per_hz_f1 = udic[f1_dim]["size"] / udic[f1_dim]["sw"] 
-pt_per_hz_f2 = udic[f2_dim]["size"] / udic[f2_dim]["sw"] 
+pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
+pt_per_hz_f1 = pseudo3D.pt_per_hz_f1 
+
+# ppm per point
+ppm_per_pt_f2 = pseudo3D.ppm_per_pt_f2
+ppm_per_pt_f1 = pseudo3D.ppm_per_pt_f1 
+
+# point per ppm
+pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
+pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1 
 
 # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
 peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
@@ -138,9 +142,6 @@ peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
 #x_radius = x_radius * pt_per_ppm_f2
 #y_radius = y_radius * pt_per_ppm_f1
 
-#  rearrange data if dims not in standard order
-if dims != [0, 1, 2]:
-    data = np.transpose(data, dims)
 
 # sum planes for initial fit
 summed_planes = data.sum(axis=0)
@@ -179,6 +180,7 @@ for name, group in groups:
         first, mask = fit_first_plane(
             group,
             summed_planes,
+            #norm(summed_planes),
             uc_dics,
             lineshape=lineshape,
             plot=plot,
@@ -202,6 +204,7 @@ for name, group in groups:
 
         for d in data:
             first.fit(data=d[mask], params=first.params)  # noise=weights[mask].ravel())
+            #first.fit(data=norm(d[mask]), params=first.params)  # noise=weights[mask].ravel())
             if verb:
                 print(first.fit_report())
 

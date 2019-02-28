@@ -120,7 +120,7 @@ if __name__ == "__main__":
     contour_factor_g = params.get("contour_factor", 1.2)
     nspec = len(spectra)
     notes = []
-
+    legends = 0  
     for num, spec in enumerate(spectra):
 
         # unpack spec specific parameters
@@ -138,7 +138,7 @@ if __name__ == "__main__":
             colors = spec["colors"]
 
         neg_colors = spec.get("neg_colors")
-        label = spec["label"]
+        label = spec.get("label")
         cs = float(spec.get("cs", cs_g))
         contour_num = spec.get("contour_num", contour_num_g)
         contour_factor = spec.get("contour_factor", contour_factor_g)
@@ -224,8 +224,11 @@ if __name__ == "__main__":
                 alpha=0.5,
             )
 
-        ## hack for legend
-        #ax.plot([], [], c=colors, label=label)
+        # make legend
+        if label:
+            legends+=1
+            # hack for legend
+            ax.plot([], [], c=colors, label=label)
 
     # plt.xlim(ppm_f2_0, ppm_f2_1)
     ax.invert_xaxis()
@@ -237,10 +240,13 @@ if __name__ == "__main__":
     ax.invert_yaxis()
     ax.set_ylabel(udic[f1]["label"] + " ppm")
 
-    #plt.legend(
-    #    loc="upper center", bbox_to_anchor=(0.5, 1.20), ncol=params.get("ncol", 2)
-    #)
-    # plt.tight_layout()
+    if legends > 0:
+        plt.legend(
+            loc="upper center", bbox_to_anchor=(0.5, 1.20), ncol=params.get("ncol", 2)
+        )
+
+    plt.tight_layout()
+
     #  add a list of outfiles
     y = 0.025
     # only write cs levels if show_cs: True in yaml file
