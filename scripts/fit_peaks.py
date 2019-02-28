@@ -48,7 +48,7 @@ from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 
-from peak_deconvolution.core import fix_params, get_params, rmsd, fit_first_plane, Pseudo3D
+from peakipy.core import fix_params, get_params, rmsd, fit_first_plane, Pseudo3D
 
 def norm(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))

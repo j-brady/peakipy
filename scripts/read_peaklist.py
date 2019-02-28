@@ -72,7 +72,7 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
-from peak_deconvolution.core import make_mask, Pseudo3D 
+from peakipy.core import make_mask, Pseudo3D 
 
 # Read peak list and output into pandas dataframe for fitting peaks
 # make column in dataframe for group identities

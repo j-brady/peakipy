@@ -44,7 +44,7 @@ from bokeh.plotting import figure
 from bokeh.io import curdoc
 from bokeh.palettes import PuBuGn9, Category20
 
-from peak_deconvolution.core import Pseudo3D
+from peakipy.core import Pseudo3D
 
 
 def clusters(df, data, thres=None, struc_el="square", struc_size=(3,), iterations=1, l_struc=None):
