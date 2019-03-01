@@ -50,8 +50,10 @@ from docopt import docopt
 
 from peakipy.core import fix_params, get_params, rmsd, fit_first_plane, Pseudo3D
 
+
 def norm(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
+
 
 args = docopt(__doc__)
 
@@ -64,13 +66,13 @@ else:
 lineshape = args.get("--lineshape")
 # params to fix
 to_fix = args.get("--fix")
-to_fix = to_fix.split(',')
+to_fix = to_fix.split(",")
 verb = args.get("--verb")
-#print(to_fix)
+# print(to_fix)
 # f2 radius in ppm for mask
-#x_radius = float(args.get("--x_radius"))
+# x_radius = float(args.get("--x_radius"))
 ## f1 radius in ppm for mask
-#y_radius = float(args.get("--y_radius"))
+# y_radius = float(args.get("--y_radius"))
 if verb:
     print("Using ", args)
 log = open("log.txt", "w")
@@ -95,7 +97,7 @@ else:
 
 # read vclist - currently not working
 vclist = args.get("--vclist")
-#print("vclist", vclist)
+# print("vclist", vclist)
 if vclist == "None":
     add_vclist = False
 else:
@@ -112,22 +114,22 @@ dic, data = ng.pipe.read(args["<data>"])
 pseudo3D = Pseudo3D(dic, data, dims)
 uc_f1 = pseudo3D.uc_f1
 uc_f2 = pseudo3D.uc_f2
-uc_dics = {"f1":uc_f1, "f2": uc_f2}
+uc_dics = {"f1": uc_f1, "f2": uc_f2}
 
 dims = pseudo3D.dims
 data = pseudo3D.data
 
 # point per Hz
 pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
-pt_per_hz_f1 = pseudo3D.pt_per_hz_f1 
+pt_per_hz_f1 = pseudo3D.pt_per_hz_f1
 
 # ppm per point
 ppm_per_pt_f2 = pseudo3D.ppm_per_pt_f2
-ppm_per_pt_f1 = pseudo3D.ppm_per_pt_f1 
+ppm_per_pt_f1 = pseudo3D.ppm_per_pt_f1
 
 # point per ppm
 pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
-pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1 
+pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 
 # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
 peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
@@ -139,8 +141,8 @@ peaks["X_AXISf"] = peaks.X_PPM.apply(lambda x: uc_f2.f(x, "PPM"))
 peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
 
 ## convert radii from ppm to points
-#x_radius = x_radius * pt_per_ppm_f2
-#y_radius = y_radius * pt_per_ppm_f1
+# x_radius = x_radius * pt_per_ppm_f2
+# y_radius = y_radius * pt_per_ppm_f1
 
 
 # sum planes for initial fit
@@ -180,30 +182,30 @@ for name, group in groups:
         first, mask = fit_first_plane(
             group,
             summed_planes,
-            #norm(summed_planes),
+            # norm(summed_planes),
             uc_dics,
             lineshape=lineshape,
             plot=plot,
             show=args.get("--show"),
-            verbose=verb
+            verbose=verb,
         )
 
         # fix sigma center and fraction parameters
         # could add an option to select params to fix
-        if len(to_fix) == 0 or to_fix=="None":
+        if len(to_fix) == 0 or to_fix == "None":
             if verb:
                 print("Floating all parameters")
             pass
         else:
             to_fix = to_fix
             if verb:
-                print("Fixing parameters:",to_fix)
-            #to_fix = ["sigma", "center", "fraction"]
+                print("Fixing parameters:", to_fix)
+            # to_fix = ["sigma", "center", "fraction"]
             # to_fix = ["center", "fraction"]
             fix_params(first.params, to_fix)
 
         for d in data:
-            first.fit(data=d[mask], params=first.params) 
+            first.fit(data=d[mask], params=first.params)
             if verb:
                 print(first.fit_report())
 
@@ -288,8 +290,8 @@ df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
 # Fill nan values
 df.fillna(value=np.nan, inplace=True)
 # calculate errors and square amplitudes
-#df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
-#df["amp"] = df.amp.apply(lambda x: x ** 2.0)
+# df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
+# df["amp"] = df.amp.apply(lambda x: x ** 2.0)
 
 #  output data
 output = Path(args["<output>"])

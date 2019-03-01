@@ -120,7 +120,7 @@ if __name__ == "__main__":
     contour_factor_g = params.get("contour_factor", 1.2)
     nspec = len(spectra)
     notes = []
-    legends = 0  
+    legends = 0
     for num, spec in enumerate(spectra):
 
         # unpack spec specific parameters
@@ -178,10 +178,10 @@ if __name__ == "__main__":
             ppm_f1_0, ppm_f1_1 = uc_f2.ppm_limits()  # max,min
             ppm_f2_0, ppm_f2_1 = uc_f3.ppm_limits()  # max,min
 
-            #if f1 == 0:
+            # if f1 == 0:
             #    data = data[f1]
-            if dims != [1,2,3]:
-                data = np.transpose(data, dims) 
+            if dims != [1, 2, 3]:
+                data = np.transpose(data, dims)
             data = data[0]
             # x and y are set to f2 and f1
             f1, f2 = f2, f3
@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
         # make legend
         if label:
-            legends+=1
+            legends += 1
             # hack for legend
             ax.plot([], [], c=colors, label=label)
 
@@ -268,9 +268,9 @@ if __name__ == "__main__":
         groups = clusters.groupby("CLUSTID")
         for ind, group in groups:
             if len(group) == 1:
-                ax.plot(group.X_PPM, group.Y_PPM, "ko", markersize=1)#, picker=5)
+                ax.plot(group.X_PPM, group.Y_PPM, "ko", markersize=1)  # , picker=5)
             else:
-                ax.plot(group.X_PPM, group.Y_PPM, "o", markersize=1)#, picker=5)
+                ax.plot(group.X_PPM, group.Y_PPM, "o", markersize=1)  # , picker=5)
 
     if params.get("outname") and (type(params.get("outname")) == list):
         for i in params.get("outname"):

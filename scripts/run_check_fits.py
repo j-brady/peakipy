@@ -16,7 +16,8 @@ import os
 from pathlib import Path
 from shutil import which
 from docopt import docopt
-#import subprocess
+
+# import subprocess
 
 args = docopt(__doc__)
 peaklist = Path(args.get("<peaklist>"))
@@ -25,6 +26,6 @@ dims = args.get("--dims")
 
 script = which("check_fits.py")
 
-#p = subprocess.Popen(['bokeh','serve', '--show', script, '--args', peaklist, data, f'--dims={dims}' ])
+# p = subprocess.Popen(['bokeh','serve', '--show', script, '--args', peaklist, data, f'--dims={dims}' ])
 
 os.system(f"bokeh serve --show {script} --args {peaklist} {data} --dims={dims}")

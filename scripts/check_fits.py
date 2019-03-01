@@ -492,7 +492,7 @@ struct_el = Select(
     options=["square", "disk", "rectangle", "None"],
 )
 
-struct_el_size = TextInput(value="5", title="Size(pts):")
+struct_el_size = TextInput(value="5", title="Size(width or width,height for rectangle):")
 # iterations = TextInput(value="1", title="Number of iterations of binary dilation")
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)

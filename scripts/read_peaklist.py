@@ -72,7 +72,7 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
-from peakipy.core import make_mask, Pseudo3D 
+from peakipy.core import make_mask, Pseudo3D
 
 # Read peak list and output into pandas dataframe for fitting peaks
 # make column in dataframe for group identities
@@ -218,16 +218,20 @@ class Peaklist:
             self.df["ASS"] = self.df.apply(
                 lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
             )
-        
+
         # make default values for X and Y radii for fit masks
         f2radius, f1radius = radii
         self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + f2radius
         self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + f1radius
-        self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(lambda x: x * self.pt_per_ppm_f2) 
-        self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(lambda x: x * self.pt_per_ppm_f1) 
+        self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(
+            lambda x: x * self.pt_per_ppm_f2
+        )
+        self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(
+            lambda x: x * self.pt_per_ppm_f1
+        )
 
         ## rearrange dims
-        #if dims != [0, 1, 2]:
+        # if dims != [0, 1, 2]:
         #    data = np.transpose(data, dims)
 
     def _read_analysis(self):
@@ -289,8 +293,8 @@ class Peaklist:
             self.thresh = threshold_otsu(self.data[0])
         else:
             self.thresh = thres
-        
-        # get positive and negative 
+
+        # get positive and negative
         thresh_data = np.bitwise_or(
             self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
         )
@@ -328,10 +332,9 @@ class Peaklist:
         )
 
         # count how many peaks per cluster
-        self.df["MEMCNT"] = np.zeros(len(self.df),dtype=int)
+        self.df["MEMCNT"] = np.zeros(len(self.df), dtype=int)
         for ind, group in self.df.groupby("CLUSTID"):
-            self.df.loc[group.index,"MEMCNT"] = len(group)
-
+            self.df.loc[group.index, "MEMCNT"] = len(group)
 
     def adaptive_clusters(self, block_size, offset, l_struc=None):
 
@@ -355,9 +358,7 @@ class Peaklist:
             max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
         )
 
-
     def mask_method(self, x_radius=0.04, y_radius=0.4, l_struc=None):
-        
 
         self.thresh = threshold_otsu(self.data[0])
 
@@ -366,9 +367,10 @@ class Peaklist:
 
         mask = np.zeros(self.data[0].shape, dtype=bool)
 
-
         for ind, peak in self.df.iterrows():
-            mask += make_mask(self.data[0],peak.X_AXISf,peak.Y_AXISf, x_radius, y_radius)
+            mask += make_mask(
+                self.data[0], peak.X_AXISf, peak.Y_AXISf, x_radius, y_radius
+            )
 
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
         labeled_array, num_features = ndimage.label(mask, l_struc)
@@ -382,9 +384,9 @@ class Peaklist:
             max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
         )
         import matplotlib.pyplot as plt
+
         plt.imshow(mask)
         plt.show()
-
 
     def get_df(self):
         return self.df
@@ -408,7 +410,7 @@ if __name__ == "__main__":
         args["--thres"] = None
     else:
         args["--thres"] = eval(args["--thres"])
-    
+
     thres = args.get("--thres")
     print("Using arguments:", args)
 
@@ -425,13 +427,14 @@ if __name__ == "__main__":
     pipe_ft_file = args.get("<data>")
     if args.get("--a2"):
 
-        peaks = Peaklist(filename, pipe_ft_file, fmt="a2", dims=dims, radii=[f2radius,f1radius])
+        peaks = Peaklist(
+            filename, pipe_ft_file, fmt="a2", dims=dims, radii=[f2radius, f1radius]
+        )
         # peaks.adaptive_clusters(block_size=151,offset=0)
         peaks.clusters(thres=thres, **clust_args, l_struc=None)
-        #peaks.mask_method(x_radius=0.04,y_radius=0.25)
+        # peaks.mask_method(x_radius=0.04,y_radius=0.25)
         data = peaks.get_df()
         thres = peaks.get_thres()
-
 
     elif args.get("--sparky"):
 
