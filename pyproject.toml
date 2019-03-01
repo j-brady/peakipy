@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "peak_deconvolution"
+name = "peakipy"
 version = "0.1.0"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
@@ -14,6 +14,8 @@ nmrglue = "^0.6.0"
 scipy = "^1.2"
 docopt = "^0.6.2"
 lmfit = "^0.9.12"
+scikit-image= "^0.14.2"
+bokeh = "^1.0.4"
 
 [tool.poetry.dev-dependencies]
 

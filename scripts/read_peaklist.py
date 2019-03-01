@@ -309,11 +309,11 @@ class Peaklist:
         elif struc_el == "rectangle":
             width, height = struc_size
             print(f"using rectangle with {width} and {height}")
-            closed_data = binary_closing(data, rectangle(width, height))
+            closed_data = binary_closing(thresh_data, rectangle(width, height))
 
         else:
             print(f"Not using any closing function")
-            closed_data = data
+            closed_data = self.data
 
         labeled_array, num_features = ndimage.label(closed_data, l_struc)
         # print(labeled_array, num_features)

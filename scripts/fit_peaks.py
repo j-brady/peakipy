@@ -203,8 +203,7 @@ for name, group in groups:
             fix_params(first.params, to_fix)
 
         for d in data:
-            first.fit(data=d[mask], params=first.params)  # noise=weights[mask].ravel())
-            #first.fit(data=norm(d[mask]), params=first.params)  # noise=weights[mask].ravel())
+            first.fit(data=d[mask], params=first.params) 
             if verb:
                 print(first.fit_report())
 

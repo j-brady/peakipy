@@ -24,13 +24,15 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import magma, autumn
 
 from scipy import ndimage
-#from scipy.ndimage.morphology import binary_dilation
+
+# from scipy.ndimage.morphology import binary_dilation
 from skimage.filters import threshold_otsu
 from skimage.morphology import binary_closing, square, rectangle, disk
 
 from bokeh.events import ButtonClick
 from bokeh.layouts import row, column, widgetbox
 from bokeh.models import ColumnDataSource
+from bokeh.models.tools import HoverTool
 from bokeh.models.widgets import (
     Slider,
     Select,
@@ -39,6 +41,7 @@ from bokeh.models.widgets import (
     TableColumn,
     TextInput,
     RadioButtonGroup,
+    Div,
 )
 from bokeh.plotting import figure
 from bokeh.io import curdoc
@@ -47,7 +50,9 @@ from bokeh.palettes import PuBuGn9, Category20
 from peakipy.core import Pseudo3D
 
 
-def clusters(df, data, thres=None, struc_el="square", struc_size=(3,), iterations=1, l_struc=None):
+def clusters(
+    df, data, thres=None, struc_el="square", struc_size=(3,), iterations=1, l_struc=None
+):
     """ Find clusters of peaks 
 
     Need to update these docs.
@@ -71,22 +76,23 @@ def clusters(df, data, thres=None, struc_el="square", struc_size=(3,), iteration
         radius = struc_size[0]
         radius = radius / 2.0
         print(f"using disk with {radius}")
-        closed_data = binary_closing(thresh_data, disk(float(radius)))
-        #closed_data = binary_dilation(thresh_data, disk(radius), iterations=iterations)
+        closed_data = binary_closing(thresh_data, disk(int(radius)))
+        # closed_data = binary_dilation(thresh_data, disk(radius), iterations=iterations)
 
     elif struc_el == "square":
         width = struc_size[0]
         print(f"using square with {width}")
-        closed_data = binary_closing(thresh_data, square(float(width)))
-        #closed_data = binary_dilation(thresh_data, square(width), iterations=iterations)
+        closed_data = binary_closing(thresh_data, square(int(width)))
+        # closed_data = binary_dilation(thresh_data, square(width), iterations=iterations)
 
     elif struc_el == "rectangle":
         width, height = struc_size
         print(f"using rectangle with {width} and {height}")
-        data = binary_closing(data, rectangle(float(width), float(height)))
-        #closed_data = binary_dilation(thresh_data, rectangle(width, height), iterations=iterations)
+        closed_data = binary_closing(thresh_data, rectangle(int(width), int(height)))
+        # closed_data = binary_dilation(thresh_data, rectangle(width, height), iterations=iterations)
 
     else:
+        closed_data = thresh_data
         print(f"Not using any closing function")
 
     labeled_array, num_features = ndimage.label(closed_data, l_struc)
@@ -125,13 +131,13 @@ def recluster_peaks(event):
         thres=eval(contour_start.value),
         struc_el=struct_el.value,
         struc_size=struc_size,
-        #iterations=int(iterations.value)
+        # iterations=int(iterations.value)
     )
-    #print("struct", struct_el.value)
-    #print("struct size", struct_el_size.value )
-    #print(type(struct_el_size.value) )
-    #print(type(eval(struct_el_size.value)) )
-    #print(type([].extend(eval(struct_el_size.value)))
+    # print("struct", struct_el.value)
+    # print("struct size", struct_el_size.value )
+    # print(type(struct_el_size.value) )
+    # print(type(eval(struct_el_size.value)) )
+    # print(type([].extend(eval(struct_el_size.value)))
 
 
 def update_memcnt(df):
@@ -163,7 +169,9 @@ def fit_selected(event):
 
     lineshape = lineshapes[radio_button_group.active]
     print("Using LS = ", lineshape)
-    print(f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}")
+    print(
+        f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}"
+    )
     os.system(
         f"fit_peaks.py ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}"
     )
@@ -306,24 +314,24 @@ pseudo3D = Pseudo3D(dic, data, dims)
 data = pseudo3D.data
 udic = pseudo3D.udic
 
-#udic = ng.pipe.guess_udic(dic, data)
-#ndim = udic["ndim"]
+# udic = ng.pipe.guess_udic(dic, data)
+# ndim = udic["ndim"]
 dims = pseudo3D.dims
 planes, f1, f2 = dims
 # size of f1 and f2 in points
-#f2pts = udic[f2]["size"]
-#f1pts = udic[f1]["size"]
-f2pts = pseudo3D.f2_size 
+# f2pts = udic[f2]["size"]
+# f1pts = udic[f1]["size"]
+f2pts = pseudo3D.f2_size
 f1pts = pseudo3D.f1_size
 
 #  points per ppm
-#pt_per_ppm_f1 = f1pts / (udic[f1]["sw"] / udic[f1]["obs"])
-#pt_per_ppm_f2 = f2pts / (udic[f2]["sw"] / udic[f2]["obs"])
-pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1 
+# pt_per_ppm_f1 = f1pts / (udic[f1]["sw"] / udic[f1]["obs"])
+# pt_per_ppm_f2 = f2pts / (udic[f2]["sw"] / udic[f2]["obs"])
+pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
 
 # get ppm limits for ppm scales
-uc_f1 = pseudo3D.uc_f1 
+uc_f1 = pseudo3D.uc_f1
 ppm_f1 = uc_f1.ppm_scale()
 ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()
 
@@ -331,19 +339,18 @@ uc_f2 = pseudo3D.uc_f2
 ppm_f2 = uc_f2.ppm_scale()
 ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 
+f2_label = pseudo3D.f2_label
+f1_label = pseudo3D.f1_label
 #  make bokeh figure
 p = figure(
     x_range=(ppm_f2_0, ppm_f2_1),
     y_range=(ppm_f1_0, ppm_f1_1),
-    tooltips=[
-        ("Assignment", "@ASS"),
-        ("CLUSTID", "@CLUSTID"),
-        ("RADII", "@X_RADIUS_PPM, @Y_RADIUS_PPM"),
-    ],
+    x_axis_label=f"{f2_label} - ppm",
+    y_axis_label=f"{f1_label} - ppm",
 )
 
 ## rearrange dims
-#if dims != [0, 1, 2]:
+# if dims != [0, 1, 2]:
 #    data = np.transpose(data, dims)
 
 # plot NMR data
@@ -358,8 +365,8 @@ contour_factor = 1.20  # scaling factor between contour levels
 cl = contour_start * contour_factor ** np.arange(contour_num)
 extent = (ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1)
 spec_source = get_contour_data(data[0], cl, extent=extent)
-# negative contours
-spec_source_neg =  get_contour_data(data[0] * -1.0, cl, extent=extent, cmap=autumn)
+#  negative contours
+spec_source_neg = get_contour_data(data[0] * -1.0, cl, extent=extent, cmap=autumn)
 p.multi_line(xs="xs", ys="ys", line_color="line_color", source=spec_source)
 p.multi_line(xs="xs", ys="ys", line_color="line_color", source=spec_source_neg)
 # contour_num = Slider(title="contour number", value=20, start=1, end=50,step=1)
@@ -371,7 +378,7 @@ contour_start.on_change("value", update_contour)
 #    w.on_change("value",update_contour)
 
 #  plot mask outlines
-p.ellipse(
+el = p.ellipse(
     x="X_PPM",
     y="Y_PPM",
     width="X_DIAMETER_PPM",
@@ -383,9 +390,31 @@ p.ellipse(
     line_color="red",
 )
 
+p.add_tools(
+    HoverTool(
+        tooltips=[
+            ("Assignment", "@ASS"),
+            ("CLUSTID", "@CLUSTID"),
+            ("RADII", "@X_RADIUS_PPM{0.000}, @Y_RADIUS_PPM{0.000}"),
+        ],
+        mode="mouse",
+        # add renderers
+        renderers=[el],
+    )
+)
+# p.toolbar.active_scroll = "auto"
+
 p.circle(x="X_PPM", y="Y_PPM", source=source, color="color")
 # plot cluster numbers
-p.text(x="X_PPM", y="Y_PPM", text="CLUSTID", text_color="color", source=source)
+p.text(
+    x="X_PPM",
+    y="Y_PPM",
+    text="CLUSTID",
+    text_color="color",
+    source=source,
+    text_font_size="8pt",
+    text_font_style="bold",
+)
 
 # configure sliders
 slider_X_RADIUS = Slider(
@@ -408,7 +437,15 @@ button.on_event(ButtonClick, save_peaks)
 fit_button = Button(label="Fit selected", button_type="primary")
 radio_button_group = RadioButtonGroup(labels=["PV", "G", "L"], active=0)
 lineshapes = {0: "PV", 1: "G", 2: "L"}
-
+ls_div = Div(
+    text="Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G) or Lorentzian (L)"
+)
+clust_div = Div(
+    text="""If you want to adjust how the peaks are automatically clustered then try changing the 
+        width/diameter/height (integer values) of the structuring element used during the binary dilation step
+        (you can also remove it by selecting 'None').Increasing the size of the structuring element will cause
+        peaks to be more readily incorporated into clusters."""
+)
 
 #  not sure this is needed
 selected_df = df.copy()
@@ -443,7 +480,7 @@ source.selected.on_change("indices", select_callback)
 controls = column(
     row(slider_X_RADIUS, slider_Y_RADIUS),
     row(
-        column(contour_start, fit_button, radio_button_group),
+        column(contour_start, fit_button, widgetbox(ls_div), radio_button_group),
         column(savefilename, button),
     ),
 )
@@ -456,13 +493,18 @@ struct_el = Select(
 )
 
 struct_el_size = TextInput(value="5", title="Size(pts):")
-#iterations = TextInput(value="1", title="Number of iterations of binary dilation")
+# iterations = TextInput(value="1", title="Number of iterations of binary dilation")
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)
 
-#cluster_widget = widgetbox(struct_el, struct_el_size)
-#recluster)
-curdoc().add_root(row(column(p, row(struct_el, struct_el_size), recluster), column(data_table, controls)))
+# cluster_widget = widgetbox(struct_el, struct_el_size)
+# recluster)
+curdoc().add_root(
+    row(
+        column(p, widgetbox(clust_div), row(struct_el, struct_el_size), recluster),
+        column(data_table, controls),
+    )
+)
 # curdoc().title = "Export CSV"
 
 

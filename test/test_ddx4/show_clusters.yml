@@ -9,7 +9,7 @@
     cs: 2316031.0                     # contour start
     contour_num: 10                 # number of contours
     contour_factor: 1.2             # contour factor
-    colors: tab20                    # must be matplotlib.cm colormap
+    colors: tab20                   # must be matplotlib.cm colormap
     show_cs: True
 
     outname: ["clusters.pdf","clusters.png"] # either single value or list of output names

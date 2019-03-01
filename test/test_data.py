@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 from lmfit import Model, report_fit
 
-from peak_deconvolution.core import (
+from peakipy.core import (
     pvoigt2d,
     fix_params,
     get_params,

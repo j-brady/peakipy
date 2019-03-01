@@ -25,62 +25,6 @@ s2 = sqrt(2.0)
 tiny = 1.0e-13
 
 
-def gaussian(x, amplitude=1.0, center=0.0, sigma=1.0):
-    """Return a 1-dimensional Gaussian function.
-    gaussian(x, amplitude, center, sigma) =
-        (amplitude/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
-    """
-    return (amplitude / (sqrt(2 * π) * sigma)) * exp(
-        -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
-    )
-
-
-def lorentzian(x, amplitude=1.0, center=0.0, sigma=1.0):
-    """Return a 1-dimensional Lorentzian function.
-    lorentzian(x, amplitude, center, sigma) =
-        (amplitude/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
-    """
-    return (amplitude / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
-
-
-#def pvoigt2d(
-#    XY,
-#    amplitude=1.0,
-#    center_x=0.5,
-#    center_y=0.5,
-#    sigma_x=1.0,
-#    sigma_y=1.0,
-#    fraction=0.5,
-#):
-#    """ 2D pseudo-voigt model
-#
-#        Arguments:
-#            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-#            -- amplitude: peak amplitude (gaussian and lorentzian)
-#            -- center_x: position of peak in x
-#            -- center_y: position of peak in y
-#            -- sigma_x: linewidth in x
-#            -- sigma_y: linewidth in y
-#            -- fraction: fraction of lorenztian in fit
-#
-#        Returns:
-#            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
-#
-#    """
-#    x, y = XY
-#    sigma_gx = sigma_x / sqrt(2 * log2)
-#    sigma_gy = sigma_y / sqrt(2 * log2)
-#    # fraction same for both dimensions
-#    # super position of gaussian and lorentzian
-#    # then convoluted for x y
-#    pv_x = (1 - fraction) * gaussian(
-#        x, amplitude, center_x, sigma_gx
-#    ) + fraction * lorentzian(x, amplitude, center_x, sigma_x)
-#    pv_y = (1 - fraction) * gaussian(
-#        y, amplitude, center_y, sigma_gy
-#    ) + fraction * lorentzian(y, amplitude, center_y, sigma_y)
-#    return pv_x * pv_y
-
 def pvoigt2d(
     XY,
     amplitude=1.0,
@@ -409,23 +353,21 @@ def fit_first_plane(
     _norm_sim = norm_sim[~np.isnan(norm_sim)]
     chi2 = np.sum((_norm_z - _norm_sim)**2. / _norm_sim)
 
+    # number of peaks in cluster
+    n_peaks = len(group)
+    chi2 = chi2 / n_peaks
     if chi2 < 1:
-        print(f"Cluster {peak.CLUSTID} - chi2={chi2:.3f} - ")
+        print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
     else:
-        print(f"Cluster {peak.CLUSTID} - chi2={chi2:.3f} - NEEDS CHECKING")
+        print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING")
     
 
     if plot != None:
         plot_path = Path(plot)
-        Zsim = mod.eval(XY=XY, params=out.params)
-        #print(report_fit(out.params))
-        Zsim[~mask] = np.nan
 
         # plotting
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
-        Z_plot = data.copy()
-        Z_plot[~mask] = np.nan
         # convert to ints may need tweeking
         min_x = int(np.floor(min_x))
         max_x = int(np.ceil(max_x))
@@ -436,22 +378,13 @@ def fit_first_plane(
         Z_plot = Z_plot[min_y - 1 : max_y, min_x - 1 : max_x]
         Zsim = Zsim[min_y - 1 : max_y, min_x - 1 : max_x]
 
-        # calculate chi2 
-        norm_z = (Z_plot - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
-        norm_sim = (Zsim - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
-        _norm_z = norm_z[~np.isnan(norm_z)]
-        _norm_sim = norm_sim[~np.isnan(norm_sim)]
-        chi2 = np.sum((_norm_z - _norm_sim)**2. / _norm_sim)
-
         ax.set_title("$\chi^2$="+f"{chi2:.3f}")
-        #contf = ax.contourf(X_plot,Y_plot,residuals,100,zdir='z',cmap=viridis, alpha=0.75)
 
         # plot raw data
         ax.plot_wireframe(
             X_plot, Y_plot, Z_plot, color="k"
             #X_plot, Y_plot, norm_z, color="k"
         )
-        # ax.contour3D(X_plot, Y_plot, Z_plot[min_y - 1 : max_y, min_x - 1 : max_x],cmap='viridis')
 
         ax.set_xlabel("F2 ppm")
         ax.set_ylabel("F1 ppm")
@@ -553,6 +486,9 @@ class Pseudo3D:
 
         self._dic = dic
 
+        self._f1_label = self._udic[self._f1_dim]["label"] 
+        self._f2_label = self._udic[self._f2_dim]["label"]
+
     @property
     def uc_f1(self):
         """ Return unit conversion dict for F1"""
@@ -584,6 +520,16 @@ class Pseudo3D:
     @property
     def ndim(self):
         return self._ndim
+
+    @property
+    def f1_label(self):
+        # dim label
+        return self._f1_label
+
+    @property
+    def f2_label(self):
+        # dim label
+        return self._f2_label
 
     # size of f1 and f2 in points
     @property

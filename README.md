@@ -1,4 +1,4 @@
-# Peak deconvolution
+# PeakIpy - NMR peak integration/deconvolution using python
 
 ## Description
 
@@ -9,13 +9,13 @@ Simple deconvolution of NMR peaks for extraction of intensities. Provided an NMR
 With poetry...
 
 ```bash
-cd peak_deconvolution; poetry install
+cd peakipy; poetry install
 ```
 
 With setup.py you will need python3.6 or greater installed.
 
 ```bash
-cd peak_deconvolution; python setup.py install
+cd peakipy; python setup.py install
 ```
 
 ## Inputs
@@ -64,7 +64,7 @@ Select the cluster you are interested in using the table and double click to edi
 ![Example fit](images/fit.png)
 
 
-## Protocol
+## Protocol
 
 Initial parameters for FWHM,  
 
