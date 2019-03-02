@@ -1,4 +1,4 @@
-# PeakIpy - NMR peak integration/deconvolution using python
+# Peakipy - NMR peak integration/deconvolution using python
 
 ## Description
 

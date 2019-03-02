@@ -292,6 +292,7 @@ def fit_first_plane(
     plot=None,
     show=True,
     verbose=False,
+    log=None,
 ):
     """
         Arguments:
@@ -357,10 +358,16 @@ def fit_first_plane(
     n_peaks = len(group)
     chi2 = chi2 / n_peaks
     if chi2 < 1:
+        chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
         print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
     else:
+        chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
         print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING")
-    
+
+    if log !=None: 
+        log.write(chi_str + "\n")
+    else:
+        pass
 
     if plot != None:
         plot_path = Path(plot)

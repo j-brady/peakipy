@@ -29,7 +29,7 @@ from scipy import ndimage
 from skimage.filters import threshold_otsu
 from skimage.morphology import binary_closing, square, rectangle, disk
 
-from bokeh.events import ButtonClick
+from bokeh.events import ButtonClick, DoubleTap
 from bokeh.layouts import row, column, widgetbox
 from bokeh.models import ColumnDataSource
 from bokeh.models.tools import HoverTool
@@ -74,7 +74,6 @@ def clusters(
 
     if struc_el == "disk":
         radius = struc_size[0]
-        radius = radius / 2.0
         print(f"using disk with {radius}")
         closed_data = binary_closing(thresh_data, disk(int(radius)))
         # closed_data = binary_dilation(thresh_data, disk(radius), iterations=iterations)
@@ -202,6 +201,8 @@ def select_callback(attrname, old, new):
     # update memcnt
     update_memcnt(df)
 
+def peak_pick_callback(event):
+    print(event.x,event.y)
 
 def callback(attrname, old, new):
 
@@ -342,11 +343,14 @@ ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 f2_label = pseudo3D.f2_label
 f1_label = pseudo3D.f1_label
 #  make bokeh figure
+tools = ["redo","undo","tap","box_zoom","wheel_zoom","pan",]
 p = figure(
     x_range=(ppm_f2_0, ppm_f2_1),
     y_range=(ppm_f1_0, ppm_f1_1),
     x_axis_label=f"{f2_label} - ppm",
     y_axis_label=f"{f1_label} - ppm",
+    title="Check fits",
+    tools=tools,
 )
 
 ## rearrange dims
@@ -415,6 +419,8 @@ p.text(
     text_font_size="8pt",
     text_font_style="bold",
 )
+
+p.on_event(DoubleTap, peak_pick_callback)
 
 # configure sliders
 slider_X_RADIUS = Slider(
@@ -492,7 +498,7 @@ struct_el = Select(
     options=["square", "disk", "rectangle", "None"],
 )
 
-struct_el_size = TextInput(value="5", title="Size(width or width,height for rectangle):")
+struct_el_size = TextInput(value="3", title="Size(width/radius or width,height for rectangle):")
 # iterations = TextInput(value="1", title="Number of iterations of binary dilation")
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)

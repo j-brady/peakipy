@@ -22,9 +22,9 @@
         --struc_el=<str>          Structuring element for binary_closing [default: disk]
                                   'square'|'disk'|'rectangle'
 
-        --struc_size=<(float,)>   size/dimensions of structuring element [default: (5,)]
-                                  for square and disk first element of tuple is used (for disk value corresponds to diameter)
-                                  for rectangle, tuple corresponds to (width,height).
+        --struc_size=<int,>       Size/dimensions of structuring element [default: 3,]
+                                  For square and disk first element of tuple is used (for disk value corresponds to radius).
+                                  For rectangle, tuple corresponds to (width,height).
 
         --f1radius=<float>        F1 radius in ppm for fit mask [default: 0.4]
         --f2radius=<float>        F2 radius in ppm for fit mask [default: 0.04]
@@ -218,7 +218,8 @@ class Peaklist:
             self.df["ASS"] = self.df.apply(
                 lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
             )
-
+        # check assignments for duplicates
+        self.check_assignments()
         # make default values for X and Y radii for fit masks
         f2radius, f1radius = radii
         self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + f2radius
@@ -269,6 +270,20 @@ class Peaklist:
         )
         return df
 
+    def check_assignments(self):
+        duplicates_bool = self.df.ASS.duplicated()
+        duplicates = self.df.ASS[duplicates_bool]
+        if len(duplicates)>0:
+            print("You have duplicated assignments in your list...")
+            print("Currently each peak needs a unique assignment. Sorry about that buddy...")
+            print("Here are the duplicates")
+            print(duplicates)
+            #exit()
+            print("Creating dummy assignments for duplicates")
+            self.df.loc[duplicates_bool,"ASS"] = [f"{i}_dummy_{num+1}" for num,i in enumerate(duplicates)]
+            print(self.df.ASS)
+            
+
     def clusters(self, thres=None, struc_el="square", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks 
 
@@ -282,7 +297,7 @@ class Peaklist:
 
         struc_size: tuple
             size/dimensions of structuring element
-            for square and disk first element of tuple is used (for disk value corresponds to diameter)
+            for square and disk first element of tuple is used (for disk value corresponds to radius)
             for rectangle, tuple corresponds to (width,height).
 
 
@@ -301,19 +316,18 @@ class Peaklist:
 
         if struc_el == "disk":
             radius = struc_size[0]
-            radius = radius / 2.0
             print(f"using disk with {radius}")
-            closed_data = binary_closing(thresh_data, disk(radius))
+            closed_data = binary_closing(thresh_data, disk(int(radius)))
 
         elif struc_el == "square":
             width = struc_size[0]
             print(f"using square with {width}")
-            closed_data = binary_closing(thresh_data, square(width))
+            closed_data = binary_closing(thresh_data, square(int(width)))
 
         elif struc_el == "rectangle":
             width, height = struc_size
             print(f"using rectangle with {width} and {height}")
-            closed_data = binary_closing(thresh_data, rectangle(width, height))
+            closed_data = binary_closing(thresh_data, rectangle(int(width), int(height)))
 
         else:
             print(f"Not using any closing function")
@@ -431,21 +445,18 @@ if __name__ == "__main__":
             filename, pipe_ft_file, fmt="a2", dims=dims, radii=[f2radius, f1radius]
         )
         # peaks.adaptive_clusters(block_size=151,offset=0)
-        peaks.clusters(thres=thres, **clust_args, l_struc=None)
-        # peaks.mask_method(x_radius=0.04,y_radius=0.25)
-        data = peaks.get_df()
-        thres = peaks.get_thres()
 
     elif args.get("--sparky"):
 
-        peaks = Peaklist(filename, pipe_ft_file, fmt="sparky", dims=dims)
-        peaks.clusters(thres=thres, **clust_args, l_struc=None)
-        data = peaks.get_df()
-        thres = peaks.get_thres()
+        peaks = Peaklist(filename, pipe_ft_file, fmt="sparky", dims=dims, radii=[f2radius, f1radius])
 
-    else:
+    elif args.get("--pipe"):
+        peaks = Peaklist(filename, pipe_ft_file, fmt="pipe", dims=dims, radii=[f2radius, f1radius])
 
-        data = read_pipe(filename)
+    peaks.clusters(thres=thres, **clust_args, l_struc=None)
+    data = peaks.get_df()
+    thres = peaks.get_thres()
+
     print(data.head())
     outfmt = args.get("--outfmt", "csv")
     outname = filename.stem

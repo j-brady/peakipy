@@ -169,6 +169,7 @@ names = []
 indices = []
 assign = []
 clustids = []
+planes = []
 # vclists = []
 
 # group peaks based on CLUSTID
@@ -188,6 +189,7 @@ for name, group in groups:
             plot=plot,
             show=args.get("--show"),
             verbose=verb,
+            log=log
         )
 
         # fix sigma center and fraction parameters
@@ -204,7 +206,8 @@ for name, group in groups:
             # to_fix = ["center", "fraction"]
             fix_params(first.params, to_fix)
 
-        for d in data:
+        for num, d in enumerate(data):
+
             first.fit(data=d[mask], params=first.params)
             if verb:
                 print(first.fit_report())
@@ -232,6 +235,9 @@ for name, group in groups:
             sigma_y_errs.extend(sig_y_err)
 
             fractions.extend(frac)
+            # add plane number, this should map to vclist
+            planes.extend([num for _ in amp])
+
             #  get prefix for fit
             names.extend([i.replace("fraction", "") for i in name])
             assign.extend(group["ASS"])
@@ -257,6 +263,7 @@ df_dic = {
     # "sigma_y_err": np.ravel(sigma_y_errs),
     "fraction": np.ravel(fractions),
     "clustid": np.ravel(clustids),
+    "plane": planes,
     # "vclist": np.ravel(vclists)
 }
 
