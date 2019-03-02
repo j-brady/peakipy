@@ -28,13 +28,6 @@
 
         --verb                                 Print what's going on
 
-        --vclist=<path>                        vclist-like file containing delays will be incorporated into final dataframe [default: None]
-
-    ToDo: 
-        1. per peak R^2, fit first summed spec (may need to adjust start params for this)
-        2. decide clusters based on lw?
-        3. add vclist data to output?
-        4. add threshold to R2 so that you just give an error for the fit and suggest reselecting the group.
 
 """
 from pathlib import Path
@@ -48,7 +41,7 @@ from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 
-from peakipy.core import fix_params, get_params, rmsd, fit_first_plane, Pseudo3D
+from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D
 
 
 def norm(data):
@@ -68,11 +61,6 @@ lineshape = args.get("--lineshape")
 to_fix = args.get("--fix")
 to_fix = to_fix.split(",")
 verb = args.get("--verb")
-# print(to_fix)
-# f2 radius in ppm for mask
-# x_radius = float(args.get("--x_radius"))
-## f1 radius in ppm for mask
-# y_radius = float(args.get("--y_radius"))
 if verb:
     print("Using ", args)
 log = open("log.txt", "w")
@@ -95,15 +83,6 @@ else:
     plot = Path(plot)
     plot.mkdir(parents=True, exist_ok=True)
 
-# read vclist - currently not working
-vclist = args.get("--vclist")
-# print("vclist", vclist)
-if vclist == "None":
-    add_vclist = False
-else:
-    vclist = np.genfromtxt(vclist)
-    add_vclist = True
-
 # get dims from command line input
 dims = args.get("--dims")
 dims = [int(i) for i in dims.split(",")]
@@ -123,6 +102,10 @@ data = pseudo3D.data
 pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
 pt_per_hz_f1 = pseudo3D.pt_per_hz_f1
 
+# point per Hz
+hz_per_pt_f2 = 1.0 / pt_per_hz_f2
+hz_per_pt_f1 = 1.0 / pt_per_hz_f1
+
 # ppm per point
 ppm_per_pt_f2 = pseudo3D.ppm_per_pt_f2
 ppm_per_pt_f1 = pseudo3D.ppm_per_pt_f1
@@ -134,35 +117,31 @@ pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
 peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
 peaks["YW"] = peaks.YW_HZ * pt_per_hz_f1
+
 # convert peak positions from ppm to points in case they were adjusted running run_check_fits.py
 peaks["X_AXIS"] = peaks.X_PPM.apply(lambda x: uc_f2(x, "PPM"))
 peaks["Y_AXIS"] = peaks.Y_PPM.apply(lambda x: uc_f1(x, "PPM"))
 peaks["X_AXISf"] = peaks.X_PPM.apply(lambda x: uc_f2.f(x, "PPM"))
 peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
 
-## convert radii from ppm to points
-# x_radius = x_radius * pt_per_ppm_f2
-# y_radius = y_radius * pt_per_ppm_f1
-
-
 # sum planes for initial fit
 summed_planes = data.sum(axis=0)
 
-# for saving data
+# for saving data, currently not using errs for center and sigma
 amps = []
 amp_errs = []
 
 center_xs = []
-center_x_errs = []
+# center_x_errs = []
 
 center_ys = []
-center_y_errs = []
+# center_y_errs = []
 
 sigma_ys = []
-sigma_y_errs = []
+# sigma_y_errs = []
 
 sigma_xs = []
-sigma_x_errs = []
+# sigma_x_errs = []
 
 fractions = []
 names = []
@@ -170,7 +149,6 @@ indices = []
 assign = []
 clustids = []
 planes = []
-# vclists = []
 
 # group peaks based on CLUSTID
 groups = peaks.groupby("CLUSTID")
@@ -189,7 +167,7 @@ for name, group in groups:
             plot=plot,
             show=args.get("--show"),
             verbose=verb,
-            log=log
+            log=log,
         )
 
         # fix sigma center and fraction parameters
@@ -202,8 +180,6 @@ for name, group in groups:
             to_fix = to_fix
             if verb:
                 print("Fixing parameters:", to_fix)
-            # to_fix = ["sigma", "center", "fraction"]
-            # to_fix = ["center", "fraction"]
             fix_params(first.params, to_fix)
 
         for num, d in enumerate(data):
@@ -223,18 +199,19 @@ for name, group in groups:
             amp_errs.extend(amp_err)
 
             center_xs.extend(cen_x)
-            center_x_errs.extend(cen_x_err)
+            # center_x_errs.extend(cen_x_err)
 
             center_ys.extend(cen_y)
-            center_y_errs.extend(cen_y_err)
+            # center_y_errs.extend(cen_y_err)
 
             sigma_xs.extend(sig_x)
-            sigma_x_errs.extend(sig_x_err)
+            # sigma_x_errs.extend(sig_x_err)
 
             sigma_ys.extend(sig_y)
-            sigma_y_errs.extend(sig_y_err)
+            # sigma_y_errs.extend(sig_y_err)
 
             fractions.extend(frac)
+
             # add plane number, this should map to vclist
             planes.extend([num for _ in amp])
 
@@ -243,33 +220,24 @@ for name, group in groups:
             assign.extend(group["ASS"])
             clustids.extend(group["CLUSTID"])
 
-            # if add_vclist:
-            #    vclists.extend(vclist)
-
-            # print(plane.fit_report())
 
 df_dic = {
-    "fit_prefix": np.ravel(names),
-    "assignment": np.ravel(assign),
-    "amp": np.ravel(amps),
-    "amp_err": np.ravel(amp_errs),
-    "center_x": np.ravel(center_xs),
-    # "center_x_err": np.ravel(center_x_errs),
-    "center_y": np.ravel(center_ys),
-    # "center_y_err": np.ravel(center_y_errs),
-    "sigma_x": np.ravel(sigma_xs),
-    # "sigma_x_err": np.ravel(sigma_x_errs),
-    "sigma_y": np.ravel(sigma_ys),
-    # "sigma_y_err": np.ravel(sigma_y_errs),
-    "fraction": np.ravel(fractions),
-    "clustid": np.ravel(clustids),
+    "fit_prefix": names,
+    "assignment": assign,
+    "amp": amps,
+    "amp_err": amp_errs,
+    "center_x": center_xs,
+    # "center_x_err": center_x_errs,
+    "center_y": center_ys,
+    # "center_y_err": center_y_errs,
+    "sigma_x": sigma_xs,
+    # "sigma_x_err": sigma_x_errs,
+    "sigma_y": sigma_ys,
+    # "sigma_y_err": sigma_y_errs,
+    "fraction": fractions,
+    "clustid": clustids,
     "plane": planes,
-    # "vclist": np.ravel(vclists)
 }
-
-# remove vclist if not using
-# if not add_vclist:
-#    df_dic.pop("vclist")
 
 #  make dataframe
 df = pd.DataFrame(df_dic)
@@ -294,11 +262,10 @@ df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * ppm_per_pt_f2)
 df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * ppm_per_pt_f1)
 df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * ppm_per_pt_f2)
 df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
+df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * hz_per_pt_f2)
+df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * hz_per_pt_f1)
 # Fill nan values
 df.fillna(value=np.nan, inplace=True)
-# calculate errors and square amplitudes
-# df["amp_err"] = df.apply(lambda x: 2.0 * (x.amp_err / x.amp) * x.amp ** 2.0, axis=1)
-# df["amp"] = df.amp.apply(lambda x: x ** 2.0)
 
 #  output data
 output = Path(args["<output>"])
