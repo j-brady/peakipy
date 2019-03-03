@@ -6,10 +6,9 @@ import nmrglue as ng
 import matplotlib.pyplot as plt
 
 from numpy import sqrt, log, pi, exp
-from scipy import stats
 from lmfit import Model, report_fit
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.cm import viridis
+from matplotlib.widgets import Button
 
 
 # constants
@@ -49,6 +48,7 @@ def pvoigt2d(
             -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
+
     def gaussian(x, center=0.0, sigma=1.0):
         """Return a 1-dimensional Gaussian function.
         gaussian(x, center, sigma) =
@@ -57,7 +57,6 @@ def pvoigt2d(
         return (1.0 / (sqrt(2 * π) * sigma)) * exp(
             -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
         )
-
 
     def lorentzian(x, center=0.0, sigma=1.0):
         """Return a 1-dimensional Lorentzian function.
@@ -72,20 +71,21 @@ def pvoigt2d(
     # fraction same for both dimensions
     # super position of gaussian and lorentzian
     # then convoluted for x y
-    pv_x = (1 - fraction) * gaussian(
-        x, center_x, sigma_gx
-    ) + fraction * lorentzian(x, center_x, sigma_x)
-    pv_y = (1 - fraction) * gaussian(
-        y, center_y, sigma_gy
-    ) + fraction * lorentzian(y, center_y, sigma_y)
+    pv_x = (1 - fraction) * gaussian(x, center_x, sigma_gx) + fraction * lorentzian(
+        x, center_x, sigma_x
+    )
+    pv_y = (1 - fraction) * gaussian(y, center_y, sigma_gy) + fraction * lorentzian(
+        y, center_y, sigma_y
+    )
     return amplitude * pv_x * pv_y
 
 
 def make_mask(data, c_x, c_y, r_x, r_y):
     """ Create and elliptical mask
 
-        ToDo:
-            write explanation of function
+        Description:
+            Generate an elliptical boolean mask with center c_x/c_y in points
+            with radii r_x and r_y. Used to generate fit mask
 
         Arguments:
             data -- 2D array
@@ -106,24 +106,9 @@ def make_mask(data, c_x, c_y, r_x, r_y):
     return mask
 
 
-# ERROR CALCULATION
-def r_square(data, residuals):
-    """ Calculate R^2 value for fit
-
-        Arguments:
-            data -- array of data used for fitting
-            residuals -- residuals for fit
-
-        Returns:
-            R^2 value
-    """
-    SS_tot = np.sum((data - data.mean()) ** 2.0)
-    SS_res = np.sum(residuals ** 2.0)
-    r2 = 1 - SS_res / SS_tot
-    return r2
-
 def rmsd(residuals):
-    return np.sqrt(np.sum(residuals ** 2.)/ len(residuals))
+    return np.sqrt(np.sum(residuals ** 2.0) / len(residuals))
+
 
 def fix_params(params, to_fix):
     """ Set parameters to fix
@@ -174,15 +159,7 @@ def make_param_dict(peaks, data, lineshape="PV"):
             int(peak.X_AXIS) - int(peak.XW) : int(peak.X_AXIS) + int(peak.XW) + 1,
         ].sum()
 
-        ## in case of negative amplitudes
-        #if amplitude_est < 0.0:
-        #    amplitude_est = -1.0 * np.sqrt(abs(amplitude_est))
-        #else:
-        #    amplitude_est = np.sqrt(amplitude_est)
-
-        param_dict[
-            str_form("amplitude")
-        ] = amplitude_est  # since A is sqrt of actual amplitude
+        param_dict[str_form("amplitude")] = amplitude_est
         if lineshape == "G":
             param_dict[str_form("fraction")] = 0.0
         elif lineshape == "L":
@@ -194,11 +171,31 @@ def make_param_dict(peaks, data, lineshape="PV"):
 
 
 def to_prefix(x):
+    """
+    Peak assignments with characters that are not compatible lmfit model naming
+    are converted to lmfit "safe" names.
+
+    Arguments:
+        -- x: Peak assignment to be used as prefix for lmfit model
+
+    Returns:
+        -- prefix: _Peak_assignment_
+
+    """
     prefix = "_" + x
-    to_replace = [[" ", ""], ["{", "_"], ["}", "_"], ["[", "_"], ["]", "_"],["-",""],["/","or"],["?","maybe"],["\\",""]]
+    to_replace = [
+        [" ", ""],
+        ["{", "_"],
+        ["}", "_"],
+        ["[", "_"],
+        ["]", "_"],
+        ["-", ""],
+        ["/", "or"],
+        ["?", "maybe"],
+        ["\\", ""],
+    ]
     for p in to_replace:
         prefix = prefix.replace(*p)
-    #print("prefix", prefix)
     return prefix + "_"
 
 
@@ -254,22 +251,22 @@ def update_params(params, param_dict, lineshape="PV"):
     """
     for k, v in param_dict.items():
         params[k].value = v
-        #print("update", k, v)
+        # print("update", k, v)
         if "center" in k:
-            #params[k].min = v - 5
-            #params[k].max = v + 5
+            # params[k].min = v - 5
+            # params[k].max = v + 5
             pass
-            #print(
+            # print(
             #    "setting limit of %s, min = %.3e, max = %.3e"
             #    % (k, params[k].min, params[k].max)
-            #)
+            # )
         elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
-            #print(
+            # print(
             #    "setting limit of %s, min = %.3e, max = %.3e"
             #    % (k, params[k].min, params[k].max)
-            #)
+            # )
         elif "fraction" in k:
             # fix weighting between 0 and 1
             params[k].min = 0.0
@@ -287,7 +284,6 @@ def fit_first_plane(
     group,
     data,
     uc_dics,
-    noise=None,
     lineshape="PV",
     plot=None,
     show=True,
@@ -309,7 +305,7 @@ def fit_first_plane(
 
     mask = np.zeros(data.shape, dtype=bool)
     mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape)
-    # print(p_guess)
+
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
     cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
@@ -317,14 +313,16 @@ def fit_first_plane(
     for index, peak in group.iterrows():
         #  minus 1 from X_AXIS and Y_AXIS to center peaks in mask
         # print(peak.X_AXIS,peak.Y_AXIS,row.HEIGHT)
-        mask += make_mask(data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS)
+        mask += make_mask(
+            data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
+        )
         # print(peak)
 
     # needs checking since this may not center peaks
     x_radius = group.X_RADIUS.max()
     y_radius = group.Y_RADIUS.max()
-    max_x, min_x = int(round(max(cen_x))) + x_radius, int(round(min(cen_x))) - x_radius
-    max_y, min_y = int(round(max(cen_y))) + y_radius, int(round(min(cen_y))) - y_radius
+    max_x, min_x = int(np.ceil(max(cen_x) + x_radius + 2)), int(np.floor(min(cen_x) - x_radius - 1))
+    max_y, min_y = int(np.ceil(max(cen_y) + y_radius + 2)), int(np.floor(min(cen_y) - y_radius - 1))
 
     peak_slices = data.copy()[mask]
 
@@ -337,24 +335,23 @@ def fit_first_plane(
     XY_slices = [X.copy()[mask], Y.copy()[mask]]
     out = mod.fit(
         peak_slices, XY=XY_slices, params=p_guess
-    )  # , weights=weights[mask].ravel())
+    )
     if verbose:
         print(out.fit_report())
-    #print(p_guess)
 
-    # calculate chi2 
-    Zsim = mod.eval(XY=XY, params=out.params)
-    Zsim[~mask] = np.nan
-    Z_plot = data.copy()
-    Z_plot[~mask] = np.nan
+    # calculate chi2
+    z_sim = mod.eval(XY=XY, params=out.params)
+    z_sim[~mask] = np.nan
+    z_plot = data.copy()
+    z_plot[~mask] = np.nan
 
-    norm_z = (Z_plot - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
-    norm_sim = (Zsim - np.nanmin(Z_plot)) / (np.nanmax(Z_plot) - np.nanmin(Z_plot))
+    norm_z = (z_plot - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
+    norm_sim = (z_sim - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
     _norm_z = norm_z[~np.isnan(norm_z)]
     _norm_sim = norm_sim[~np.isnan(norm_sim)]
-    chi2 = np.sum((_norm_z - _norm_sim)**2. / _norm_sim)
+    chi2 = np.sum((_norm_z - _norm_sim) ** 2.0 / _norm_sim)
 
-    # number of peaks in cluster
+    #  number of peaks in cluster
     n_peaks = len(group)
     chi2 = chi2 / n_peaks
     if chi2 < 1:
@@ -362,9 +359,11 @@ def fit_first_plane(
         print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
     else:
         chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-        print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING")
+        print(
+            f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
+        )
 
-    if log !=None: 
+    if log != None:
         log.write(chi_str + "\n")
     else:
         pass
@@ -375,34 +374,29 @@ def fit_first_plane(
         # plotting
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
-        # convert to ints may need tweeking
-        min_x = int(np.floor(min_x))
-        max_x = int(np.ceil(max_x))
-        min_y = int(np.floor(min_y))
-        max_y = int(np.ceil(max_y))
-        X_plot = uc_dics["f2"].ppm(X[min_y - 1 : max_y, min_x - 1 : max_x])
-        Y_plot = uc_dics["f1"].ppm(Y[min_y - 1 : max_y, min_x - 1 : max_x])
-        Z_plot = Z_plot[min_y - 1 : max_y, min_x - 1 : max_x]
-        Zsim = Zsim[min_y - 1 : max_y, min_x - 1 : max_x]
+        # slice out plot area
+        x_plot = uc_dics["f2"].ppm(X[min_y: max_y, min_x: max_x])
+        y_plot = uc_dics["f1"].ppm(Y[min_y: max_y, min_x: max_x])
+        z_plot = z_plot[min_y : max_y, min_x: max_x]
+        z_sim = z_sim[min_y : max_y, min_x: max_x]
 
-        ax.set_title("$\chi^2$="+f"{chi2:.3f}")
+        ax.set_title("$\chi^2$=" + f"{chi2:.3f}")
 
         # plot raw data
         ax.plot_wireframe(
-            X_plot, Y_plot, Z_plot, color="k"
-            #X_plot, Y_plot, norm_z, color="k"
+            x_plot,
+            y_plot,
+            z_plot,
+            color="k"
         )
 
         ax.set_xlabel("F2 ppm")
         ax.set_ylabel("F1 ppm")
-        #ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
-        #cmap = [tuple(i) for i in viridis(np.ravel(np.sqrt((Z_plot-Zsim)**2.)))]
         ax.plot_wireframe(
-            X_plot,
-            Y_plot,
-            Zsim,
-            #norm_sim,
-            colors='r',
+            x_plot,
+            y_plot,
+            z_sim,
+            colors="r",
             linestyle="--",
             label="fit",
         )
@@ -434,12 +428,19 @@ def fit_first_plane(
             # print(l, x, y, z)
             ax.text(x, y, z * 1.4, l, None)
 
-        #plt.colorbar(contf)
+        # plt.colorbar(contf)
         plt.legend()
 
         name = group.CLUSTID.iloc[0]
         if show:
             plt.savefig(plot_path / f"{name}.png", dpi=300)
+
+            def exit_program(event):
+                exit()
+
+            axexit= plt.axes([0.81, 0.05, 0.1, 0.075])
+            bnexit = Button(axexit, 'Exit')
+            bnexit.on_clicked(exit_program)
             plt.show()
         else:
             plt.savefig(plot_path / f"{name}.png", dpi=300)
@@ -447,6 +448,7 @@ def fit_first_plane(
         # close plot
         plt.close()
     return out, mask
+
 
 class Pseudo3D:
     """ Read dic, data from NMRGlue and dims from input to create a 
@@ -462,22 +464,23 @@ class Pseudo3D:
 
             
     """
+
     def __init__(self, dic, data, dims):
         # check dimensions
         self._udic = ng.pipe.guess_udic(dic, data)
-        self._ndim = self._udic['ndim']
+        self._ndim = self._udic["ndim"]
 
         if self._ndim == 1:
             raise TypeError("NMR Data should be either 2D or 3D")
 
-        elif (self._ndim == 2) and (len(dims)==2):
+        elif (self._ndim == 2) and (len(dims) == 2):
             self._f1_dim, self._f2_dim = dims
             self._planes = 0
             self._uc_f1 = ng.pipe.make_uc(dic, data, dim=self._f1_dim)
             self._uc_f2 = ng.pipe.make_uc(dic, data, dim=self._f2_dim)
             # make data pseudo3d
             self._data = data.reshape((1, data.shape[0], data.shape[1]))
-            self._dims = [self._planes, self._f1_dim+1, self._f2_dim+1]
+            self._dims = [self._planes, self._f1_dim + 1, self._f2_dim + 1]
 
         else:
             self._planes, self._f1_dim, self._f2_dim = dims
@@ -493,7 +496,7 @@ class Pseudo3D:
 
         self._dic = dic
 
-        self._f1_label = self._udic[self._f1_dim]["label"] 
+        self._f1_label = self._udic[self._f1_dim]["label"]
         self._f2_label = self._udic[self._f2_dim]["label"]
 
     @property
@@ -552,16 +555,20 @@ class Pseudo3D:
     # points per ppm
     @property
     def pt_per_ppm_f1(self):
-        return self.f1_size / (self._udic[self._f1_dim]["sw"] / self._udic[self._f1_dim]["obs"]) 
+        return self.f1_size / (
+            self._udic[self._f1_dim]["sw"] / self._udic[self._f1_dim]["obs"]
+        )
 
     @property
     def pt_per_ppm_f2(self):
-        return self.f2_size / (self._udic[self._f2_dim]["sw"] / self._udic[self._f2_dim]["obs"]) 
+        return self.f2_size / (
+            self._udic[self._f2_dim]["sw"] / self._udic[self._f2_dim]["obs"]
+        )
 
-    # points per hz 
+    # points per hz
     @property
     def pt_per_hz_f1(self):
-        return self.f1_size / self._udic[self._f1_dim]["sw"] 
+        return self.f1_size / self._udic[self._f1_dim]["sw"]
 
     @property
     def pt_per_hz_f2(self):
@@ -570,13 +577,15 @@ class Pseudo3D:
     # ppm per point
     @property
     def ppm_per_pt_f1(self):
-        return 1. / self.pt_per_ppm_f1
+        return 1.0 / self.pt_per_ppm_f1
 
     @property
     def ppm_per_pt_f2(self):
-        return 1. / self.pt_per_ppm_f2
+        return 1.0 / self.pt_per_ppm_f2
 
     # get ppm limits for ppm scales
+
+
 #    uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
 #    ppm_f1 = uc_f1.ppm_scale()
 #    ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()

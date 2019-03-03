@@ -201,8 +201,10 @@ def select_callback(attrname, old, new):
     # update memcnt
     update_memcnt(df)
 
+
 def peak_pick_callback(event):
-    print(event.x,event.y)
+    print(event.x, event.y)
+
 
 def callback(attrname, old, new):
 
@@ -343,7 +345,7 @@ ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 f2_label = pseudo3D.f2_label
 f1_label = pseudo3D.f1_label
 #  make bokeh figure
-tools = ["redo","undo","tap","box_zoom","wheel_zoom","pan",]
+tools = ["redo", "undo", "tap", "box_zoom", "wheel_zoom", "pan", "reset"]
 p = figure(
     x_range=(ppm_f2_0, ppm_f2_1),
     y_range=(ppm_f1_0, ppm_f1_1),
@@ -351,16 +353,10 @@ p = figure(
     y_axis_label=f"{f1_label} - ppm",
     title="Check fits",
     tools=tools,
+    active_drag="pan",
+    active_scroll="wheel_zoom",
+    active_tap=None,
 )
-
-## rearrange dims
-# if dims != [0, 1, 2]:
-#    data = np.transpose(data, dims)
-
-# plot NMR data
-# p.image(image=[data[0]],
-#        x=ppm_f2_0, y=ppm_f1_0, dw=(ppm_f2_0-ppm_f2_1), dh=(ppm_f1_0-ppm_f1_1),
-#        palette=PuBuGn9[::-1])
 
 thres = threshold_otsu(data[0])
 contour_start = thres  # contour level start value
@@ -498,7 +494,9 @@ struct_el = Select(
     options=["square", "disk", "rectangle", "None"],
 )
 
-struct_el_size = TextInput(value="3", title="Size(width/radius or width,height for rectangle):")
+struct_el_size = TextInput(
+    value="3", title="Size(width/radius or width,height for rectangle):"
+)
 # iterations = TextInput(value="1", title="Number of iterations of binary dilation")
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)

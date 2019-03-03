@@ -35,8 +35,10 @@
  
         --show                    Show the clusters on the spectrum color coded using matplotlib
 
+        --fuda                    Create a parameter file for running fuda (params.fuda)
+
     Examples:
-        read_peaklist.py test.tab
+        read_peaklist.py test.tab test.ft2 --pipe --dims0,1
         read_peaklist.py test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
 
     Description:
@@ -73,13 +75,6 @@ from skimage.morphology import square, binary_closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
 from peakipy.core import make_mask, Pseudo3D
-
-# Read peak list and output into pandas dataframe for fitting peaks
-# make column in dataframe for group identities
-#  column for plane of expt
-# column for peak masking params
-#  column for fit results etc.
-# everything done with one df including all peaks.
 
 analysis_to_pipe = {
     "#": "INDEX",
@@ -166,10 +161,10 @@ class Peaklist:
 
     """
 
-    def __init__(self, path, data, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4]):
+    def __init__(self, path, data_path, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4]):
         self.fmt = fmt
         self.path = path
-
+        self.data_path = data_path
         if self.fmt == "a2":
             self.df = self._read_analysis()
 
@@ -183,12 +178,12 @@ class Peaklist:
             raise (TypeError, "I don't know this format")
 
         #  read pipe data
-        dic, self.data = ng.pipe.read(data)
+        dic, self.data = ng.pipe.read(data_path)
         pseudo3D = Pseudo3D(dic, self.data, dims)
         self.data = pseudo3D.data
         uc_f1 = pseudo3D.uc_f1
         uc_f2 = pseudo3D.uc_f2
-        dims = pseudo3D.dims
+        self.dims = pseudo3D.dims
         self.data = pseudo3D.data
         self.pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
         self.pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
@@ -221,19 +216,15 @@ class Peaklist:
         # check assignments for duplicates
         self.check_assignments()
         # make default values for X and Y radii for fit masks
-        f2radius, f1radius = radii
-        self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + f2radius
-        self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + f1radius
+        self.f2radius, self.f1radius = radii
+        self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f2radius
+        self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f1radius
         self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(
             lambda x: x * self.pt_per_ppm_f2
         )
         self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(
             lambda x: x * self.pt_per_ppm_f1
         )
-
-        ## rearrange dims
-        # if dims != [0, 1, 2]:
-        #    data = np.transpose(data, dims)
 
     def _read_analysis(self):
 
@@ -274,11 +265,10 @@ class Peaklist:
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates)>0:
-            print("You have duplicated assignments in your list...")
-            print("Currently each peak needs a unique assignment. Sorry about that buddy...")
-            print("Here are the duplicates")
+            print(""" You have duplicated assignments in your list...
+            Currently each peak needs a unique assignment. Sorry about that buddy...
+            Here are the duplicates""")
             print(duplicates)
-            #exit()
             print("Creating dummy assignments for duplicates")
             self.df.loc[duplicates_bool,"ASS"] = [f"{i}_dummy_{num+1}" for num,i in enumerate(duplicates)]
             print(self.df.ASS)
@@ -408,11 +398,42 @@ class Peaklist:
     def get_thres(self):
         return self.thresh
 
+    def to_fuda(self,fname="params.fuda"):
+        with open("peaks.fuda","w") as peaks_fuda:
+            for ass, f1_ppm, f2_ppm in zip(self.df.ASS, self.df.Y_PPM, self.df.X_PPM):
+                peaks_fuda.write(f"{ass}\t{f1_ppm:.3f}\t{f2_ppm:.3f}\n")
+        groups = self.df.groupby("CLUSTID")
+        fuda_params = Path(fname)
+        overlap_peaks = ""
 
-def to_fuda(df):
-    groups = df.groupby("CLUSTID")
-    with open("params.fuda", "w") as f:
-        pass
+        for ind, group in groups:
+            if len(group)>1:
+                overlap_peaks_str = ";".join(group.ASS)
+                overlap_peaks += f"OVERLAP_PEAKS=({overlap_peaks_str})\n"
+
+        fuda_file = f"""
+# Read peaklist and spectrum info
+PEAKLIST=peaks.fuda
+SPECFILE={self.data_path}
+PARAMETERFILE=(bruker;vclist)
+NOISE={self.get_thres()} # you'll need to adjust this
+BASELINE=N
+VERBOSELEVEL=5
+PRINTDATA=Y
+LM=(MAXFEV=250;TOL=1e-5)
+
+#Specify the default values. All values are in ppm:
+DEF_LINEWIDTH_F1={self.f1radius}
+DEF_LINEWIDTH_F2={self.f2radius}
+DEF_RADIUS_F1={self.f1radius}
+DEF_RADIUS_F2={self.f2radius}
+SHAPE=GLORE
+# OVERLAP PEAKS
+{overlap_peaks}
+        """
+        with open(fuda_params, "w") as f:
+            f.write(fuda_file)
+        print(overlap_peaks)
 
 
 if __name__ == "__main__":
@@ -456,6 +477,10 @@ if __name__ == "__main__":
     peaks.clusters(thres=thres, **clust_args, l_struc=None)
     data = peaks.get_df()
     thres = peaks.get_thres()
+
+    if args.get("--fuda"):
+        print("Creating fuda parameter file")
+        peaks.to_fuda()
 
     print(data.head())
     outfmt = args.get("--outfmt", "csv")

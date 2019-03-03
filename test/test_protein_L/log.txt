@@ -1,1 +1,1 @@
-Cluster 30 containing 3 peaks - chi2=0.288
+Cluster 7 containing 2 peaks - chi2=0.480
