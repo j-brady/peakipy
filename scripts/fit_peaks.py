@@ -243,14 +243,14 @@ df_dic = {
 df = pd.DataFrame(df_dic)
 
 #  convert sigmas to fwhm based on the model used to fit
-if lineshape == "PV":
+if (lineshape == "PV") or (lineshape == "L"):
     # fwhm = 2*sigma
     df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
     df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 elif lineshape == "G":
     # fwhm = 2*sigma * sqrt(2*ln2)
-    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.3548)
-    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.3548)
+    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.35482)
+    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.35482)
 else:
     df["fwhm_x"] = df.sigma_x.apply(lambda x: x)
     df["fwhm_y"] = df.sigma_y.apply(lambda x: x)

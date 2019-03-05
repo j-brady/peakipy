@@ -250,9 +250,10 @@ class Peaklist:
         to_skip = 0
         with open(self.path) as f:
             lines = f.readlines()
-            columns = lines[0].strip().split()[1:]
             for line in lines:
-                if line[:5].strip(" ").isdigit():
+                if line.startswith("VARS"):
+                    columns = line.strip().split()[1:]
+                elif line[:5].strip(" ").isdigit():
                     break
                 else:
                     to_skip += 1
@@ -274,7 +275,7 @@ class Peaklist:
             print(self.df.ASS)
             
 
-    def clusters(self, thres=None, struc_el="square", struc_size=(3,), l_struc=None):
+    def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks 
 
         thres : float
