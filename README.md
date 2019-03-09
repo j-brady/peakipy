@@ -1,5 +1,7 @@
 # Peakipy - NMR peak integration/deconvolution using python
 
+[![Build Status](https://travis-ci.org/j-brady/peakipy.png?branch=master)](https://travis-ci.org/j-brady/peakipy)
+
 ## Description
 
 Simple deconvolution of NMR peaks for extraction of intensities. Provided an NMRPipe format spectrum (2D or Pseudo 3D)
