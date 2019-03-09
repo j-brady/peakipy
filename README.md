@@ -152,6 +152,8 @@ parameters for fitting (including the X and Y radii for the fitting mask, using 
 
 ![Example fit](images/fit.png)
 
+If you like the parameters you have chosen then you can save the peak list using the `save` button. If you want to return to your edited peak
+list at a later stage then run `run_check_fits.py` with the edited peak list as your `<peaklist>` argument.
 
 ## Protocol
 
@@ -164,6 +166,13 @@ Initial parameters for FWHM, peak centers and fraction are fitted from the sum o
 ## Outputs
 
 1. Pandas DataFrame containing fitted intensities/linewidths/centers etc.
+
+```bash
+,fit_prefix,assignment,amp,amp_err,center_x,center_y,sigma_x,sigma_y,fraction,clustid,plane,fwhm_x,fwhm_y,center_x_ppm,center_y_ppm,sigma_x_ppm,sigma_y_ppm,fwhm_x_ppm,fwhm_y_ppm,fwhm_x_hz,fwhm_y_hz
+0,_None_,None,291803167.58915764,5502181.0934204245,159.44747887142083,10.264911118698288,1.1610683960566748,1.1605030885314394,1.1516510856068862e-07,1,0,2.3221367921133496,2.3210061770628787,9.328949976009751,129.5761441197758,0.008514312030509797,0.1087866024456647,0.017028624061019595,0.2175732048913294,13.628076224917237,17.64583894576153
+1,_None_,None,197442877.53398255,3671706.654558565,159.44747887142083,10.264911118698288,1.1610683960566748,1.1605030885314394,1.1516510856068862e-07,1,1,2.3221367921133496,2.3210061770628787,9.328949976009751,129.5761441197758,0.008514312030509797,0.1087866024456647,0.017028624061019595,0.2175732048913294,13.628076224917237,17.64583894576153
+```
+
 2. If `--plot=<path>` option selected the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (CLUSTID) of the fit. Adding `--show` option calls `plt.show()` on each fit so you can see what it looks like.
 
 
