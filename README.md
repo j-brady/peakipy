@@ -118,6 +118,9 @@ The new peaklist with selected clusters is saved as a csv file `peaks.csv` to be
 `run_check_fits.py` or `fit_peaks.py`.
 
 
+Clustered peaks are colour coded and singlet peaks are black (shown below).
+If you want to edit this plot after running `read_peaklist.py` then you can edit `show_clusters.yml` and re-plot using
+`spec.py show_clusters.yml`.
 ![Clustered peaks](images/clusters.png)
 
 The threshhold level can be adjusted with the `--thres` option like so
@@ -126,9 +129,6 @@ The threshhold level can be adjusted with the `--thres` option like so
 read_peaklist.py peaks.sparky test.ft2 --sparky --show --outfmt=csv --thres=1e6
 ```
 
-Clustered peaks are colour coded. Singlet peaks are black.
-If you want to edit this plot after running `read_peaklist.py` then you can edit `show_clusters.yml` and re-plot using
-`spec.py show_clusters.yml`.
 
 
 It is also possible to adjust the clustering behaviour by changing the structuring element used for binary closing.

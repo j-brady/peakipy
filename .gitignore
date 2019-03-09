@@ -1,4 +1,4 @@
-*.ft2
+#*.ft2
 *.pkl
 build
 *.pyc
