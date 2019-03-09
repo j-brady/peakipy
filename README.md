@@ -121,6 +121,8 @@ The new peaklist with selected clusters is saved as a csv file `peaks.csv` to be
 Clustered peaks are colour coded and singlet peaks are black (shown below).
 If you want to edit this plot after running `read_peaklist.py` then you can edit `show_clusters.yml` and re-plot using
 `spec.py show_clusters.yml`.
+
+
 ![Clustered peaks](images/clusters.png)
 
 The threshhold level can be adjusted with the `--thres` option like so
