@@ -185,7 +185,7 @@ class TestCoreFunctions(unittest.TestCase):
 
     def test_pseudo3D(self):
 
-        dic, data = ng.pipe.read("test_protein_L/test1.ft2")
+        dic, data = ng.pipe.read("test/test_protein_L/test1.ft2")
 
         data_shape = (4, 256, 546)
         dims = [0, 1, 2]
@@ -200,11 +200,10 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(pseudo3D.f1_size, 256)
         self.assertEqual(pseudo3D.f2_size, 546)
 
-
     def test_pseudo3D_2(self):
 
-        # input shape is (546, 256, 4) 
-        dic, data = ng.pipe.read("test_protein_L/test_tp.ft2")
+        # input shape is (546, 256, 4)
+        dic, data = ng.pipe.read("test/test_protein_L/test_tp.ft2")
         # expected output shape with following dims for np.transpose
         data_shape = (4, 256, 546)
         dims = [2, 1, 0]
@@ -219,13 +218,12 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(pseudo3D.f1_size, 256)
         self.assertEqual(pseudo3D.f2_size, 546)
 
-
     def test_pseudo3D_3(self):
 
-        # input shape is (546, 4, 256) 
-        dic, data = ng.pipe.read("test_protein_L/test_tp2.ft2")
+        # input shape is (546, 4, 256)
+        dic, data = ng.pipe.read("test/test_protein_L/test_tp2.ft2")
         # expected output shape with following dims for np.transpose
-        #print("Shape",data.shape)
+        # print("Shape",data.shape)
         data_shape = (4, 256, 546)
         dims = [1, 2, 0]
 
@@ -238,7 +236,6 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(pseudo3D.dims, dims)
         self.assertEqual(pseudo3D.f1_size, 256)
         self.assertEqual(pseudo3D.f2_size, 546)
-
 
 
 if __name__ == "__main__":
