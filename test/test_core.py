@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
+import nmrglue as ng
 from lmfit import Model
 
 from peakipy.core import (
@@ -12,6 +13,7 @@ from peakipy.core import (
     make_param_dict,
     to_prefix,
     make_models,
+    Pseudo3D,
 )
 
 
@@ -45,7 +47,6 @@ class TestCoreFunctions(unittest.TestCase):
         # print(result)
         self.assertEqual(test.sum(), 0)
 
-
     def test_make_mask_2(self):
         data = np.ones((10, 10))
         c_x = 5
@@ -75,7 +76,6 @@ class TestCoreFunctions(unittest.TestCase):
         # print(result)
         self.assertEqual(test.sum(), 0)
 
-
     def test_fix_params(self):
 
         mod = Model(pvoigt2d)
@@ -88,7 +88,6 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(pars["sigma_x"].vary, False)
         self.assertEqual(pars["sigma_y"].vary, False)
         self.assertEqual(pars["fraction"].vary, False)
-
 
     def test_get_params(self):
 
@@ -147,7 +146,6 @@ class TestCoreFunctions(unittest.TestCase):
             # print(prefix)
             self.assertEqual(prefix, expect)
 
-
     def test_make_models(self):
 
         peaks = pd.DataFrame(
@@ -159,7 +157,7 @@ class TestCoreFunctions(unittest.TestCase):
                 "Y_AXIS": [15, 10, 5],
                 "XW": [2.5, 2.5, 2.5],
                 "YW": [2.5, 2.5, 2.5],
-                "CLUSTID": [1,1,1],
+                "CLUSTID": [1, 1, 1],
             }
         )
 
@@ -184,6 +182,62 @@ class TestCoreFunctions(unittest.TestCase):
             if lineshape == "L":
                 self.assertEqual(p_guess["_one_fraction"].vary, False)
                 self.assertEqual(p_guess["_one_fraction"].value, 1.0)
+
+    def test_pseudo3D(self):
+
+        dic, data = ng.pipe.read("test_protein_L/test1.ft2")
+
+        data_shape = (4, 256, 546)
+        dims = [0, 1, 2]
+
+        pseudo3D = Pseudo3D(dic, data, dims)
+
+        self.assertEqual(dims, pseudo3D.dims)
+        self.assertEqual(pseudo3D.data.shape, data_shape)
+        self.assertEqual(pseudo3D.f1_label, "15N")
+        self.assertEqual(pseudo3D.f2_label, "HN")
+        self.assertEqual(pseudo3D.dims, dims)
+        self.assertEqual(pseudo3D.f1_size, 256)
+        self.assertEqual(pseudo3D.f2_size, 546)
+
+
+    def test_pseudo3D_2(self):
+
+        # input shape is (546, 256, 4) 
+        dic, data = ng.pipe.read("test_protein_L/test_tp.ft2")
+        # expected output shape with following dims for np.transpose
+        data_shape = (4, 256, 546)
+        dims = [2, 1, 0]
+
+        pseudo3D = Pseudo3D(dic, data, dims)
+
+        self.assertEqual(dims, pseudo3D.dims)
+        self.assertEqual(pseudo3D.data.shape, data_shape)
+        self.assertEqual(pseudo3D.f1_label, "15N")
+        self.assertEqual(pseudo3D.f2_label, "HN")
+        self.assertEqual(pseudo3D.dims, dims)
+        self.assertEqual(pseudo3D.f1_size, 256)
+        self.assertEqual(pseudo3D.f2_size, 546)
+
+
+    def test_pseudo3D_3(self):
+
+        # input shape is (546, 4, 256) 
+        dic, data = ng.pipe.read("test_protein_L/test_tp2.ft2")
+        # expected output shape with following dims for np.transpose
+        #print("Shape",data.shape)
+        data_shape = (4, 256, 546)
+        dims = [1, 2, 0]
+
+        pseudo3D = Pseudo3D(dic, data, dims)
+
+        self.assertEqual(dims, pseudo3D.dims)
+        self.assertEqual(pseudo3D.data.shape, data_shape)
+        self.assertEqual(pseudo3D.f1_label, "15N")
+        self.assertEqual(pseudo3D.f2_label, "HN")
+        self.assertEqual(pseudo3D.dims, dims)
+        self.assertEqual(pseudo3D.f1_size, 256)
+        self.assertEqual(pseudo3D.f2_size, 546)
 
 
 

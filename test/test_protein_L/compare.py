@@ -5,18 +5,16 @@ from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import column
 
-#from lmfit.models import LinearModel
-
-#cols = "INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT".split(" ")
-#cols
+# read data
 pipe_data = pd.read_csv("nlin.csv")
-#pipe_data["ASS"] = ["_%d"%i for i in range(len(pipe_data))]
 peakipy_data = pd.read_csv("fits.csv")
 # take first plane
 peakipy_data = peakipy_data[peakipy_data.plane == 0]
+# make new columns called amp and ASS
 pipe_data["amp"] = pipe_data["VOL"]
 peakipy_data["ASS"] = peakipy_data["assignment"]
 
+# merge dataframes on assignment column
 merged = pd.merge(peakipy_data, pipe_data, on="ASS")
 source = ColumnDataSource(merged)
 p1 = figure(tooltips = [('Assignment', '@assignment, @ASS')], x_axis_label="peakipy", y_axis_label="pipe", title="VOL")
@@ -25,9 +23,8 @@ p2 = figure(tooltips = [('Assignment', '@assignment, @ASS')], x_axis_label="peak
 p2.circle("fwhm_x", "XW", source=source, size=10, alpha=0.75)
 p3 = figure(tooltips = [('Assignment', '@assignment, @ASS')], x_axis_label="peakipy", y_axis_label="pipe", title="Y LW")
 p3.circle("fwhm_y", "YW", source=source, size=10, alpha=0.75)
-#print(merged)
-#print(pipe_data.amp)
-#print(peakipy_data.amp)
+
+# make matplotlib figure
 fig, axes = plt.subplots(2,3,figsize=(9,6))
 
 ax1 = axes[0][0]
@@ -59,13 +56,9 @@ for title,ax in zip(titles,axes):
     ax.set_ylabel("Pipe")
     ax.set_xlabel("Peakipy")
     ax.set_title(title)
+
 ax6.remove()
 plt.tight_layout()
 plt.savefig("correlation.pdf")
-#plt.show()
 output_file("correlation.html", title="Comparison of PIPE and peakipy")
 show(column(p1,p2,p3)) # show the plot
-
-#print(peakipy_data)
-#print(pd.merge(peakipy_data,pipe_data,"amp"))
-
