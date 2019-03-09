@@ -488,7 +488,7 @@ if __name__ == "__main__":
     outname = filename.stem
     if outfmt == "csv":
         outname = outname + ".csv"
-        data.to_csv(outname)
+        data.to_csv(outname, float_format="%.3e")
     else:
         outname = outname + ".pkl"
         data.to_pickle(outname)

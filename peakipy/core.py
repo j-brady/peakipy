@@ -151,6 +151,7 @@ def make_param_dict(peaks, data, lineshape="PV"):
         # using exact value of points (i.e decimal)
         param_dict[str_form("center_x")] = peak.X_AXISf
         param_dict[str_form("center_y")] = peak.Y_AXISf
+        # linewidth esimate
         param_dict[str_form("sigma_x")] = peak.XW / 2.0
         param_dict[str_form("sigma_y")] = peak.YW / 2.0
         # estimate peak volume
@@ -160,6 +161,7 @@ def make_param_dict(peaks, data, lineshape="PV"):
         ].sum()
 
         param_dict[str_form("amplitude")] = amplitude_est
+
         if lineshape == "G":
             param_dict[str_form("fraction")] = 0.0
         elif lineshape == "L":
@@ -203,12 +205,13 @@ def make_models(model, peaks, data, lineshape="PV"):
     """ Make composite models for multiple peaks
 
         Arguments:
-            -- models
-            -- peaks: list of Peak objects [<Peak1>,<Peak2>,...]
+            -- model
+            -- peaks: instance of pandas.df.groupby("CLUSTID")
+            -- data: NMR data
             -- lineshape: PV/G/L
 
         Returns:
-            -- mod: Composite model containing all peaks
+            -- mod: Composite lmfit model containing all peaks
             -- p_guess: params for composite model with starting values
 
         Maybe add mask making to this function
@@ -294,13 +297,13 @@ def fit_first_plane(
         Arguments:
 
             group -- pandas data from containing group of peaks
-            data  -- 
+            data  --
             uc_dics -- unit conversion dics
             plot -- if True show wireframe plots
 
         To do:
             add model selection
-    
+
     """
 
     mask = np.zeros(data.shape, dtype=bool)
@@ -451,7 +454,7 @@ def fit_first_plane(
 
 
 class Pseudo3D:
-    """ Read dic, data from NMRGlue and dims from input to create a 
+    """ Read dic, data from NMRGlue and dims from input to create a
         Pseudo3D dataset
 
         Arguments:
@@ -462,7 +465,7 @@ class Pseudo3D:
 
         Methods:
 
-            
+
     """
 
     def __init__(self, dic, data, dims):
@@ -492,6 +495,8 @@ class Pseudo3D:
 
         #  rearrange data if dims not in standard order
         if self._dims != [0, 1, 2]:
+            # np.argsort returns indices of array for order 0,1,2 to transpose data correctly
+            #self._dims = np.argsort(self._dims)
             self._data = np.transpose(data, self._dims)
 
         self._dic = dic

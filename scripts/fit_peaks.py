@@ -249,8 +249,8 @@ if (lineshape == "PV") or (lineshape == "L"):
     df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 elif lineshape == "G":
     # fwhm = 2*sigma * sqrt(2*ln2)
-    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.35482)
-    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.35482)
+    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.)#35482)
+    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.)#35482)
 else:
     df["fwhm_x"] = df.sigma_x.apply(lambda x: x)
     df["fwhm_y"] = df.sigma_y.apply(lambda x: x)
@@ -271,10 +271,10 @@ df.fillna(value=np.nan, inplace=True)
 output = Path(args["<output>"])
 suffix = output.suffix
 if suffix == ".csv":
-    df.to_csv(output)
+    df.to_csv(output)  # , float_format="%.3e")
 
 elif suffix == ".tab":
-    df.to_csv(output, sep="\t")
+    df.to_csv(output, sep="\t")  # , float_format="%.3e")
 
 else:
     df.to_pickle(output)

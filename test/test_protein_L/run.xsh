@@ -7,11 +7,15 @@
 # Run test and comparison with NMRPipe
 import pandas as pd
 
-read_peaklist.py _test.tab test1.ft2 --pipe --f1radius=0.30 --f2radius=0.030
+read_peaklist.py test.tab test1.ft2 --pipe --f1radius=0.30 --f2radius=0.030
 
-peaks = pd.read_csv("_test.csv")
-peaks["ASS"] = ["_%d"%i for i in range(len(peaks))]
-peaks.to_csv("_test.csv",sep=',',index=False)
+#peaks = pd.read_csv("test.csv")
+#peaks["ASS"] = ["_%d"%i for i in range(len(peaks))]
+#peaks.to_csv("test.csv",sep=',',index=False)
 
-fit_peaks.py _test.csv test1.ft2 _fits.csv --lineshape=PV
+# convert Nlin tab to 
+read_peaklist.py nlin.tab test1.ft2 --pipe
+
+fit_peaks.py test.csv test1.ft2 fits.csv --lineshape=PV
+
 python compare.py

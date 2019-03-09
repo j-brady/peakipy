@@ -188,7 +188,7 @@ def save_peaks(event):
 
     print(f"Saving peaks to {to_save}")
     if to_save.suffix == ".csv":
-        df.to_csv(to_save)
+        df.to_csv(to_save, float_format="%.3e")
     else:
         df.to_pickle(to_save)
 
@@ -420,10 +420,10 @@ p.on_event(DoubleTap, peak_pick_callback)
 
 # configure sliders
 slider_X_RADIUS = Slider(
-    title="X_RADIUS - ppm", start=0.001, end=0.2, value=0.04, step=0.001
+    title="X_RADIUS - ppm", start=0.001, end=0.200, value=0.040, step=0.001, format="0[.]000"
 )
 slider_Y_RADIUS = Slider(
-    title="Y_RADIUS - ppm", start=0.01, end=2.0, value=0.4, step=0.001
+    title="Y_RADIUS - ppm", start=0.010, end=2.000, value=0.400, step=0.001, format="0[.]000"
 )
 
 slider_X_RADIUS.on_change("value", lambda attr, old, new: callback(attr, old, new))
@@ -445,7 +445,7 @@ ls_div = Div(
 clust_div = Div(
     text="""If you want to adjust how the peaks are automatically clustered then try changing the 
         width/diameter/height (integer values) of the structuring element used during the binary dilation step
-        (you can also remove it by selecting 'None').Increasing the size of the structuring element will cause
+        (you can also remove it by selecting 'None'). Increasing the size of the structuring element will cause
         peaks to be more readily incorporated into clusters."""
 )
 

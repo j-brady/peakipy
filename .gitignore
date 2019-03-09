@@ -6,3 +6,4 @@ defaultProject
 __pycache__
 test/**/*.png
 *.bak
+dist
