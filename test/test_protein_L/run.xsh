@@ -13,6 +13,6 @@ read_peaklist.py test.tab test1.ft2 --pipe --f1radius=0.35 --f2radius=0.035
 read_peaklist.py nlin.tab test1.ft2 --pipe
 
 # fit peaks with peakipy
-fit_peaks.py test.csv test1.ft2 fits.csv --lineshape=PV
+fit_peaks.py test.csv test1.ft2 fits.csv --lineshape=G
 
 python compare.py

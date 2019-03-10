@@ -210,6 +210,10 @@ To test the program for yourself cd into the test dir and
 
 ## Comparison with NMRPipe
 
+A sanity check... Peak intensities were fit using the nlinLS program from NMRPipe and compared with the output from peakipy for the same dataset.
+
+![NMRPipe vs peakipy](test/test_protein_L/correlation.png)
+
 
 ## Homage to FuDA
 

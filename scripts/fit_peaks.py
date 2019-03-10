@@ -6,7 +6,7 @@
 
     Arguments:
         <peaklist>                             peaklist output from read_peaklist.py
-        <data>                                 2D or pseudo3D NMRPipe data (single file)  
+        <data>                                 2D or pseudo3D NMRPipe data (single file)
         <output>                               output peaklist "<output>.csv" will output CSV
                                                format file, "<output>.tab" will give a tab delimited output
                                                while "<output>.pkl" results in Pandas pickle of DataFrame
@@ -20,7 +20,7 @@
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
         --fix=<fraction,sigma,center>          Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
-        --plot=<dir>                           Whether to plot wireframe fits for each peak 
+        --plot=<dir>                           Whether to plot wireframe fits for each peak
                                                (saved into <dir>) [default: None]
 
         --show                                 Whether to show (using plt.show()) wireframe
@@ -149,6 +149,11 @@ indices = []
 assign = []
 clustids = []
 planes = []
+x_radii = []
+y_radii = []
+x_radii_ppm = []
+y_radii_ppm = []
+lineshapes = []
 
 # group peaks based on CLUSTID
 groups = peaks.groupby("CLUSTID")
@@ -197,29 +202,26 @@ for name, group in groups:
 
             amps.extend(amp)
             amp_errs.extend(amp_err)
-
             center_xs.extend(cen_x)
             # center_x_errs.extend(cen_x_err)
-
             center_ys.extend(cen_y)
             # center_y_errs.extend(cen_y_err)
-
             sigma_xs.extend(sig_x)
             # sigma_x_errs.extend(sig_x_err)
-
             sigma_ys.extend(sig_y)
             # sigma_y_errs.extend(sig_y_err)
-
             fractions.extend(frac)
-
             # add plane number, this should map to vclist
             planes.extend([num for _ in amp])
-
+            lineshapes.extend([lineshape for _ in amp])
             #  get prefix for fit
             names.extend([i.replace("fraction", "") for i in name])
             assign.extend(group["ASS"])
             clustids.extend(group["CLUSTID"])
-
+            x_radii.extend(group["X_RADIUS"])
+            y_radii.extend(group["Y_RADIUS"])
+            x_radii_ppm.extend(group["X_RADIUS_PPM"])
+            y_radii_ppm.extend(group["Y_RADIUS_PPM"])
 
 df_dic = {
     "fit_prefix": names,
@@ -237,24 +239,18 @@ df_dic = {
     "fraction": fractions,
     "clustid": clustids,
     "plane": planes,
+    "x_radius": x_radii,
+    "y_radius": y_radii,
+    "x_radius_ppm": x_radii_ppm,
+    "y_radius_ppm": y_radii_ppm,
+    "lineshape": lineshapes,
 }
 
 #  make dataframe
 df = pd.DataFrame(df_dic)
-
-#  convert sigmas to fwhm based on the model used to fit
-if (lineshape == "PV") or (lineshape == "L"):
-    # fwhm = 2*sigma
-    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
-elif lineshape == "G":
-    # fwhm = 2*sigma * sqrt(2*ln2)
-    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.)#35482)
-    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.)#35482)
-else:
-    df["fwhm_x"] = df.sigma_x.apply(lambda x: x)
-    df["fwhm_y"] = df.sigma_y.apply(lambda x: x)
-
+#  convert sigmas to fwhm
+df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 #  convert values to ppm
 df["center_x_ppm"] = df.center_x.apply(lambda x: uc_f2.ppm(x))
 df["center_y_ppm"] = df.center_y.apply(lambda x: uc_f1.ppm(x))

@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -183,60 +184,29 @@ class TestCoreFunctions(unittest.TestCase):
                 self.assertEqual(p_guess["_one_fraction"].vary, False)
                 self.assertEqual(p_guess["_one_fraction"].value, 1.0)
 
-    def test_pseudo3D(self):
+    def test_Pseudo3D(self):
 
-        dic, data = ng.pipe.read("test/test_protein_L/test1.ft2")
+        datasets = [("test/test_protein_L/test1.ft2",[0, 1, 2]),
 
+                    ("test/test_protein_L/test_tp.ft2", [2, 1, 0]),
+                ("test/test_protein_L/test_tp2.ft2",[1, 2, 0])]
+
+        # expected shape 
         data_shape = (4, 256, 546)
-        dims = [0, 1, 2]
-
-        pseudo3D = Pseudo3D(dic, data, dims)
-
-        self.assertEqual(dims, pseudo3D.dims)
-        self.assertEqual(pseudo3D.data.shape, data_shape)
-        self.assertEqual(pseudo3D.f1_label, "15N")
-        self.assertEqual(pseudo3D.f2_label, "HN")
-        self.assertEqual(pseudo3D.dims, dims)
-        self.assertEqual(pseudo3D.f1_size, 256)
-        self.assertEqual(pseudo3D.f2_size, 546)
-
-    def test_pseudo3D_2(self):
-
-        # input shape is (546, 256, 4)
-        dic, data = ng.pipe.read("test/test_protein_L/test_tp.ft2")
-        # expected output shape with following dims for np.transpose
-        data_shape = (4, 256, 546)
-        dims = [2, 1, 0]
-
-        pseudo3D = Pseudo3D(dic, data, dims)
-
-        self.assertEqual(dims, pseudo3D.dims)
-        self.assertEqual(pseudo3D.data.shape, data_shape)
-        self.assertEqual(pseudo3D.f1_label, "15N")
-        self.assertEqual(pseudo3D.f2_label, "HN")
-        self.assertEqual(pseudo3D.dims, dims)
-        self.assertEqual(pseudo3D.f1_size, 256)
-        self.assertEqual(pseudo3D.f2_size, 546)
-
-    def test_pseudo3D_3(self):
-
-        # input shape is (546, 4, 256)
-        dic, data = ng.pipe.read("test/test_protein_L/test_tp2.ft2")
-        # expected output shape with following dims for np.transpose
-        # print("Shape",data.shape)
-        data_shape = (4, 256, 546)
-        dims = [1, 2, 0]
-
-        pseudo3D = Pseudo3D(dic, data, dims)
-
-        self.assertEqual(dims, pseudo3D.dims)
-        self.assertEqual(pseudo3D.data.shape, data_shape)
-        self.assertEqual(pseudo3D.f1_label, "15N")
-        self.assertEqual(pseudo3D.f2_label, "HN")
-        self.assertEqual(pseudo3D.dims, dims)
-        self.assertEqual(pseudo3D.f1_size, 256)
-        self.assertEqual(pseudo3D.f2_size, 546)
+        test_nu = 1
+        for dataset, dims in datasets:
+            with self.subTest(i=test_nu):
+                dic, data = ng.pipe.read(dataset)
+                pseudo3D = Pseudo3D(dic, data, dims)
+                self.assertEqual(dims, pseudo3D.dims)
+                self.assertEqual(pseudo3D.data.shape, data_shape)
+                self.assertEqual(pseudo3D.f1_label, "15N")
+                self.assertEqual(pseudo3D.f2_label, "HN")
+                self.assertEqual(pseudo3D.dims, dims)
+                self.assertEqual(pseudo3D.f1_size, 256)
+                self.assertEqual(pseudo3D.f2_size, 546)
+            test_nu += 1
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
