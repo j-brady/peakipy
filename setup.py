@@ -8,11 +8,11 @@ if os.path.exists("build"):
 # scripts = glob("scripts/*.py")
 scripts = [
     "fit_peaks.py",
-    "run_check_fits.py",
     "check_fits.py",
     "read_peaklist.py",
     "spec.py",
-    "plot_all.py",
+    "edit_fits.py",
+    "edit_fits_script.py",
 ]
 scripts = [f"scripts/{script}" for script in scripts]
 [os.system(f"chmod +x {script}") for script in scripts]

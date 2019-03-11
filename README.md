@@ -28,7 +28,7 @@ With setup.py you will need python3.6 or greater installed.
 cd peakipy; python setup.py install
 ```
 
-At this point the package is installed and the main scripts (`read_peaklist.py`, `run_check_fits.py` and `fit_peaks.py`)
+At this point the package is installed and the main scripts (`read_peaklist.py`, `edit_fits.py`, `fit_peaks.py` and `check_fits.py`)
 should have been added to your path.
 
 ## Inputs
@@ -36,13 +36,15 @@ should have been added to your path.
 1. Peak list (see below for specification)
 2. NMRPipe frequency domain dataset (2D or Pseudo 3D)
 
-There are three main scripts.
+There are four main scripts.
 
 1. `read_peaklist.py` is used to convert peak list and select clusters peaks.
-2. `run_check_fits.py` is used to check and adjust fit parameters interactively (i.e clusters and mask radii) if initial clustering is not satisfactory.
+2. `edit_fits.py` is used to check and adjust fit parameters interactively (i.e clusters and mask radii) if initial clustering is not satisfactory.
 3. `fit_peaks.py` is used to fit clusters of peaks
+4. `check_peaks.py` is used to check individual fits or groups of fits and make plots.
 
-Use the `-h` or `--help` flags for instructions on how to run the programs.
+Below is a description of how to run these scripts.
+You can also use the `-h` or `--help` flags for instructions on how to run the programs.
 
 ### Peaklists
 
@@ -102,6 +104,7 @@ The input data should be either a NMRPipe 2D or 3D cube. The dimension order can
 For example if you have a 2D spectrum with shape (F1_size,F2_size) then you should call the scripts using `--dims=0,1`.
 If you have a 3D cube with shape (F2_size,F1_size,ID) then you would run the scripts with `--dims=2,1,0` ([F2,ID,F1]
 would be `--dims=1,2,0` i.e the indices required to reorder to 0,1,2).
+The default dimension order is ID,F1,F2.
 
 ### Running read_peaklist.py
 
@@ -111,11 +114,12 @@ Here is an example of how to run read_peaklist.py
 read_peaklist.py peaks.sparky test.ft2 --sparky --show --outfmt=csv
 ```
 
-This will convert your peaklist to into a `pandas DataFrame` and use `threshold_otsu` from `scikit-image` to determine a
+This will convert your peak list to into a `pandas DataFrame` and use `threshold_otsu` from `scikit-image` to determine a
  cutoff for selecting overlapping peaks.
-These are subsequently grouped into clusters ("CLUSTID" column a la NMRPipe!)
-The new peaklist with selected clusters is saved as a csv file `peaks.csv` to be used as input for either
-`run_check_fits.py` or `fit_peaks.py`.
+These are subsequently grouped into clusters ("CLUSTID" column a la NMRPipe!).
+The new peak list with selected clusters is saved as a csv file `peaks.csv` to be used as input for either
+`edit_fits.py` or `fit_peaks.py`.
+It is possible to set the threshold value manually using the `--thres` option. However, it may be preferable to adjust this parameter within the `edit_fits.py` script.
 
 
 Clustered peaks are colour coded and singlet peaks are black (shown below).
@@ -140,22 +144,32 @@ read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --show --outfmt=csv
 ```
 
 If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using
-`run_check_fits.py`.
+`edit_fits.py`.
 
 ```bash
-run_check_fits.py <peaklist> <nmrdata>
+edit_fits.py <peaklist> <nmrdata>
 ```
 
-![Using run_check_fits.py](images/bokeh.png)
+This command will start a `bokeh` server and cause a tab to open in your internet browser in which you can interactively edit peak fitting parameters.
 
-Select the cluster you are interested in using the table and double click to edit the cluster numbers.
+![Using edit_fits.py](images/bokeh.png)
+
+Use the table on the right to select the cluster(s) you are interested and double click to edit values in the table.
+For example if you think peak1 should be fitted with peak2 but they have different clustids then you can simply change peak2's clustid to match peak1's.
+
 Once a set of peaks is selected (or at least one peak within a cluster) you can manually adjust their starting
-parameters for fitting (including the X and Y radii for the fitting mask, using the sliders)
+parameters for fitting (including the X and Y radii for the fitting mask, using the sliders).
+
+The effect of changing these paramters can be visualised by clicking on the `Fit selected` button which will cause a `matplotlib` wireframe plot to popup. Note that you must close this `matplotlib` interactive window before continuing with parameter adjustments (I will try and add a 3D visualisation that works in the browser...).
+
+To test other peak clustering settings you can adjust the contour level (akin to changing `--thres`) or adjust the dimensions of the structuring element used for binary closing.
 
 ![Example fit](images/fit.png)
 
 If you like the parameters you have chosen then you can save the peak list using the `save` button. If you want to return to your edited peak
-list at a later stage then run `run_check_fits.py` with the edited peak list as your `<peaklist>` argument.
+list at a later stage then run `edit_fits.py` with the edited peak list as your `<peaklist>` argument.
+
+Clicking `Quit` closes the bokeh server.
 
 ## Protocol
 
@@ -170,13 +184,22 @@ Initial parameters for FWHM, peak centers and fraction are fitted from the sum o
 1. Pandas DataFrame containing fitted intensities/linewidths/centers etc.
 
 ```bash
-,fit_prefix,assignment,amp,amp_err,center_x,center_y,sigma_x,sigma_y,fraction,clustid,plane,fwhm_x,fwhm_y,center_x_ppm,center_y_ppm,sigma_x_ppm,sigma_y_ppm,fwhm_x_ppm,fwhm_y_ppm,fwhm_x_hz,fwhm_y_hz
-0,_None_,None,291803167.58915764,5502181.0934204245,159.44747887142083,10.264911118698288,1.1610683960566748,1.1605030885314394,1.1516510856068862e-07,1,0,2.3221367921133496,2.3210061770628787,9.328949976009751,129.5761441197758,0.008514312030509797,0.1087866024456647,0.017028624061019595,0.2175732048913294,13.628076224917237,17.64583894576153
-1,_None_,None,197442877.53398255,3671706.654558565,159.44747887142083,10.264911118698288,1.1610683960566748,1.1605030885314394,1.1516510856068862e-07,1,1,2.3221367921133496,2.3210061770628787,9.328949976009751,129.5761441197758,0.008514312030509797,0.1087866024456647,0.017028624061019595,0.2175732048913294,13.628076224917237,17.64583894576153
+,fit_prefix,assignment,amp,amp_err,center_x,center_y,sigma_x,sigma_y,fraction,clustid,plane,x_radius,y_radius,x_radius_ppm,y_radius_ppm,lineshape,fwhm_x,fwhm_y,center_x_ppm,center_y_ppm,sigma_x_ppm,sigma_y_ppm,fwhm_x_ppm,fwhm_y_ppm,fwhm_x_hz,fwhm_y_hz
+0,_None_,None,291803398.52980924,5502183.185104156,158.44747896487527,9.264911100915297,1.1610674220702277,1.160506074898704,0.0,1,0,4.773,3.734,0.035,0.35,G,2.3221348441404555,2.321012149797408,9.336283145411077,129.6698850201278,0.008514304888101518,0.10878688239041588,0.017028609776203036,0.21757376478083176,13.628064792721176,17.645884354478063
+1,_None_,None,197443035.67109975,3671708.463467884,158.44747896487527,9.264911100915297,1.1610674220702277,1.160506074898704,0.0,1,1,4.773,3.734,0.035,0.35,G,2.3221348441404555,2.321012149797408,9.336283145411077,129.6698850201278,0.008514304888101518,0.10878688239041588,0.017028609776203036,0.21757376478083176,13.628064792721176,17.645884354478063
+etc...
 ```
 
 2. If `--plot=<path>` option selected the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (CLUSTID) of the fit. Adding `--show` option calls `plt.show()` on each fit so you can see what it looks like.
 
+3. To plot fits for all planes or interactively check them you can run `check_fits.py`
+
+```bash
+check_fits.py fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf
+```
+Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf.
+
+Run `check_fits.py -h` for more options.
 
 ## Pseudo-Voigt model
 
@@ -206,14 +229,13 @@ The linewidth for PV and L lineshapes is
 
 ## Test data
 
-To test the program for yourself cd into the test dir and
+To test the program for yourself `cd` into the `test` directory. I wrote some tests for the code itself which should be run from the top directory like so `python test/test_core.py`.
 
 ## Comparison with NMRPipe
 
 A sanity check... Peak intensities were fit using the nlinLS program from NMRPipe and compared with the output from peakipy for the same dataset.
 
 ![NMRPipe vs peakipy](test/test_protein_L/correlation.png)
-
 
 ## Homage to FuDA
 

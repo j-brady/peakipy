@@ -2,7 +2,7 @@
 """ Script for checking fits and editing fit params
 
     Usage:
-        run_check_fits.py <peaklist> <data> [options]
+        edit_fits.py <peaklist> <data> [options]
 
     Arguments:
         <peaklist>  peaklist output from read_peaklist.py (csv, tab or pkl)
@@ -24,7 +24,7 @@ peaklist = Path(args.get("<peaklist>"))
 data = args.get("<data>")
 dims = args.get("--dims")
 
-script = which("check_fits.py")
+script = which("edit_fits_script.py")
 
 # p = subprocess.Popen(['bokeh','serve', '--show', script, '--args', peaklist, data, f'--dims={dims}' ])
 
