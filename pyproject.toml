@@ -5,7 +5,7 @@ description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 pandas = "^0.24.0"
 numpy = "^1.16"
 matplotlib = "^3.0"
