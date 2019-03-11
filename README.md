@@ -6,11 +6,11 @@
 
 Simple deconvolution of NMR peaks for extraction of intensities. Provided an NMRPipe format spectrum (2D or Pseudo 3D)
  and a peak list (NMRPipe, Sparky or Analysis2), overlapped peaks are automatically/interactively clustered and groups
- of overlapped peaks are fitted together using Gaussian, Lorentzian or Pseudo-Voigt (Gaussian + Lorentzian).
+ of overlapped peaks are fitted together using Gaussian, Lorentzian or Pseudo-Voigt (Gaussian + Lorentzian) lineshape.
 
 ## Installation
 
-With poetry...
+The easiest way to install peakipy is with poetry...
 
 ```bash
 cd peakipy; poetry install
@@ -22,7 +22,7 @@ If you don't have poetry you can install it with pip
 pip install poetry
 ```
 
-With setup.py you will need python3.6 or greater installed.
+Otherwise you can install peakipy with `setup.py`. You will need python3.6 or greater installed.
 
 ```bash
 cd peakipy; python setup.py install
@@ -275,4 +275,4 @@ The `lmfit` team for their awesome work.
 `bokeh` and `matplotlib` for beautiful plotting.
 `scikit-image`!
 
-My colleagues, Rui Huang, Alex Conicella, Enrico Rennella and Rob Harkness for their extremely helpful input.
+My colleagues, Rui Huang, Alex Conicella, Enrico Rennella, Rob Harkness and Taehun Kim for their extremely helpful input.
