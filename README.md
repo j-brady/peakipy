@@ -171,6 +171,14 @@ list at a later stage then run `edit_fits.py` with the edited peak list as your 
 
 Clicking `Quit` closes the bokeh server.
 
+Following this `fit_peaks.py` can be run using your edited peak list. For example...
+
+```bash
+fit_peaks.py edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV
+```
+
+Fit that likely to need checking flagged in the `log.txt` file.
+
 ## Protocol
 
 Initial parameters for FWHM, peak centers and fraction are fitted from the sum of all planes in your spectrum (for best signal to
