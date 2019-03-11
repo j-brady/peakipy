@@ -209,6 +209,23 @@ Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib w
 
 Run `check_fits.py -h` for more options.
 
+You can explore the output data conveniently with `pandas`.
+
+```python
+In [1]: import pandas as pd
+
+In [2]: import matplotlib.pyplot as plt
+
+In [3]: data = pd.read_csv("fits.csv")
+
+In [4]: groups = data.groupby("assignment")
+
+In [5]: for ind, group in groups:
+   ...:     plt.errorbar(group.vclist,group.amp,yerr=group.amp_err,fmt="o",label=group.assignment.iloc[0])
+   ...:     plt.legend()
+   ...:     plt.show()
+```
+
 ## Pseudo-Voigt model
 
 ![Pseudo-Voigt](images/equations/pv.tex.png)

@@ -19,6 +19,7 @@
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
         --fix=<fraction,sigma,center>          Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
+        --vclist=<fname>                       Bruker style vclist [default: None]
 
         --plot=<dir>                           Whether to plot wireframe fits for each peak
                                                (saved into <dir>) [default: None]
@@ -74,6 +75,14 @@ if peaklist.suffix == ".csv":
 else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
+
+# read vclist
+vclist = args.get("--vclist")
+if vclist == "None":
+    vclist = False
+else:
+    vclist_data = np.genfromtxt(vclist)
+    vclist = True
 
 # plot results or not
 plot = args.get("--plot")
@@ -262,7 +271,9 @@ df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * hz_per_pt_f2)
 df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * hz_per_pt_f1)
 # Fill nan values
 df.fillna(value=np.nan, inplace=True)
-
+# vclist
+if vclist:
+    df["vclist"] = df.plane.apply(lambda x: vclist_data[x])
 #  output data
 output = Path(args["<output>"])
 suffix = output.suffix
