@@ -1,13 +1,13 @@
 """ Plot peakipy fits
-    
+
     Usage:
         check_fits.py <fits> <nmrdata> [options]
 
     Options:
         --dims=<id,f1,f2>         Dimension order [default: 0,1,2]
 
-        --clusters=<id1,id2,id3>  Plot selected cluster based on clustid [default: None]
-                                  For a single cluster use a trailing comma eg. --cluster=1,
+        --clusters=<id1,id2,etc>  Plot selected cluster based on clustid [default: None]
+                                  For a single cluster use a trailing comma eg. --cluster=1
 
         --outname=<plotname>      Plot name [default: plots.pdf]
 
@@ -48,10 +48,11 @@ if __name__ == "__main__":
     first_only = args.get("--first")
     show = args.get("--show")
     clusters = args.get("--clusters")
+
     if clusters == "None":
         pass
     else:
-        clusters = [int(i) for i in eval(clusters)]
+        clusters = [int(i) for i in clusters.split(',')]
         # only use these clusters
         fits = fits[fits.clustid.isin(clusters)]
 
@@ -94,9 +95,9 @@ if __name__ == "__main__":
             ):
 
                 tmp_mask = make_mask(mask, cx, cy, rx, ry)
-                mask += tmp_mask 
+                mask += tmp_mask
                 masks.append(tmp_mask)
-            
+
             # generate simulated data
             for plane_id, plane in group.groupby("plane"):
                 sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
@@ -113,7 +114,7 @@ if __name__ == "__main__":
                     sim_data += pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
                         shape
                     )
-                
+
                 masked_data = pseudo3D.data[plane_id].copy()
                 masked_sim_data = sim_data.copy()
                 masked_data[~mask] = np.nan
@@ -144,8 +145,8 @@ if __name__ == "__main__":
                  #   norm_data = normalise(pseudo3D.data[plane_id][peak_mask])
                  #   norm_sim = normalise(sim_data[peak_mask])
                  #   print(norm_data,norm_sim)
-                 #   chi2 = np.sum((norm_data-norm_sim)**2./norm_sim)  
-                 #   chi2s.append(chi2) 
+                 #   chi2 = np.sum((norm_data-norm_sim)**2./norm_sim)
+                 #   chi2s.append(chi2)
                     #out_str += f"{name} = {amp:.3e}, {chi2}\n"
                     out_str += f"{name} = {amp:.3e}\n"
                 #print(chi2s)

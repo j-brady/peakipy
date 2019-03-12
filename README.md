@@ -135,12 +135,18 @@ The threshhold level can be adjusted with the `--thres` option like so
 read_peaklist.py peaks.sparky test.ft2 --sparky --show --outfmt=csv --thres=1e6
 ```
 
-
-
 It is also possible to adjust the clustering behaviour by changing the structuring element used for binary closing.
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --show --outfmt=csv
+read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --struc_el=disk --struc_size=4, --show
+```
+
+Would use a disk shaped structuring element with a radius of 4 points (see the scikit-image.morphology module for more information).
+
+To adjust the radii used for masking the data to be fitted you can adjust the `--f2radius` and `--f1radius` flags like so (values given in ppm)...
+
+```bash
+read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
 ```
 
 If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using
@@ -275,4 +281,4 @@ The `lmfit` team for their awesome work.
 `bokeh` and `matplotlib` for beautiful plotting.
 `scikit-image`!
 
-My colleagues, Rui Huang, Alex Conicella, Enrico Rennella, Rob Harkness and Taehun Kim for their extremely helpful input.
+My colleagues, Rui Huang, Alex Conicella, Enrico Rennella, Rob Harkness and Tae Hun Kim for their extremely helpful input.

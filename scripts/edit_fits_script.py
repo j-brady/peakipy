@@ -188,7 +188,7 @@ def save_peaks(event):
 
     print(f"Saving peaks to {to_save}")
     if to_save.suffix == ".csv":
-        df.to_csv(to_save, float_format="%.3e")
+        df.to_csv(to_save, float_format="%.4f")
     else:
         df.to_pickle(to_save)
 

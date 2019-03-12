@@ -52,8 +52,10 @@ import os
 import yaml
 import nmrglue as ng
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
+from matplotlib.patches import Ellipse
 from matplotlib import cm
 from docopt import docopt
 
@@ -258,7 +260,6 @@ if __name__ == "__main__":
             y += 0.05
 
     if params.get("clusters"):
-        import pandas as pd
 
         peaklist = params.get("clusters")
         if os.path.splitext(peaklist)[-1] == ".csv":

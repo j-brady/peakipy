@@ -15,7 +15,7 @@
     Options:
         -h --help                 Show this screen
         --version                 Show version
- 
+
         --thres=<thres>           Threshold for making binary mask that is used for peak clustering [default: None]
                                   If set to None then threshold_otsu from scikit-image is used to determine threshold
 
@@ -32,7 +32,7 @@
         --dims=<planes,F1,F2>     Order of dimensions [default: 0,1,2]
 
         --outfmt=<csv/pkl>        Format of output peaklist [default: csv]
- 
+
         --show                    Show the clusters on the spectrum color coded using matplotlib
 
         --fuda                    Create a parameter file for running fuda (params.fuda)
@@ -42,11 +42,11 @@
         read_peaklist.py test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
 
     Description:
-      
+
        NMRPipe column headers:
 
-           INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT 
-      
+           INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT
+
        Are mapped onto analysis peak list
 
            'Number', '#', 'Position F1', 'Position F2', 'Sampled None',
@@ -135,7 +135,7 @@ sparky_to_pipe = {
 
 class Peaklist:
     """ Read analysis or sparky peak list and convert to NMRPipe-ish format also find peak clusters
-     
+
     Parameters
     ----------
     path : path-like or str
@@ -147,12 +147,12 @@ class Peaklist:
     radii: [x,y]
         Mask radii in ppm
 
-    
+
     Methods
     -------
 
-    clusters : 
-    adaptive_clusters : 
+    clusters :
+    adaptive_clusters :
 
     Returns
     -------
@@ -273,16 +273,16 @@ class Peaklist:
             print("Creating dummy assignments for duplicates")
             self.df.loc[duplicates_bool,"ASS"] = [f"{i}_dummy_{num+1}" for num,i in enumerate(duplicates)]
             print(self.df.ASS)
-            
+
 
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
-        """ Find clusters of peaks 
+        """ Find clusters of peaks
 
         thres : float
             threshold for positive signals above which clusters are selected. If None then
             threshold_otsu is used
 
-        struc_el: str 
+        struc_el: str
             'square'|'disk'|'rectangle'
             structuring element for binary_closing of thresholded data can be square, disc or rectangle
 
@@ -488,7 +488,7 @@ if __name__ == "__main__":
     outname = filename.stem
     if outfmt == "csv":
         outname = outname + ".csv"
-        data.to_csv(outname, float_format="%.3e")
+        data.to_csv(outname, float_format="%.4f")
     else:
         outname = outname + ".pkl"
         data.to_pickle(outname)

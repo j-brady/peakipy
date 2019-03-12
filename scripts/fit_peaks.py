@@ -278,10 +278,10 @@ if vclist:
 output = Path(args["<output>"])
 suffix = output.suffix
 if suffix == ".csv":
-    df.to_csv(output)  # , float_format="%.3e")
+    df.to_csv(output, float_format="%.4f")
 
 elif suffix == ".tab":
-    df.to_csv(output, sep="\t")  # , float_format="%.3e")
+    df.to_csv(output, sep="\t", float_format="%.4f")
 
 else:
     df.to_pickle(output)
