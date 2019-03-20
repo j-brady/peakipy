@@ -256,13 +256,13 @@ def update_params(params, param_dict, lineshape="PV"):
         params[k].value = v
         # print("update", k, v)
         if "center" in k:
-            # params[k].min = v - 5
-            # params[k].max = v + 5
-            pass
-            # print(
-            #    "setting limit of %s, min = %.3e, max = %.3e"
-            #    % (k, params[k].min, params[k].max)
-            # )
+            params[k].min = v - 3.
+            params[k].max = v + 3.
+            #pass
+            print(
+               "setting limit of %s, min = %.3e, max = %.3e"
+               % (k, params[k].min, params[k].max)
+            )
         elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4

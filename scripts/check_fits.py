@@ -130,10 +130,10 @@ if __name__ == "__main__":
                 sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
 
                 ax.plot_wireframe(
-                    x_plot, y_plot, sim_plot, colors="r", linestyle="--", label="fit"
+                    x_plot, y_plot, sim_plot, colors="r", linestyle="--", label="fit", rstride=1,
                 )
                 ax.plot_wireframe(
-                    x_plot, y_plot, masked_data, colors="k", linestyle="-", label="data"
+                    x_plot, y_plot, masked_data, colors="k", linestyle="-", label="data", rstride=1,
                 )
                 plt.legend()
                 names = ",".join(plane.assignment)

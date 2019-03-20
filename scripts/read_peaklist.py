@@ -59,8 +59,6 @@
              Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
 
        Clusters of peaks are selected
-
-
 """
 import os
 from pathlib import Path

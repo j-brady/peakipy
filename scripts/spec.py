@@ -5,26 +5,26 @@
 
 	Plot NMRPipe spectra overlays using nmrglue and matplotlib. This is my attempt to make a general script for
     plotting NMR data.
-    
-    
+
+
     Below is an example yaml file for input
- 
+
         # This first block is global parameters which can be overridden by adding the desired argument
-        # to your list of spectra. One exception is "colors" which if set in global params overrides the 
-        # color option set for individual spectra as the colors will now cycle through the chosen matplotlib 
+        # to your list of spectra. One exception is "colors" which if set in global params overrides the
+        # color option set for individual spectra as the colors will now cycle through the chosen matplotlib
         # colormap
 		cs: 10e5                        # contour start
 		contour_num: 10                 # number of contours
 		contour_factor: 1.2             # contour factor
 		colors: Set1                    # must be matplotlib.cm colormap
 
-		outname: ["overlay_wt_s95a.pdf","overlay_wt_s95a.png"] # either single value or list of output names 
+		outname: ["overlay_wt_s95a.pdf","overlay_wt_s95a.png"] # either single value or list of output names
 
         # Here is where your list of spectra to plot goes
-		spectra: 
+		spectra:
 
 				- fname: test.ft2
-				  label: shHTL5(S95A) pH 6.5 - 30 degrees 
+				  label: shHTL5(S95A) pH 6.5 - 30 degrees
 				  contour_num: 1
 				  linewidths: 1
 
@@ -36,16 +36,7 @@
     Dependencies:
 
         -- python3
-        -- matplotlib, pyyaml, numpy, nmrglue and docopt
-        -- pandas (if plotting clusters)
-
-
-    TODO:
-
-        -- enable N dim spectra to be plotted
-        -- make smart contour start setting
-
-
+        -- matplotlib, pyyaml, numpy, nmrglue, pandas and docopt 
 """
 import os
 
@@ -64,7 +55,7 @@ yaml_file = """
 #  This first block is global parameters which can be overridden by adding the desired argument          #
 #  to your list of spectra. One exception is "colors" which if set in global params overrides the        #
 #  color option set for individual spectra as the colors will now cycle through the chosen matplotlib    #
-#  colormap                                                                                              #         
+#  colormap                                                                                              #
 ##########################################################################################################
 
 cs: 10e5                        # contour start
@@ -72,14 +63,14 @@ contour_num: 10                 # number of contours
 contour_factor: 1.2             # contour factor
 colors: Set1                    # must be matplotlib.cm colormap
 
-outname: ["overlay_wt_s95a.pdf","overlay_wt_s95a.png"] # either single value or list of output names 
+outname: ["overlay_wt_s95a.pdf","overlay_wt_s95a.png"] # either single value or list of output names
 ncol: 1 #  tells matplotlib how many columns to give the figure legend - if not set defaults to 2
 
 # Here is where your list of spectra to plot goes
-spectra: 
+spectra:
 
         - fname: test.ft2
-          label: shHTL5(S95A) pH 6.5 - 30 degrees 
+          label: shHTL5(S95A) pH 6.5 - 30 degrees
           contour_num: 1
           linewidths: 1
 """

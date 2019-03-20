@@ -12,8 +12,8 @@
                                                while "<output>.pkl" results in Pandas pickle of DataFrame
 
     Options:
-        -h --help  Show this page
-        -v --version Show version
+        -h --help                              Show this page
+        -v --version                           Show version
 
         --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
