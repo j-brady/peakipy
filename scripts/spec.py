@@ -18,13 +18,13 @@
 		contour_factor: 1.2             # contour factor
 		colors: Set1                    # must be matplotlib.cm colormap
 
-		outname: ["overlay_wt_s95a.pdf","overlay_wt_s95a.png"] # either single value or list of output names
+		outname: ["overlay.pdf","overlay.png"] # either single value or list of output names
 
         # Here is where your list of spectra to plot goes
 		spectra:
 
 				- fname: test.ft2
-				  label: shHTL5(S95A) pH 6.5 - 30 degrees
+				  label: write legend here 
 				  contour_num: 1
 				  linewidths: 1
 

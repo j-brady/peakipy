@@ -1,9 +1,9 @@
 #*.ft2
 *.pkl
-build
+build/*
 *.pyc
 defaultProject
 __pycache__
 test/**/*.png
 *.bak
-dist
+dist/*
