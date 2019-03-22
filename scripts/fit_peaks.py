@@ -75,13 +75,14 @@ if peaklist.suffix == ".csv":
 else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
+    
 # only include peaks with 'include'
 if "include" in peaks.columns:
     pass
 else:
     # for compatibility
     peaks["include"] = peaks.apply(lambda _: "yes", axis=1)
-    
+
 print(f"The following peaks have been exluded:\n{peaks[peaks.include != 'yes']}")
 peaks = peaks[peaks.include == 'yes']
 
