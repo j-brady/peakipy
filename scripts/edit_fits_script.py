@@ -278,9 +278,9 @@ args = docopt(__doc__)
 path = Path(args.get("<peaklist>"))
 
 if path.suffix == ".csv":
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, comment='#')
 elif path.suffix == ".tab":
-    df = pd.read_csv(path, sep="\t")
+    df = pd.read_csv(path, sep="\t", comment='#')
 else:
     df = pd.read_pickle(path)
 

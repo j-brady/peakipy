@@ -71,11 +71,11 @@ peaklist = Path(args.get("<peaklist>"))
 
 # determine filetype
 if peaklist.suffix == ".csv":
-    peaks = pd.read_csv(peaklist)
+    peaks = pd.read_csv(peaklist, comment='#')
 else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
-    
+
 # only include peaks with 'include'
 if "include" in peaks.columns:
     pass
