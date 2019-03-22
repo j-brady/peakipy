@@ -223,6 +223,8 @@ class Peaklist:
         self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(
             lambda x: x * self.pt_per_ppm_f1
         )
+        # add include column
+        self.df["include"] = self.df.apply(lambda x: 'yes', axis=1)
 
     def _read_analysis(self):
 

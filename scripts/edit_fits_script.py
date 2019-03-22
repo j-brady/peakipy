@@ -296,6 +296,11 @@ if "Edited" in df.columns:
     pass
 else:
     df["Edited"] = np.zeros(len(df), dtype=bool)
+
+if "include" in df.columns:
+    pass
+else:
+    df["include"] = df.apply(lambda _: "yes", axis=1)
 #    df["color"] = df.Edited.apply(lambda x: 'red' if x else 'black')
 
 df["color"] = df.apply(
@@ -466,14 +471,14 @@ selected_columns = [
     "XW_HZ",
     "YW_HZ",
     "VOL",
-    "Edited",
+    "include",
     "MEMCNT",
 ]
 
 columns = [TableColumn(field=field, title=field) for field in selected_columns]
 
 data_table = DataTable(
-    source=source, columns=columns, editable=True, fit_columns=True, width=600
+    source=source, columns=columns, editable=True, fit_columns=True, width=800
 )
 
 # callback for adding

@@ -199,6 +199,13 @@ fit_peaks.py edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV --vc
 This will result in an extra column being added to your `fits.csv` file called `vclist`
 containing the corresponding values.
 
+### Excluding peaks
+
+Peaks can be excluded from being fitted either by directly commenting the line in
+the `.csv` file containing the peak list i.e add a `#` at the start of the line
+you want to exclude. Alternatively, peaks can be excluded by changing the value
+in the column entitled `include` from `yes` to `no`. The easiest way to do this is via the `edit_peaks.py` script.
+
 ## Protocol
 
 Initial parameters for FWHM, peak centers and fraction are fitted from the sum of all planes in your spectrum (for best signal to
