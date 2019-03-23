@@ -62,7 +62,7 @@ Number  #       Position F1     Position F2     Sampled None    Assign F1       
 
 ```
 
-Note that the Position F1 and Position F2 are actually the wrong way round (i.e. F1=x and F2=y). I think this happens by default with Analysis2 but you may chastise me if I'm being an idiot if I'm wrong.
+Note that the Position F1 and Position F2 are actually the wrong way round (i.e. F1=x and F2=y). I think this happens by default with Analysis2, however, you can chastise me for being an idiot if I'm wrong.
 `read_peaklist.py` will flip them around, so beware.
 If you have "correctly" labelled columns then you can use `--posF1=<column_name>` and `-posF2=<column_name>` to define which column names map to `Y_PPM` and `X_PPM`, respectively.
 
