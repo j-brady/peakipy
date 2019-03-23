@@ -93,6 +93,9 @@ if max_cluster_size == "None":
             You have some clusters of as many as {max_cluster_size} peaks.
             You may want to consider reducing the size of your clusters as the
             fits will struggle.
+
+            Otherwise you can use the --max_cluster_size flag to exclude large
+            clusters
             ##################################################################
         """
         )
