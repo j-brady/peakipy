@@ -39,15 +39,15 @@ should have been added to your path.
 
 There are four main scripts.
 
-1. `read_peaklist.py` is used to convert peak list and select clusters peaks.
+1. `read_peaklist.py` converts your peak list and selects clusters of peaks.
 2. `edit_fits.py` is used to check and adjust fit parameters interactively (i.e clusters and mask radii) if initial clustering is not satisfactory.
-3. `fit_peaks.py` is used to fit clusters of peaks
+3. `fit_peaks.py` fits clusters of peaks.
 4. `check_fits.py` is used to check individual fits or groups of fits and make plots.
 
 Below is a description of how to run these scripts.
 You can also use the `-h` or `--help` flags for instructions on how to run the programs.
 
-### Peaklists
+### Peak lists
 
 First you need a peak list in either Sparky, Analysis2 or NMRPipe format.
 
@@ -61,6 +61,11 @@ Number  #       Position F1     Position F2     Sampled None    Assign F1       
 2       2       10.38068        129.32604       2.00000  {9}H[17]        {9}N[18]        2.0    6.61262e+07     3.58137e+08     15.20785        19.76284        None    1.00000 None    parabolic       box sum
 
 ```
+
+Note that the Position F1 and Position F2 are actually the wrong way round (i.e. F1=x and F2=y). I think this happens by default with Analysis2 but you may chastise me if I'm being an idiot if I'm wrong.
+`read_peaklist.py` will flip them around, so beware.
+If you have "correctly" labelled columns then you can use `--posF1=<column_name>` and `-posF2=<column_name>` to define which column names map to `Y_PPM` and `X_PPM`, respectively.
+
 
 #### Sparky peak list
 
@@ -107,7 +112,7 @@ If you have a 3D cube with shape (F2_size,F1_size,ID) then you would run the scr
 would be `--dims=1,2,0` i.e the indices required to reorder to 0,1,2).
 The default dimension order is ID,F1,F2.
 
-### Running read_peaklist.py
+## Running read_peaklist.py
 
 Here is an example of how to run read_peaklist.py
 

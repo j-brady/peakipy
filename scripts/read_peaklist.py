@@ -31,6 +31,12 @@
 
         --dims=<planes,F1,F2>     Order of dimensions [default: 0,1,2]
 
+        --posF2=<column_name>     Name of column in Analysis2 peak list containing F2 (i.e. X_PPM)
+                                  peak positions [default: "Position F1"]
+
+        --posF1=<column_name>     Name of column in Analysis2 peak list containing F1 (i.e. Y_PPM)
+                                  peak positions [default: "Position F2"]
+
         --outfmt=<csv/pkl>        Format of output peaklist [default: csv]
 
         --show                    Show the clusters on the spectrum color coded using matplotlib
@@ -72,7 +78,7 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, opening, disk, rectangle
 from skimage.filters import threshold_otsu, threshold_adaptive
 
-from peakipy.core import make_mask, Pseudo3D
+from peakipy.core import make_mask, Pseudo3D, run_log
 
 analysis_to_pipe = {
     "#": "INDEX",
@@ -187,7 +193,7 @@ class Peaklist:
         self.pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
         pt_per_hz_f2dim = pseudo3D.pt_per_hz_f2
         pt_per_hz_f1dim = pseudo3D.pt_per_hz_f1
-        print("Points per hz f1 = %s, f2 = %s" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
+        print("Points per hz f1 = %.3f, f2 = %.3f" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
 
         # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: uc_f2(x, "ppm"))
@@ -224,7 +230,7 @@ class Peaklist:
             lambda x: x * self.pt_per_ppm_f1
         )
         # add include column
-        self.df["include"] = self.df.apply(lambda x: 'yes', axis=1)
+        self.df["include"] = self.df.apply(lambda x: "yes", axis=1)
 
     def _read_analysis(self):
 
@@ -265,15 +271,18 @@ class Peaklist:
     def check_assignments(self):
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
-        if len(duplicates)>0:
-            print(""" You have duplicated assignments in your list...
+        if len(duplicates) > 0:
+            print(
+                """ You have duplicated assignments in your list...
             Currently each peak needs a unique assignment. Sorry about that buddy...
-            Here are the duplicates""")
+            Here are the duplicates"""
+            )
             print(duplicates)
             print("Creating dummy assignments for duplicates")
-            self.df.loc[duplicates_bool,"ASS"] = [f"{i}_dummy_{num+1}" for num,i in enumerate(duplicates)]
+            self.df.loc[duplicates_bool, "ASS"] = [
+                f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
+            ]
             print(self.df.ASS)
-
 
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks
@@ -318,7 +327,9 @@ class Peaklist:
         elif struc_el == "rectangle":
             width, height = struc_size
             print(f"using rectangle with {width} and {height}")
-            closed_data = binary_closing(thresh_data, rectangle(int(width), int(height)))
+            closed_data = binary_closing(
+                thresh_data, rectangle(int(width), int(height))
+            )
 
         else:
             print(f"Not using any closing function")
@@ -399,8 +410,8 @@ class Peaklist:
     def get_thres(self):
         return self.thresh
 
-    def to_fuda(self,fname="params.fuda"):
-        with open("peaks.fuda","w") as peaks_fuda:
+    def to_fuda(self, fname="params.fuda"):
+        with open("peaks.fuda", "w") as peaks_fuda:
             for ass, f1_ppm, f2_ppm in zip(self.df.ASS, self.df.Y_PPM, self.df.X_PPM):
                 peaks_fuda.write(f"{ass}\t{f1_ppm:.3f}\t{f2_ppm:.3f}\n")
         groups = self.df.groupby("CLUSTID")
@@ -408,7 +419,7 @@ class Peaklist:
         overlap_peaks = ""
 
         for ind, group in groups:
-            if len(group)>1:
+            if len(group) > 1:
                 overlap_peaks_str = ";".join(group.ASS)
                 overlap_peaks += f"OVERLAP_PEAKS=({overlap_peaks_str})\n"
 
@@ -462,6 +473,11 @@ if __name__ == "__main__":
     dims = [int(i) for i in dims.split(",")]
     pipe_ft_file = args.get("<data>")
     if args.get("--a2"):
+        # set X and Y ppm column names if not default (i.e. "Position F1" = "X_PPM"
+        # "Position F2" = "Y_PPM" ) this is due to Analysis2 often having the
+        #  dimension order flipped relative to convention
+        analysis_to_pipe[args.get("--posF1")] = "Y_PPM"
+        analysis_to_pipe[args.get("--posF2")] = "X_PPM"
 
         peaks = Peaklist(
             filename, pipe_ft_file, fmt="a2", dims=dims, radii=[f2radius, f1radius]
@@ -470,10 +486,14 @@ if __name__ == "__main__":
 
     elif args.get("--sparky"):
 
-        peaks = Peaklist(filename, pipe_ft_file, fmt="sparky", dims=dims, radii=[f2radius, f1radius])
+        peaks = Peaklist(
+            filename, pipe_ft_file, fmt="sparky", dims=dims, radii=[f2radius, f1radius]
+        )
 
     elif args.get("--pipe"):
-        peaks = Peaklist(filename, pipe_ft_file, fmt="pipe", dims=dims, radii=[f2radius, f1radius])
+        peaks = Peaklist(
+            filename, pipe_ft_file, fmt="pipe", dims=dims, radii=[f2radius, f1radius]
+        )
 
     peaks.clusters(thres=thres, **clust_args, l_struc=None)
     data = peaks.get_df()
@@ -492,6 +512,8 @@ if __name__ == "__main__":
     else:
         outname = outname + ".pkl"
         data.to_pickle(outname)
+
+    run_log()
 
     yaml = f"""
     ##########################################################################################################

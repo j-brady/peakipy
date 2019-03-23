@@ -1,4 +1,6 @@
 """ Functions for NMR peak deconvolution """
+import sys
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -281,10 +283,19 @@ def update_params(params, param_dict, lineshape="PV"):
                 params[k].vary = False
 
     # return params
+def run_log(log_name="run_log.txt"):
+    """ Write log file containing time script was run and with which arguments"""
+    with open(log_name,'a') as log:
+        sys_argv = sys.argv
+        sys_argv[0] = Path(sys_argv[0]).name
+        run_args = " ".join(sys_argv)
+        time_stamp = datetime.now()
+        time_stamp = time_stamp.strftime("%A %d %B %Y at %H:%M")
+        log.write(f"# Script run on {time_stamp}:\n{run_args}\n")
 
 
 class Fit:
-    """ Class for fitting planes """
+    """ Class for fitting planes: NOT CURRENTLY USED """
     def __init__(
         self,
         group,

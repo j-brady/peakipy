@@ -24,7 +24,7 @@
 		spectra:
 
 				- fname: test.ft2
-				  label: write legend here 
+				  label: write legend here
 				  contour_num: 1
 				  linewidths: 1
 
@@ -36,7 +36,7 @@
     Dependencies:
 
         -- python3
-        -- matplotlib, pyyaml, numpy, nmrglue, pandas and docopt 
+        -- matplotlib, pyyaml, numpy, nmrglue, pandas and docopt
 """
 import os
 

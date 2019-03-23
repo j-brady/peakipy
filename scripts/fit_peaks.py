@@ -42,7 +42,7 @@ from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 
-from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D
+from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_log
 
 
 def norm(data):
@@ -51,11 +51,6 @@ def norm(data):
 
 args = docopt(__doc__)
 
-max_cluster_size = args.get("--max_cluster_size")
-if max_cluster_size == "None":
-    max_cluster_size = 1000
-else:
-    max_cluster_size = int(max_cluster_size)
 
 lineshape = args.get("--lineshape")
 # params to fix
@@ -71,7 +66,7 @@ peaklist = Path(args.get("<peaklist>"))
 
 # determine filetype
 if peaklist.suffix == ".csv":
-    peaks = pd.read_csv(peaklist, comment='#')
+    peaks = pd.read_csv(peaklist, comment="#")
 else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
@@ -83,8 +78,26 @@ else:
     # for compatibility
     peaks["include"] = peaks.apply(lambda _: "yes", axis=1)
 
-print(f"The following peaks have been exluded:\n{peaks[peaks.include != 'yes']}")
-peaks = peaks[peaks.include == 'yes']
+if len(peaks[peaks.include != "yes"]) > 0:
+    print(f"The following peaks have been exluded:\n{peaks[peaks.include != 'yes']}")
+    peaks = peaks[peaks.include == "yes"]
+
+# filter list based on cluster size
+max_cluster_size = args.get("--max_cluster_size")
+if max_cluster_size == "None":
+    max_cluster_size = peaks.MEMCNT.max()
+    if peaks.MEMCNT.max() > 10:
+        print(
+        f"""
+            ##################################################################
+            You have some clusters of as many as {max_cluster_size} peaks.
+            You may want to consider reducing the size of your clusters as the
+            fits will struggle.
+            ##################################################################
+        """
+        )
+else:
+    max_cluster_size = int(max_cluster_size)
 
 # read vclist
 vclist = args.get("--vclist")
@@ -180,7 +193,21 @@ groups = peaks.groupby("CLUSTID")
 # iterate over groups of peaks
 for name, group in groups:
     #  max cluster size
-    if len(group) <= max_cluster_size:
+    len_group = len(group)
+    if len_group <= max_cluster_size:
+        if len_group == 1:
+            peak_str = "peak"
+        else:
+            peak_str = "peaks"
+
+        print(
+        f"""
+
+            ####################################
+            Fitting cluster of {len_group} {peak_str}
+            ####################################
+        """
+        )
         # fits sum of all planes first
         first, mask = fit_first_plane(
             group,
@@ -295,3 +322,5 @@ elif suffix == ".tab":
 
 else:
     df.to_pickle(output)
+
+run_log()

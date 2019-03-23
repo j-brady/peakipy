@@ -26,10 +26,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-from peakipy.core import make_mask, pvoigt2d, make_models, Pseudo3D
+from peakipy.core import make_mask, pvoigt2d, make_models, Pseudo3D, run_log
+
 
 def normalise(x):
-    return (x-np.min(x))/(np.max(x)-np.min(x))
+    return (x - np.min(x)) / (np.max(x) - np.min(x))
+
 
 if __name__ == "__main__":
     args = docopt(__doc__)
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     if clusters == "None":
         pass
     else:
-        clusters = [int(i) for i in clusters.split(',')]
+        clusters = [int(i) for i in clusters.split(",")]
         # only use these clusters
         fits = fits[fits.clustid.isin(clusters)]
 
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         for ind, group in groups:
 
             mask = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
-            #sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
+            # sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
 
             first_plane = group[group.plane == 0]
 
@@ -130,26 +132,38 @@ if __name__ == "__main__":
                 sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
 
                 ax.plot_wireframe(
-                    x_plot, y_plot, sim_plot, colors="r", linestyle="--", label="fit", rstride=1,
+                    x_plot,
+                    y_plot,
+                    sim_plot,
+                    colors="r",
+                    linestyle="--",
+                    label="fit",
+                    rstride=1,
                 )
                 ax.plot_wireframe(
-                    x_plot, y_plot, masked_data, colors="k", linestyle="-", label="data", rstride=1,
+                    x_plot,
+                    y_plot,
+                    masked_data,
+                    colors="k",
+                    linestyle="-",
+                    label="data",
+                    rstride=1,
                 )
                 plt.legend()
                 names = ",".join(plane.assignment)
                 plt.title(f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}")
                 out_str = "Amplitudes\n----------------\n"
-                #chi2s = []
+                # chi2s = []
                 for amp, name, peak_mask in zip(plane.amp, plane.assignment, masks):
 
-                 #   norm_data = normalise(pseudo3D.data[plane_id][peak_mask])
-                 #   norm_sim = normalise(sim_data[peak_mask])
-                 #   print(norm_data,norm_sim)
-                 #   chi2 = np.sum((norm_data-norm_sim)**2./norm_sim)
-                 #   chi2s.append(chi2)
-                    #out_str += f"{name} = {amp:.3e}, {chi2}\n"
+                    #   norm_data = normalise(pseudo3D.data[plane_id][peak_mask])
+                    #   norm_sim = normalise(sim_data[peak_mask])
+                    #   print(norm_data,norm_sim)
+                    #   chi2 = np.sum((norm_data-norm_sim)**2./norm_sim)
+                    #   chi2s.append(chi2)
+                    # out_str += f"{name} = {amp:.3e}, {chi2}\n"
                     out_str += f"{name} = {amp:.3e}\n"
-                #print(chi2s)
+                # print(chi2s)
                 ax.text2D(
                     -0.15, 1.0, out_str, transform=ax.transAxes, fontsize=10, va="top"
                 )
@@ -162,3 +176,4 @@ if __name__ == "__main__":
 
                 if first_only:
                     break
+run_log()

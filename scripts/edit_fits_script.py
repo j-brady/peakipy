@@ -271,16 +271,18 @@ def update_contour(attrname, old, new):
     cl = new_cs * contour_factor ** np.arange(contour_num)
     spec_source.data = get_contour_data(data[0], cl, extent=extent).data
 
+
 def exit_edit_peaks(event):
     exit()
+
 
 args = docopt(__doc__)
 path = Path(args.get("<peaklist>"))
 
 if path.suffix == ".csv":
-    df = pd.read_csv(path, comment='#')
+    df = pd.read_csv(path, comment="#")
 elif path.suffix == ".tab":
-    df = pd.read_csv(path, sep="\t", comment='#')
+    df = pd.read_csv(path, sep="\t", comment="#")
 else:
     df = pd.read_pickle(path)
 
@@ -427,10 +429,20 @@ p.on_event(DoubleTap, peak_pick_callback)
 
 # configure sliders
 slider_X_RADIUS = Slider(
-    title="X_RADIUS - ppm", start=0.001, end=0.200, value=0.040, step=0.001, format="0[.]000"
+    title="X_RADIUS - ppm",
+    start=0.001,
+    end=0.200,
+    value=0.040,
+    step=0.001,
+    format="0[.]000",
 )
 slider_Y_RADIUS = Slider(
-    title="Y_RADIUS - ppm", start=0.010, end=2.000, value=0.400, step=0.001, format="0[.]000"
+    title="Y_RADIUS - ppm",
+    start=0.010,
+    end=2.000,
+    value=0.400,
+    step=0.001,
+    format="0[.]000",
 )
 
 slider_X_RADIUS.on_change("value", lambda attr, old, new: callback(attr, old, new))
@@ -520,6 +532,5 @@ curdoc().add_root(
     )
 )
 # curdoc().title = "Export CSV"
-
 
 # update()

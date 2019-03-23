@@ -17,6 +17,8 @@ from pathlib import Path
 from shutil import which
 from docopt import docopt
 
+from peakipy.core import run_log
+
 # import subprocess
 
 args = docopt(__doc__)
@@ -27,5 +29,5 @@ dims = args.get("--dims")
 script = which("edit_fits_script.py")
 
 # p = subprocess.Popen(['bokeh','serve', '--show', script, '--args', peaklist, data, f'--dims={dims}' ])
-
+run_log()
 os.system(f"bokeh serve --show {script} --args {peaklist} {data} --dims={dims}")
