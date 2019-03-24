@@ -2,7 +2,3 @@ Cluster 1 containing 1 peaks - chi2=0.401
 Cluster 2 containing 4 peaks - chi2=0.498
 Cluster 3 containing 1 peaks - chi2=1.549 - NEEDS CHECKING
 Cluster 4 containing 1 peaks - chi2=1.704 - NEEDS CHECKING
-Cluster 5 containing 6 peaks - chi2=0.253
-Cluster 6 containing 2 peaks - chi2=0.616
-Cluster 7 containing 1 peaks - chi2=0.881
-Cluster 8 containing 1 peaks - chi2=0.869

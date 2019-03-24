@@ -191,7 +191,7 @@ class TestCoreFunctions(unittest.TestCase):
                     ("test/test_protein_L/test_tp.ft2", [2, 1, 0]),
                 ("test/test_protein_L/test_tp2.ft2",[1, 2, 0])]
 
-        # expected shape 
+        # expected shape
         data_shape = (4, 256, 546)
         test_nu = 1
         for dataset, dims in datasets:

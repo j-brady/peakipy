@@ -203,7 +203,7 @@ def to_prefix(x):
     return prefix + "_"
 
 
-def make_models(model, peaks, data, lineshape="PV"):
+def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
     """ Make composite models for multiple peaks
 
         Arguments:
@@ -211,6 +211,7 @@ def make_models(model, peaks, data, lineshape="PV"):
             -- peaks: instance of pandas.df.groupby("CLUSTID")
             -- data: NMR data
             -- lineshape: PV/G/L
+            -- xy_bounds: tuple containing bounds for peak centers (+/-x, +/-y)
 
         Returns:
             -- mod: Composite lmfit model containing all peaks
@@ -236,12 +237,12 @@ def make_models(model, peaks, data, lineshape="PV"):
         p_guess = mod.make_params(**param_dict)
         # add Peak params to p_guess
 
-    update_params(p_guess, param_dict, lineshape=lineshape)
+    update_params(p_guess, param_dict, lineshape=lineshape, xy_bounds=xy_bounds)
 
     return mod, p_guess
 
 
-def update_params(params, param_dict, lineshape="PV"):
+def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
     """ Update lmfit parameters with values from Peak
 
         Arguments:
@@ -251,20 +252,31 @@ def update_params(params, param_dict, lineshape="PV"):
         ToDo:
              -- deal with boundaries
              -- currently positions in points
-             --
 
     """
     for k, v in param_dict.items():
         params[k].value = v
         # print("update", k, v)
         if "center" in k:
-            params[k].min = v - 3.
-            params[k].max = v + 3.
-            #pass
-            print(
-               "setting limit of %s, min = %.3e, max = %.3e"
-               % (k, params[k].min, params[k].max)
-            )
+            if xy_bounds == None:
+                # no bounds set
+                pass
+            else:
+                if "center_x" in k:
+                    # set x bounds
+                    x_bound = xy_bounds[0]
+                    params[k].min = v - x_bound
+                    params[k].max = v + x_bound
+                elif "center_y" in k:
+                    # set y bounds
+                    y_bound = xy_bounds[1]
+                    params[k].min = v - y_bound
+                    params[k].max = v + y_bound
+                #pass
+                print(
+                   "setting limit of %s, min = %.3e, max = %.3e"
+                   % (k, params[k].min, params[k].max)
+                )
         elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
@@ -283,6 +295,7 @@ def update_params(params, param_dict, lineshape="PV"):
                 params[k].vary = False
 
     # return params
+
 def run_log(log_name="run_log.txt"):
     """ Write log file containing time script was run and with which arguments"""
     with open(log_name,'a') as log:
@@ -294,207 +307,8 @@ def run_log(log_name="run_log.txt"):
         log.write(f"# Script run on {time_stamp}:\n{run_args}\n")
 
 
-class Fit:
-    """ Class for fitting planes: NOT CURRENTLY USED """
-    def __init__(
-        self,
-        group,
-        data,
-        udics,
-        model=pvoigt2d,
-        lineshape="PV",
-        plot=None,
-        show=True,
-        verbose=False,
-        log=None,
-    ):
-
-        """
-            Arguments:
-
-                group -- pandas data from containing group of peaks using groupby("CLUSTID")
-                data  -- NMR data cube
-                uc_dics -- unit conversion dics
-                lineshape -- PV/G/L
-                plot -- if True show wireframe plots
-                show -- whether or not to show the plot using plt.show()
-                verbose -- whether or not to print results
-                log -- filehandle for log file
-        """
-        self.group = group
-        self.data = data
-        self.udics = udics
-        self.model = model
-        self.lineshape = lineshape
-        self.log = log
-        self.show = show
-        self.plot = plot
-
-    def first_plane(self):
-
-        """ Fit first plane """
-
-        summed_planes = self.data.sum(axis=0)
-        # create boolean mask
-        self.mask = np.zeros(self.data.shape, dtype=bool)
-        # make models
-        self.mod, self.p_guess = make_models(self.model, self.group, self.data, lineshape=self.lineshape)
-
-        ## get initial peak centers
-        #self.cen_x = [self.p_guess[k].value for k in self.p_guess if "center_x" in k]
-        #self.cen_y = [self.p_guess[k].value for k in self.p_guess if "center_y" in k]
-
-        for index, peak in self.group.iterrows():
-            # generate boolean mask based on peak locations and radii
-            self.mask += make_mask(
-                self.data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
-            )
-
-        # needs checking since this may not center peaks
-        x_radius = self.group.X_RADIUS.max()
-        y_radius = self.group.Y_RADIUS.max()
-        self.max_x, self.min_x = (
-            int(np.ceil(max(self.group.X_AXISf) + x_radius + 1)),
-            int(np.floor(min(self.group.X_AXISf) - x_radius )),
-        )
-        self.max_y, self.min_y = (
-            int(np.ceil(max(self.group.Y_AXISf) + y_radius + 1)),
-            int(np.floor(min(self.group.Y_AXISf) - y_radius )),
-        )
-        #self.max_x, self.min_x = (
-        #    int(np.ceil(max(self.group.X_AXISf) + x_radius + 2)),
-        #    int(np.floor(min(self.group.X_AXISf) - x_radius - 1)),
-        #)
-        #self.max_y, self.min_y = (
-        #    int(np.ceil(max(self.group.Y_AXISf) + y_radius + 2)),
-        #    int(np.floor(min(self.group.Y_AXISf) - y_radius - 1)),
-        #)
-
-        peak_slices = self.data[mask]
-
-        # must be a better way to make the meshgrid
-        # starts from 1
-        #x = np.arange(1, data.shape[-1] + 1)
-        #y = np.arange(1, data.shape[-2] + 1)
-        x = np.arange(data.shape[-1])
-        y = np.arange(data.shape[-2])
-        self.xy_grid = np.meshgrid(x, y)
-        self.x_grid, self.y_grid = self.xy_grid
-
-        # mask mesh data
-        xy_slices = [x_grid[mask], y_grid[mask]]
-        # fit data
-        self.out = self.mod.fit(peak_slices, XY=xy_slices, params=self.p_guess)
-        if verbose:
-            print(self.out.fit_report())
-
-    def chi_squared(self):
-
-        # calculate chi2
-        z_sim = self.mod.eval(XY=self.xy_grid, params=self.out.params)
-        z_sim[~mask] = np.nan
-        z_plot = data.copy()
-        z_plot[~mask] = np.nan
-
-        norm_z = (z_plot - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
-        norm_sim = (z_sim - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
-        _norm_z = norm_z[~np.isnan(norm_z)]
-        _norm_sim = norm_sim[~np.isnan(norm_sim)]
-        chi2 = np.sum((_norm_z - _norm_sim) ** 2.0 / _norm_sim)
-
-        #  number of peaks in cluster
-        n_peaks = len(group)
-        chi2 = chi2 / n_peaks
-        if chi2 < 1:
-            chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-            print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
-        else:
-            chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-            print(
-                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-            )
-
-        if log != None:
-            log.write(chi_str + "\n")
-        else:
-            pass
-
-    def plot_fit(self):
-
-        if plot != None:
-            plot_path = Path(plot)
-
-            # plotting
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-            # slice out plot area
-            x_plot = uc_dics["f2"].ppm(X[min_y:max_y, min_x:max_x])
-            y_plot = uc_dics["f1"].ppm(Y[min_y:max_y, min_x:max_x])
-            z_plot = z_plot[min_y:max_y, min_x:max_x]
-            z_sim = z_sim[min_y:max_y, min_x:max_x]
-
-            ax.set_title("$\chi^2$=" + f"{chi2:.3f}")
-
-            # plot raw data
-            ax.plot_wireframe(x_plot, y_plot, z_plot, color="k")
-
-            ax.set_xlabel("F2 ppm")
-            ax.set_ylabel("F1 ppm")
-            ax.plot_wireframe(
-                x_plot, y_plot, z_sim, colors="r", linestyle="--", label="fit"
-            )
-            ax.invert_xaxis()
-            ax.invert_yaxis()
-            # Annotate plots
-            labs = []
-            Z_lab = []
-            Y_lab = []
-            X_lab = []
-            for k, v in out.params.valuesdict().items():
-                if "amplitude" in k:
-                    Z_lab.append(v)
-                    # get prefix
-                    labs.append(" ".join(k.split("_")[:-1]))
-                elif "center_x" in k:
-                    X_lab.append(uc_dics["f2"].ppm(v))
-                elif "center_y" in k:
-                    Y_lab.append(uc_dics["f1"].ppm(v))
-            #  this is dumb as !£$@
-            Z_lab = [
-                data[
-                    int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
-                ]
-                for x, y in zip(X_lab, Y_lab)
-            ]
-
-            for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
-                # print(l, x, y, z)
-                ax.text(x, y, z * 1.4, l, None)
-
-            # plt.colorbar(contf)
-            plt.legend()
-
-            name = group.CLUSTID.iloc[0]
-            if show:
-                plt.savefig(plot_path / f"{name}.png", dpi=300)
-
-                def exit_program(event):
-                    exit()
-
-                axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-                bnexit = Button(axexit, "Exit")
-                bnexit.on_clicked(exit_program)
-                plt.show()
-            else:
-                plt.savefig(plot_path / f"{name}.png", dpi=300)
-            #    print(p_guess)
-            # close plot
-            plt.close()
-        return out, mask
-
-
 def fit_first_plane(
-    group, data, uc_dics, lineshape="PV", plot=None, show=True, verbose=False, log=None
+    group, data, uc_dics, lineshape="PV", xy_bounds=None, plot=None, show=True, verbose=False, log=None
 ):
     """
         Arguments:
@@ -502,26 +316,24 @@ def fit_first_plane(
             group -- pandas data from containing group of peaks using groupby("CLUSTID")
             data  -- NMR data
             uc_dics -- unit conversion dics
+            lineshape -- PV/G/L
+            xy_bounds -- None or (x_bound, y_bound)
             plot -- if True show wireframe plots
 
     """
 
     mask = np.zeros(data.shape, dtype=bool)
-    mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape)
+    mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds)
 
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
     cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
 
     for index, peak in group.iterrows():
-        #  minus 1 from X_AXIS and Y_AXIS to center peaks in mask
-        # print(peak.X_AXIS,peak.Y_AXIS,row.HEIGHT)
         mask += make_mask(
             data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
         )
-        # print(peak)
 
-    # needs checking since this may not center peaks
     x_radius = group.X_RADIUS.max()
     y_radius = group.Y_RADIUS.max()
     max_x, min_x = (
@@ -532,20 +344,10 @@ def fit_first_plane(
         int(np.ceil(max(group.Y_AXISf) + y_radius + 1)),
         int(np.floor(min(group.Y_AXISf) - y_radius )),
     )
-    #max_x, min_x = (
-    #    int(np.ceil(max(cen_x) + x_radius + 2)),
-    #    int(np.floor(min(cen_x) - x_radius - 1)),
-    #)
-    #max_y, min_y = (
-    #    int(np.ceil(max(cen_y) + y_radius + 2)),
-    #    int(np.floor(min(cen_y) - y_radius - 1)),
-    #)
 
     peak_slices = data.copy()[mask]
 
     # must be a better way to make the meshgrid
-    #x = np.arange(1, data.shape[-1] + 1)
-    #y = np.arange(1, data.shape[-2] + 1)
     x = np.arange(data.shape[-1])
     y = np.arange(data.shape[-2])
     XY = np.meshgrid(x, y)
@@ -802,3 +604,201 @@ class Pseudo3D:
 #    uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
 #    ppm_f2 = uc_f2.ppm_scale()
 #    ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
+
+class Fit:
+    """ Class for fitting planes: NOT CURRENTLY USED """
+    def __init__(
+        self,
+        group,
+        data,
+        udics,
+        model=pvoigt2d,
+        lineshape="PV",
+        plot=None,
+        show=True,
+        verbose=False,
+        log=None,
+    ):
+
+        """
+            Arguments:
+
+                group -- pandas data from containing group of peaks using groupby("CLUSTID")
+                data  -- NMR data cube
+                uc_dics -- unit conversion dics
+                lineshape -- PV/G/L
+                plot -- if True show wireframe plots
+                show -- whether or not to show the plot using plt.show()
+                verbose -- whether or not to print results
+                log -- filehandle for log file
+        """
+        self.group = group
+        self.data = data
+        self.udics = udics
+        self.model = model
+        self.lineshape = lineshape
+        self.log = log
+        self.show = show
+        self.plot = plot
+
+    def first_plane(self):
+
+        """ Fit first plane """
+
+        summed_planes = self.data.sum(axis=0)
+        # create boolean mask
+        self.mask = np.zeros(self.data.shape, dtype=bool)
+        # make models
+        self.mod, self.p_guess = make_models(self.model, self.group, self.data, lineshape=self.lineshape)
+
+        ## get initial peak centers
+        #self.cen_x = [self.p_guess[k].value for k in self.p_guess if "center_x" in k]
+        #self.cen_y = [self.p_guess[k].value for k in self.p_guess if "center_y" in k]
+
+        for index, peak in self.group.iterrows():
+            # generate boolean mask based on peak locations and radii
+            self.mask += make_mask(
+                self.data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
+            )
+
+        # needs checking since this may not center peaks
+        x_radius = self.group.X_RADIUS.max()
+        y_radius = self.group.Y_RADIUS.max()
+        self.max_x, self.min_x = (
+            int(np.ceil(max(self.group.X_AXISf) + x_radius + 1)),
+            int(np.floor(min(self.group.X_AXISf) - x_radius )),
+        )
+        self.max_y, self.min_y = (
+            int(np.ceil(max(self.group.Y_AXISf) + y_radius + 1)),
+            int(np.floor(min(self.group.Y_AXISf) - y_radius )),
+        )
+        #self.max_x, self.min_x = (
+        #    int(np.ceil(max(self.group.X_AXISf) + x_radius + 2)),
+        #    int(np.floor(min(self.group.X_AXISf) - x_radius - 1)),
+        #)
+        #self.max_y, self.min_y = (
+        #    int(np.ceil(max(self.group.Y_AXISf) + y_radius + 2)),
+        #    int(np.floor(min(self.group.Y_AXISf) - y_radius - 1)),
+        #)
+
+        peak_slices = self.data[mask]
+
+        # must be a better way to make the meshgrid
+        # starts from 1
+        #x = np.arange(1, data.shape[-1] + 1)
+        #y = np.arange(1, data.shape[-2] + 1)
+        x = np.arange(data.shape[-1])
+        y = np.arange(data.shape[-2])
+        self.xy_grid = np.meshgrid(x, y)
+        self.x_grid, self.y_grid = self.xy_grid
+
+        # mask mesh data
+        xy_slices = [x_grid[mask], y_grid[mask]]
+        # fit data
+        self.out = self.mod.fit(peak_slices, XY=xy_slices, params=self.p_guess)
+        if verbose:
+            print(self.out.fit_report())
+
+    def chi_squared(self):
+
+        # calculate chi2
+        z_sim = self.mod.eval(XY=self.xy_grid, params=self.out.params)
+        z_sim[~mask] = np.nan
+        z_plot = data.copy()
+        z_plot[~mask] = np.nan
+
+        norm_z = (z_plot - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
+        norm_sim = (z_sim - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
+        _norm_z = norm_z[~np.isnan(norm_z)]
+        _norm_sim = norm_sim[~np.isnan(norm_sim)]
+        chi2 = np.sum((_norm_z - _norm_sim) ** 2.0 / _norm_sim)
+
+        #  number of peaks in cluster
+        n_peaks = len(group)
+        chi2 = chi2 / n_peaks
+        if chi2 < 1:
+            chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
+            print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
+        else:
+            chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
+            print(
+                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
+            )
+
+        if log != None:
+            log.write(chi_str + "\n")
+        else:
+            pass
+
+    def plot_fit(self):
+
+        if plot != None:
+            plot_path = Path(plot)
+
+            # plotting
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d")
+            # slice out plot area
+            x_plot = uc_dics["f2"].ppm(X[min_y:max_y, min_x:max_x])
+            y_plot = uc_dics["f1"].ppm(Y[min_y:max_y, min_x:max_x])
+            z_plot = z_plot[min_y:max_y, min_x:max_x]
+            z_sim = z_sim[min_y:max_y, min_x:max_x]
+
+            ax.set_title("$\chi^2$=" + f"{chi2:.3f}")
+
+            # plot raw data
+            ax.plot_wireframe(x_plot, y_plot, z_plot, color="k")
+
+            ax.set_xlabel("F2 ppm")
+            ax.set_ylabel("F1 ppm")
+            ax.plot_wireframe(
+                x_plot, y_plot, z_sim, colors="r", linestyle="--", label="fit"
+            )
+            ax.invert_xaxis()
+            ax.invert_yaxis()
+            # Annotate plots
+            labs = []
+            Z_lab = []
+            Y_lab = []
+            X_lab = []
+            for k, v in out.params.valuesdict().items():
+                if "amplitude" in k:
+                    Z_lab.append(v)
+                    # get prefix
+                    labs.append(" ".join(k.split("_")[:-1]))
+                elif "center_x" in k:
+                    X_lab.append(uc_dics["f2"].ppm(v))
+                elif "center_y" in k:
+                    Y_lab.append(uc_dics["f1"].ppm(v))
+            #  this is dumb as !£$@
+            Z_lab = [
+                data[
+                    int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
+                ]
+                for x, y in zip(X_lab, Y_lab)
+            ]
+
+            for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
+                # print(l, x, y, z)
+                ax.text(x, y, z * 1.4, l, None)
+
+            # plt.colorbar(contf)
+            plt.legend()
+
+            name = group.CLUSTID.iloc[0]
+            if show:
+                plt.savefig(plot_path / f"{name}.png", dpi=300)
+
+                def exit_program(event):
+                    exit()
+
+                axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
+                bnexit = Button(axexit, "Exit")
+                bnexit.on_clicked(exit_program)
+                plt.show()
+            else:
+                plt.savefig(plot_path / f"{name}.png", dpi=300)
+            #    print(p_guess)
+            # close plot
+            plt.close()
+        return out, mask

@@ -16,9 +16,16 @@
         -v --version                           Show version
 
         --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
+
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
+
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
+
         --fix=<fraction,sigma,center>          Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
+
+        --xy_bounds=<x_ppm,y_ppm>              Bound X and Y peak centers during fit [default: None]
+                                               This can be set like so --xy_bounds=0.1,0.5
+
         --vclist=<fname>                       Bruker style vclist [default: None]
 
         --plot=<dir>                           Whether to plot wireframe fits for each peak
@@ -149,6 +156,32 @@ ppm_per_pt_f1 = pseudo3D.ppm_per_pt_f1
 pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
 pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 
+xy_bounds = args.get("--xy_bounds")
+if xy_bounds == "None":
+    xy_bounds = None
+else:
+    xy_bounds = eval(xy_bounds)
+    #print(xy_bounds,type(xy_bounds))
+    if (type(xy_bounds) == tuple) and (len(xy_bounds) == 2):
+        try:
+            xy_bounds = [float(i) for i in xy_bounds]
+            # convert ppm to points
+            xy_bounds[0] = xy_bounds[0] * pt_per_ppm_f2
+            xy_bounds[1] = xy_bounds[1] * pt_per_ppm_f1
+
+        except TypeError:
+            raise f"You did not provide a numerical value {xy_bounds}"
+    else:
+        xy_bounds = None
+        print("""
+
+        #####################################################################
+        You set xy_bounds incorrectly. Must be a pair of x and y ppm values.
+        i.e. --xy_bounds=0.1,0.4
+        #####################################################################
+
+         """)
+
 # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
 peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
 peaks["YW"] = peaks.YW_HZ * pt_per_hz_f1
@@ -218,6 +251,7 @@ for name, group in groups:
             # norm(summed_planes),
             uc_dics,
             lineshape=lineshape,
+            xy_bounds=xy_bounds,
             plot=plot,
             show=args.get("--show"),
             verbose=verb,
