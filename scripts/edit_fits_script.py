@@ -184,11 +184,11 @@ def save_peaks(event):
 
     if to_save.exists():
         os.system(f"cp {to_save} {to_save}.bak")
-        print("Making backup {to_save}.bak")
+        print(f"Making backup {to_save}.bak")
 
     print(f"Saving peaks to {to_save}")
     if to_save.suffix == ".csv":
-        df.to_csv(to_save, float_format="%.4f")
+        df.to_csv(to_save, float_format="%.4f", index=False)
     else:
         df.to_pickle(to_save)
 

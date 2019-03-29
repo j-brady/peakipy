@@ -7,7 +7,7 @@
         --dims=<id,f1,f2>         Dimension order [default: 0,1,2]
 
         --clusters=<id1,id2,etc>  Plot selected cluster based on clustid [default: None]
-                                  For a single cluster use a trailing comma eg. --cluster=1
+                                  eg. --clusters=1 or --clusters=2,4,6,7
 
         --outname=<plotname>      Plot name [default: plots.pdf]
 

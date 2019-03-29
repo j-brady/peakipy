@@ -107,7 +107,7 @@ NULLSTRING *
 ### NMRPipe Data
 
 The input data should be either a NMRPipe 2D or 3D cube. The dimension order can be specified with the `--dims` flag.
-For example if you have a 2D spectrum with shape (F1_size,F2_size) then you should call the scripts using `--dims=0,1`.
+For example, if you have a 2D spectrum with shape (F1_size,F2_size) then you should call the scripts using `--dims=0,1`.
 If you have a 3D cube with shape (F2_size,F1_size,ID) then you would run the scripts with `--dims=2,1,0` ([F2,ID,F1]
 would be `--dims=1,2,0` i.e the indices required to reorder to 0,1,2).
 The default dimension order is ID,F1,F2.
@@ -117,7 +117,7 @@ The default dimension order is ID,F1,F2.
 Here is an example of how to run read_peaklist.py
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --sparky --show --outfmt=csv
+read_peaklist.py peaks.sparky test.ft2 --sparky --show
 ```
 
 This will convert your peak list to into a `pandas DataFrame` and use `threshold_otsu` from `scikit-image` to determine a
@@ -135,11 +135,13 @@ If you want to edit this plot after running `read_peaklist.py` then you can edit
 
 ![Clustered peaks](images/clusters.png)
 
-The threshhold level can be adjusted with the `--thres` option like so
+The threshold level can be adjusted with the `--thres` option like so
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --sparky --show --outfmt=csv --thres=1e6
+read_peaklist.py peaks.sparky test.ft2 --sparky --show --thres=1e6
 ```
+
+This will exclude signals below 1e6.
 
 It is also possible to adjust the clustering behaviour by changing the structuring element used for binary closing.
 
@@ -147,9 +149,9 @@ It is also possible to adjust the clustering behaviour by changing the structuri
 read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --struc_el=disk --struc_size=4, --show
 ```
 
-Would use a disk shaped structuring element with a radius of 4 points (see the [scikit-image.morpholog](http://scikit-image.org/docs/dev/api/skimage.morphology.html) module for more information).
+The above would use a disk shaped structuring element with a radius of 4 points (see the [scikit-image.morphology](http://scikit-image.org/docs/dev/api/skimage.morphology.html) module for more information).
 
-To adjust the radii used for masking the data to be fitted you can adjust the `--f2radius` and `--f1radius` flags like so (values given in ppm)...
+The radii used for masking the data to be fitted can be adjusted by setting the `--f2radius` and `--f1radius` flags like so (values given in ppm)...
 
 ```bash
 read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
