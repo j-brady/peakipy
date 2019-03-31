@@ -120,7 +120,7 @@ Here is an example of how to run read_peaklist.py
 read_peaklist.py peaks.sparky test.ft2 --sparky --show
 ```
 
-This will convert your peak list to into a `pandas DataFrame` and use `threshold_otsu` from `scikit-image` to determine a
+This will convert your peak list into a `pandas DataFrame` and use `threshold_otsu` from `scikit-image` to determine a
  cutoff for selecting overlapping peaks.
 These are subsequently grouped into clusters ("CLUSTID" column a la NMRPipe!).
 The new peak list with selected clusters is saved as a csv file `peaks.csv` to be used as input for either
