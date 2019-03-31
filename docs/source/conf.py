@@ -50,7 +50,7 @@ exclude_patterns = []
 html_theme = 'alabaster'
 
 html_theme_options = {
-        'logo' : '../../images/logo.png',
+        'logo' : 'logo.png',
         'github_user': 'j-brady',
         'github_repo': 'peakipy'
         }
