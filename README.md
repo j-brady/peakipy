@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/j-brady/peakipy.svg?token=wh1qimLa9ucxKasjXFoj&branch=master)](https://travis-ci.com/j-brady/peakipy)
 
+[peakipy documentation](https://j-brady.github.io/peakipy)
+
 ## Description
 
 Simple deconvolution of NMR peaks for extraction of intensities. Provided an NMRPipe format spectrum (2D or Pseudo 3D)
