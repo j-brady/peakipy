@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Examples &#8212; peakipy 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Lineshapes" href="lineshapes.html" />
+    <link rel="prev" title="Instructions" href="instructions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="protein-l">
+<h2>Protein L<a class="headerlink" href="#protein-l" title="Permalink to this headline">¶</a></h2>
+<p>Having processed a spectrum and picked peaks in NMRPipe</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">read_peaklist</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span><span class="o">.</span><span class="n">tab</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">pipe</span> <span class="o">--</span><span class="n">f1radius</span><span class="o">=</span><span class="mf">0.35</span> <span class="o">--</span><span class="n">f2radius</span><span class="o">=</span><span class="mf">0.035</span>
+</pre></div>
+</div>
+<p>Since the dimensions are in order ID,F1,F2 there is no need to use the <code class="docutils literal notranslate"><span class="pre">--dims</span></code> argument.</p>
+<img alt="../_images/clusters1.png" src="../_images/clusters1.png" />
+<p>A contour plot of the spectrum with clustered peaks color coded (orange, green and blue) is generated along with a <cite>.csv</cite> file of the same name as your original peak list (i.e <cite>test.csv</cite>).</p>
+<p>To fit the peaks simply run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fit_peaks</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="o">--</span><span class="n">lineshape</span><span class="o">=</span><span class="n">G</span>
+</pre></div>
+</div>
+<p>This will output another <cite>.csv</cite> file called <cite>fits.csv</cite> containing the fitted intensities. In this case the peaks are fit to a Gaussian lineshape.</p>
+<p>To generate plots of fits or inspect them interactively you can run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">check_fits</span><span class="o">.</span><span class="n">py</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">outname</span><span class="o">=</span><span class="n">plots</span><span class="o">.</span><span class="n">pdf</span> <span class="o">--</span><span class="n">clusters</span><span class="o">=</span><span class="mi">30</span> <span class="o">--</span><span class="n">show</span> <span class="o">--</span><span class="n">first</span>
+</pre></div>
+</div>
+<img alt="../_images/egplot.png" src="../_images/egplot.png" />
+<p>This will plot the fit for the first plane of cluster 30 saving the output in <cite>plots.pdf</cite>. Omitting the <code class="docutils literal notranslate"><span class="pre">--first</span></code> flag will result in a multi-page pdf with each plane plotted on a seperate page. If you do not want to interactively display the fits then just omit the <code class="docutils literal notranslate"><span class="pre">--show</span></code> flag.</p>
+<p>If you find that you need to adjust the parameters of specific fits you can run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">edit_fits</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span>
+</pre></div>
+</div>
+<p>Which will open a <code class="docutils literal notranslate"><span class="pre">Bokeh</span></code> server in which you can adjust individual parameters on each peak.</p>
+<img alt="../_images/bokeh2.png" src="../_images/bokeh2.png" />
+<p>To save your edited peak list just click <code class="docutils literal notranslate"><span class="pre">Save</span></code>. You can open it again later</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">edit_fits</span><span class="o">.</span><span class="n">py</span> <span class="n">edited_peaks</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/../../../images/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=j-brady&repo=peakipy&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">How to install peakipy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="instructions.html">Instructions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#protein-l">Protein L</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lineshapes.html">Lineshapes</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="instructions.html" title="previous chapter">Instructions</a></li>
+      <li>Next: <a href="lineshapes.html" title="next chapter">Lineshapes</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Jacob Peter Brady.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/usage/examples.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
