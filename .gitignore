@@ -1,6 +1,6 @@
 #*.ft2
 *.pkl
-./build/
+#./build/
 *.pyc
 defaultProject
 __pycache__
