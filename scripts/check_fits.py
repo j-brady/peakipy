@@ -171,6 +171,9 @@ if __name__ == "__main__":
                     rcount=rcount,
                     ccount=ccount,
                 )
+                ax.set_ylabel(pseudo3D.f1_label)
+                ax.set_xlabel(pseudo3D.f2_label)
+
                 plt.legend()
                 names = ",".join(plane.assignment)
                 plt.title(f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}")
