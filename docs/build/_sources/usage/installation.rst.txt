@@ -7,6 +7,20 @@ Here are instructions for installing peakipy.
 Installation
 ------------
 
+I recommend using a virtual environment
+
+``python3 -m venv peakipy_venv``
+
+Then activate
+
+``source peakipy_venv/bin/activate`` if using bash
+
+or 
+
+``source peakipy_venv/bin/activate.csh`` if using c-shell
+
+Once activated 
+
 ``pip install peakipy``
 
 You can also clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
