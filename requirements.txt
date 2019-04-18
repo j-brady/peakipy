@@ -8,3 +8,4 @@ docopt>=0.6.2
 lmfit>=0.9.12
 scikit-image>=0.14.2
 bokeh>=1.0.4
+schema>=0.7.0
