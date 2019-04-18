@@ -19,7 +19,10 @@ or
 
 ``source peakipy_venv/bin/activate.csh`` if using c-shell
 
-Once activated 
+Once activated you can install peakipy... 
+
+With pip
+^^^^^^^^
 
 ``pip install peakipy``
 
@@ -59,3 +62,4 @@ Requirements
 * lmfit>=0.9.12
 * scikit-image>=0.14.2
 * bokeh>=1.0.4
+* schema>=0.7.0
