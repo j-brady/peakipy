@@ -17,7 +17,7 @@
 
         --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
 
-        --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
+        --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
 
         --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
 
@@ -38,6 +38,7 @@
 
 
 """
+import os
 from pathlib import Path
 
 import nmrglue as ng
@@ -48,6 +49,8 @@ import pandas as pd
 from lmfit import Model
 from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
+from skimage.filters import threshold_otsu
+from schema import Schema, And, Or, Use, SchemaError
 
 from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_log
 
@@ -55,14 +58,43 @@ from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_
 def norm(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
+def check_xybounds(x):
+    x = x.split(",")
+    if len(x) == 2:
+        xy_bounds = float(x[0]),float(x[1])
+        return xy_bounds
+    else:
+        print("xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
+        exit()
+
 
 args = docopt(__doc__)
 
+schema = Schema({
+        '<peaklist>': And(os.path.exists, open, error='FILE should be readable'),
+        '<data>': And(os.path.exists, Use(ng.pipe.read, error='<data> should be NMRPipe format 2D or 3D cube')),
+        '<output>': And(os.path.exists, error='PATH should exist'),
+        '--max_cluster_size': And(Use(int), lambda n: 0 < n),
+        '--lineshape': Or('PV','L','G', error="Must be either PV, L or G"),
+        '--fix': Or(Use(lambda x: [i for i in x.split(',') if (i=='fraction') or (i=='center') or (i=='sigma')])),
+        '--dims': Use(lambda n: [int(i) for i in eval(n)], error="--dims should be list of integers e.g. --dims=0,1,2"),
+        '--vclist': Or('None', And(os.path.exists, Use(np.genfromtxt, error=f"cannot open {args.get('--vclist')}"))),
+        '--plot': Or('None',Use(lambda f: Path(f))),
+        '--xy_bounds': Or('None', Use(check_xybounds, error="xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")),
+        object: object,
+        },
+        #ignore_extra_keys=True,
+        )
+
+try:
+    args = schema.validate(args)
+except SchemaError as e:
+    exit(e)
 
 lineshape = args.get("--lineshape")
 # params to fix
 to_fix = args.get("--fix")
-to_fix = to_fix.split(",")
+#print(to_fix)
 verb = args.get("--verb")
 if verb:
     print("Using ", args)
@@ -91,7 +123,7 @@ if len(peaks[peaks.include != "yes"]) > 0:
 
 # filter list based on cluster size
 max_cluster_size = args.get("--max_cluster_size")
-if max_cluster_size == "None":
+if max_cluster_size == 999:
     max_cluster_size = peaks.MEMCNT.max()
     if peaks.MEMCNT.max() > 10:
         print(
@@ -107,14 +139,14 @@ if max_cluster_size == "None":
         """
         )
 else:
-    max_cluster_size = int(max_cluster_size)
+    max_cluster_size = max_cluster_size
 
 # read vclist
 vclist = args.get("--vclist")
 if vclist == "None":
     vclist = False
 else:
-    vclist_data = np.genfromtxt(vclist)
+    vclist_data = vclist
     vclist = True
 
 # plot results or not
@@ -122,15 +154,13 @@ plot = args.get("--plot")
 if plot == "None":
     plot = None
 else:
-    plot = Path(plot)
     plot.mkdir(parents=True, exist_ok=True)
 
 # get dims from command line input
 dims = args.get("--dims")
-dims = [int(i) for i in dims.split(",")]
 
 # read NMR data
-dic, data = ng.pipe.read(args["<data>"])
+dic, data = args["<data>"]
 
 pseudo3D = Pseudo3D(dic, data, dims)
 uc_f1 = pseudo3D.uc_f1
@@ -139,6 +169,12 @@ uc_dics = {"f1": uc_f1, "f2": uc_f2}
 
 dims = pseudo3D.dims
 data = pseudo3D.data
+if len(dims) != len(data.shape):
+    print(f"Dims are {dims} while data shape is {data.shape}?")
+    exit()
+
+noise = threshold_otsu(data)
+#print(noise)
 
 # point per Hz
 pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
@@ -160,27 +196,10 @@ xy_bounds = args.get("--xy_bounds")
 if xy_bounds == "None":
     xy_bounds = None
 else:
-    xy_bounds = eval(xy_bounds)
-    #print(xy_bounds,type(xy_bounds))
-    if (type(xy_bounds) == tuple) and (len(xy_bounds) == 2):
-        try:
-            xy_bounds = [float(i) for i in xy_bounds]
-            # convert ppm to points
-            xy_bounds[0] = xy_bounds[0] * pt_per_ppm_f2
-            xy_bounds[1] = xy_bounds[1] * pt_per_ppm_f1
+    # convert ppm to points
+    xy_bounds[0] = xy_bounds[0] * pt_per_ppm_f2
+    xy_bounds[1] = xy_bounds[1] * pt_per_ppm_f1
 
-        except TypeError:
-            raise f"You did not provide a numerical value {xy_bounds}"
-    else:
-        xy_bounds = None
-        print("""
-
-        #####################################################################
-        You set xy_bounds incorrectly. Must be a pair of x and y ppm values.
-        i.e. --xy_bounds=0.1,0.4
-        #####################################################################
-
-         """)
 
 # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
 peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
@@ -200,9 +219,11 @@ amps = []
 amp_errs = []
 
 center_xs = []
+init_center_xs = []
 # center_x_errs = []
 
 center_ys = []
+init_center_ys = []
 # center_y_errs = []
 
 sigma_ys = []
@@ -256,6 +277,7 @@ for name, group in groups:
             show=args.get("--show"),
             verbose=verb,
             log=log,
+            noise=noise,
         )
 
         # fix sigma center and fraction parameters
@@ -277,8 +299,8 @@ for name, group in groups:
                 print(first.fit_report())
 
             amp, amp_err, name = get_params(first.params, "amplitude")
-            cen_x, cen_x_err, name = get_params(first.params, "center_x")
-            cen_y, cen_y_err, name = get_params(first.params, "center_y")
+            cen_x, cen_x_err, cx_name = get_params(first.params, "center_x")
+            cen_y, cen_y_err, cy_name = get_params(first.params, "center_y")
             sig_x, sig_x_err, name = get_params(first.params, "sigma_x")
             sig_y, sig_y_err, name = get_params(first.params, "sigma_y")
             frac, frac_err, name = get_params(first.params, "fraction")
@@ -286,8 +308,10 @@ for name, group in groups:
             amps.extend(amp)
             amp_errs.extend(amp_err)
             center_xs.extend(cen_x)
+            init_center_xs.extend(group.X_AXISf)
             # center_x_errs.extend(cen_x_err)
             center_ys.extend(cen_y)
+            init_center_ys.extend(group.Y_AXISf)
             # center_y_errs.extend(cen_y_err)
             sigma_xs.extend(sig_x)
             # sigma_x_errs.extend(sig_x_err)
@@ -312,8 +336,10 @@ df_dic = {
     "amp": amps,
     "amp_err": amp_errs,
     "center_x": center_xs,
+    "init_center_x": init_center_xs,
     # "center_x_err": center_x_errs,
     "center_y": center_ys,
+    "init_center_y": init_center_ys,
     # "center_y_err": center_y_errs,
     "sigma_x": sigma_xs,
     # "sigma_x_err": sigma_x_errs,
@@ -337,6 +363,8 @@ df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 #  convert values to ppm
 df["center_x_ppm"] = df.center_x.apply(lambda x: uc_f2.ppm(x))
 df["center_y_ppm"] = df.center_y.apply(lambda x: uc_f1.ppm(x))
+df["init_center_x_ppm"] = df.init_center_x.apply(lambda x: uc_f2.ppm(x))
+df["init_center_y_ppm"] = df.init_center_y.apply(lambda x: uc_f1.ppm(x))
 df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * ppm_per_pt_f2)
 df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * ppm_per_pt_f1)
 df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * ppm_per_pt_f2)

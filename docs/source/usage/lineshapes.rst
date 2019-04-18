@@ -19,4 +19,7 @@ Pseudo-Voigt
 
 :math:`\frac{(1-fraction)}{\sigma_g\sqrt{2\pi}}\exp \frac{-(x - center)^2 }{ 2 \sigma_g^2} + \frac{fraction}{\pi} \left( \frac{\sigma}{(x - center)^2 + \sigma^2}\right)`
 
+Fit quality
+-----------
 
+:math `\frac{1}{N} \sum \sqrt{\frac{(y_sim - y)^2}{y^2}}`

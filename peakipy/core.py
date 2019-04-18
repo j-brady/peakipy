@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 from numpy import sqrt, log, pi, exp
 from lmfit import Model, report_fit
+from lmfit.models import LinearModel
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Button
 
@@ -308,7 +309,7 @@ def run_log(log_name="run_log.txt"):
 
 
 def fit_first_plane(
-    group, data, uc_dics, lineshape="PV", xy_bounds=None, plot=None, show=True, verbose=False, log=None
+    group, data, uc_dics, lineshape="PV", xy_bounds=None, plot=None, show=True, verbose=False, log=None, noise=1.,
 ):
     """
         Arguments:
@@ -321,8 +322,8 @@ def fit_first_plane(
             plot -- if True show wireframe plots
 
     """
-
-    mask = np.zeros(data.shape, dtype=bool)
+    shape = data.shape
+    mask = np.zeros(shape, dtype=bool)
     mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds)
 
     # get initial peak centers
@@ -336,6 +337,7 @@ def fit_first_plane(
 
     x_radius = group.X_RADIUS.max()
     y_radius = group.Y_RADIUS.max()
+
     max_x, min_x = (
         int(np.ceil(max(group.X_AXISf) + x_radius + 1)),
         int(np.floor(min(group.X_AXISf) - x_radius )),
@@ -345,11 +347,24 @@ def fit_first_plane(
         int(np.floor(min(group.Y_AXISf) - y_radius )),
     )
 
+    # deal with peaks on the edge of spectrum
+    if min_y < 0:
+        min_y = 0
+
+    if min_x < 0:
+        min_x = 0
+
+    if max_y > shape[-2]:
+        max_y = shape[-2]
+
+    if max_x > shape[-1]:
+        max_x = shape[-1]
+
     peak_slices = data.copy()[mask]
 
     # must be a better way to make the meshgrid
-    x = np.arange(data.shape[-1])
-    y = np.arange(data.shape[-2])
+    x = np.arange(shape[-1])
+    y = np.arange(shape[-2])
     XY = np.meshgrid(x, y)
     X, Y = XY
 
@@ -363,27 +378,68 @@ def fit_first_plane(
     z_sim[~mask] = np.nan
     z_plot = data.copy()
     z_plot[~mask] = np.nan
+    #print(z_plot.shape,z_sim.shape)
+    # calculate difference between fitted height 
+    # also if peak position changed significantly from start then add warning
+    # figure out tolerence 
+    _z_plot = z_plot[~np.isnan(z_plot)]
+    _z_sim = z_sim[~np.isnan(z_sim)]
+    _z_plot_min = np.min(_z_plot)
+    _z_plot_max = np.max(_z_plot)
 
-    norm_z = (z_plot - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
-    norm_sim = (z_sim - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
-    _norm_z = norm_z[~np.isnan(norm_z)]
-    _norm_sim = norm_sim[~np.isnan(norm_sim)]
-    chi2 = np.sum((_norm_z - _norm_sim) ** 2.0 / _norm_sim)
+    norm_z = (_z_plot - _z_plot_min) / (_z_plot_max - _z_plot_min)
+    norm_sim = (_z_sim - _z_plot_min) / (_z_plot_max - _z_plot_min)
+    chi2 = np.sum((norm_z - norm_sim) ** 2.0 / np.abs(norm_sim))
+    #_norm_z = norm_z[~np.isnan(norm_z)]
+    #_norm_sim = norm_sim[~np.isnan(norm_sim)]
 
+    linmod = LinearModel()
+    linpars = linmod.guess(_z_sim,x=_z_plot)
+    linfit = linmod.fit(_z_sim,x=_z_plot,params=linpars)
+    #_sigma = np.sqrt(np.sum((_z_plot-_z_sim)**2.)/len(_z_plot))
+    #plt.plot(_z_plot,linfit.best_fit,"--",label=f"{linfit.fit_report()}:Sigma={_sigma}")
+    #plt.scatter(_z_plot,_z_sim,marker="o")
+    #plt.xlabel("z_plot")
+    #plt.ylabel("z_sim")
+    #plt.legend()
+    #plt.savefig(f"test/{peak.CLUSTID}.pdf")
+    #plt.close()
+    #chi2 = np.sum(np.abs(_z_sim - _z_plot)/ np.abs(_z_plot)) / len(_z_plot)
+    #chi2 = np.sqrt(np.sum((_z_plot - _z_sim) ** 2.0) / np.sum(_z_sim ** 2.0 ))# / len(_z_plot)
+    #chi2 = (np.sum((_z_plot - _z_sim) ** 2.0 / _z_sim**2)/len(_z_sim))**0.5
+    slope = linfit.params["slope"].value
     #  number of peaks in cluster
     n_peaks = len(group)
-    chi2 = chi2 / n_peaks
-    if chi2 < 1:
-        chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-        print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
+    fit_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - slope={slope:.3f}" 
+    if (slope > 1.05) or (slope < 0.95): 
+        fit_str += " - NEEDS CHECKING"
+        print(fit_str)
     else:
-        chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-        print(
-            f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-        )
+        print(fit_str)
+    
+    #for index, peak in group.iterrows():
+
+    #    init_prefix = peak.prefix
+    #    init_cenx = peak.X_AXISf
+    #    init_ceny = peak.Y_AXISf
+    #    print(init_prefix, init_cenx, init_ceny)
+
+        #if out.
+    chi2 = chi2 / n_peaks
+    chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
+    #if chi2 < 1:
+    #    print(chi_str)
+    #print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f}, mean-std = {mean_err-std_err:.3f} ")
+    #else:
+    #    chi_str += " - NEEDS CHECKING"
+    #    print(chi_str)
+        #print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f} ")
 
     if log != None:
-        log.write(chi_str + "\n")
+        log.write("".join("#" for _ in range(60))+"\n\n")
+        log.write(fit_str + "\n")
+        log.write(chi_str + "\n\n")
+        #pass
     else:
         pass
 

@@ -39,6 +39,12 @@ from bokeh.models.widgets import (
     Button,
     DataTable,
     TableColumn,
+    NumberFormatter,
+    NumberEditor,
+    IntEditor,
+    StringEditor,
+    StringFormatter,
+    SelectEditor,
     TextInput,
     RadioButtonGroup,
     Div,
@@ -140,13 +146,16 @@ def recluster_peaks(event):
 
 
 def update_memcnt(df):
+    
     for ind, group in df.groupby("CLUSTID"):
         df.loc[group.index, "MEMCNT"] = len(group)
 
+    # set cluster colors (set to black if singlet peaks)
     df["color"] = df.apply(
         lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
         axis=1,
     )
+    # update source data
     source.data = {col: df[col] for col in df.columns}
     return df
 
@@ -276,6 +285,8 @@ def exit_edit_peaks(event):
     exit()
 
 
+# Script starts here
+
 args = docopt(__doc__)
 path = Path(args.get("<peaklist>"))
 
@@ -305,11 +316,10 @@ else:
     df["include"] = df.apply(lambda _: "yes", axis=1)
 #    df["color"] = df.Edited.apply(lambda x: 'red' if x else 'black')
 
+# color clusters
 df["color"] = df.apply(
     lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black", axis=1
 )
-
-# print(df["color"])
 
 # make datasource
 source = ColumnDataSource(data=dict())
@@ -326,19 +336,13 @@ pseudo3D = Pseudo3D(dic, data, dims)
 data = pseudo3D.data
 udic = pseudo3D.udic
 
-# udic = ng.pipe.guess_udic(dic, data)
-# ndim = udic["ndim"]
 dims = pseudo3D.dims
 planes, f1, f2 = dims
 # size of f1 and f2 in points
-# f2pts = udic[f2]["size"]
-# f1pts = udic[f1]["size"]
 f2pts = pseudo3D.f2_size
 f1pts = pseudo3D.f1_size
 
 #  points per ppm
-# pt_per_ppm_f1 = f1pts / (udic[f1]["sw"] / udic[f1]["obs"])
-# pt_per_ppm_f2 = f2pts / (udic[f2]["sw"] / udic[f2]["obs"])
 pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
 
@@ -473,21 +477,34 @@ selected_df = df.copy()
 
 fit_button.on_event(ButtonClick, fit_selected)
 
-selected_columns = [
-    "ASS",
-    "CLUSTID",
-    "X_PPM",
-    "Y_PPM",
-    "X_RADIUS_PPM",
-    "Y_RADIUS_PPM",
-    "XW_HZ",
-    "YW_HZ",
-    "VOL",
-    "include",
-    "MEMCNT",
-]
-
-columns = [TableColumn(field=field, title=field) for field in selected_columns]
+#selected_columns = [
+#    "ASS",
+#    "CLUSTID",
+#    "X_PPM",
+#    "Y_PPM",
+#    "X_RADIUS_PPM",
+#    "Y_RADIUS_PPM",
+#    "XW_HZ",
+#    "YW_HZ",
+#    "VOL",
+#    "include",
+#    "MEMCNT",
+#]
+#
+#columns = [TableColumn(field=field, title=field) for field in selected_columns]
+columns = [
+        TableColumn(field="ASS", title="Assignment"),
+        TableColumn(field="CLUSTID", title="Cluster", editor=IntEditor()),
+        TableColumn(field="X_PPM", title=f"{f2_label}", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
+        TableColumn(field="Y_PPM", title=f"{f1_label}", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
+        TableColumn(field="X_RADIUS_PPM", title=f"{f2_label} radius (ppm)", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
+        TableColumn(field="Y_RADIUS_PPM", title=f"{f1_label} radius (ppm)", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
+        TableColumn(field="XW_HZ", title=f"{f2_label} LW (Hz)", editor=NumberEditor(step=0.01), formatter=NumberFormatter(format="0.00")),
+        TableColumn(field="YW_HZ", title=f"{f1_label} LW (Hz)", editor=NumberEditor(step=0.01), formatter=NumberFormatter(format="0.00")),
+        TableColumn(field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")),
+        TableColumn(field="include", title="Include", editor=SelectEditor(options=["yes","no"])),
+        TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
+        ]
 
 data_table = DataTable(
     source=source, columns=columns, editable=True, fit_columns=True, width=800

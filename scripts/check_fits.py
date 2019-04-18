@@ -21,6 +21,7 @@
         
         --help
 """
+from sys import exit
 from pathlib import Path
 
 import pandas as pd
@@ -30,6 +31,7 @@ import matplotlib.pyplot as plt
 from docopt import docopt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.widgets import Button
 
 from peakipy.core import make_mask, pvoigt2d, make_models, Pseudo3D, run_log
 
@@ -105,6 +107,19 @@ if __name__ == "__main__":
                 int(np.ceil(max(group.center_y) + y_radius + 1)),
                 int(np.floor(min(group.center_y) - y_radius)),
             )
+            
+            # deal with peaks on the edge of spectrum
+            if min_y < 0:
+                min_y = 0
+
+            if min_x < 0:
+                min_x = 0
+
+            if max_y > pseudo3D.f1_size:
+                max_y = pseudo3D.f1_size
+
+            if max_x > pseudo3D.f2_size:
+                max_x = pseudo3D.f2_size
 
             masks = []
             # make masks
@@ -123,6 +138,7 @@ if __name__ == "__main__":
             # generate simulated data
             for plane_id, plane in group.groupby("plane"):
                 sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
+                shape = sim_data.shape
                 for amp, c_x, c_y, s_x, s_y, frac in zip(
                     plane.amp,
                     plane.center_x,
@@ -131,8 +147,7 @@ if __name__ == "__main__":
                     plane.sigma_y,
                     plane.fraction,
                 ):
-                    print(amp)
-                    shape = sim_data.shape
+                    #print(amp)
                     sim_data += pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
                         shape
                     )
@@ -176,7 +191,9 @@ if __name__ == "__main__":
 
                 plt.legend()
                 names = ",".join(plane.assignment)
-                plt.title(f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}")
+                title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
+                plt.title(title)
+                print(f"Plotting: {title}")
                 out_str = "Amplitudes\n----------------\n"
                 # chi2s = []
                 for amp, name, peak_mask in zip(plane.amp, plane.assignment, masks):
@@ -188,6 +205,18 @@ if __name__ == "__main__":
                 pdf.savefig()
 
                 if show:
+                    def exit_program(event):
+                        exit()
+
+                    def next_plot(event):
+                        plt.close()
+
+                    axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
+                    bnexit = Button(axexit, "Exit")
+                    bnexit.on_clicked(exit_program)
+                    axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
+                    bnnext = Button(axnext, "Next")
+                    bnnext.on_clicked(next_plot)
                     plt.show()
 
                 plt.close()
