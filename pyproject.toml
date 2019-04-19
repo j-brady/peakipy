@@ -25,8 +25,9 @@ requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
-read_peaklist = peakipy:scripts.read_peaklist.py
-fit_peaks = peakipy:scripts.fit_peaks.py
-check_fits = peakipy:scripts.check_fits.py
-edit_fits_script = peakipy:scripts.edit_fits_script.py
-edit_fits = peakipy:scripts.edit_fits.py
+read_peaklist = 'peakipy:scripts.read_peaklist'
+fit_peaks = 'peakipy:scripts.fit_peaks'
+check_fits = 'peakipy:scripts.check_fits'
+edit_fits_script = 'peakipy:scripts.edit_fits_script'
+edit_fits = 'peakipy:scripts.edit_fits'
+spec = 'peakipy:scripts.spec'

@@ -26,7 +26,7 @@ peaklist = Path(args.get("<peaklist>"))
 data = args.get("<data>")
 dims = args.get("--dims")
 
-script = which("edit_fits_script.py")
+script = which("edit_fits_script")
 
 # p = subprocess.Popen(['bokeh','serve', '--show', script, '--args', peaklist, data, f'--dims={dims}' ])
 run_log()
