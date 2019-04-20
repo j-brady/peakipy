@@ -565,4 +565,4 @@ if __name__ == "__main__":
     if args.get("--show"):
         with open("show_clusters.yml", "w") as out:
             out.write(yaml)
-        os.system("spec.py show_clusters.yml")
+        os.system("spec show_clusters.yml")
