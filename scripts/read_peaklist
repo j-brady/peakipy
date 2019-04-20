@@ -253,7 +253,7 @@ class Peaklist:
 
     def _read_analysis(self):
 
-        df = pd.read_table(self.path, delimiter="\t")
+        df = pd.read_csv(self.path, delimiter="\t")
         new_columns = [analysis_to_pipe.get(i, i) for i in df.columns]
         pipe_columns = dict(zip(df.columns, new_columns))
         df = df.rename(index=str, columns=pipe_columns)
@@ -282,7 +282,7 @@ class Peaklist:
                     break
                 else:
                     to_skip += 1
-        df = pd.read_table(
+        df = pd.read_csv(
             self.path, skiprows=to_skip, names=columns, delim_whitespace=True
         )
         return df
