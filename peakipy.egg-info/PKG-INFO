@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: peakipy
+Version: 0.1.2
+Summary: Some functions and scripts for deconvoluting NMR peaks interactively
+Home-page: https://j-brady.github.io/peakipy
+Author: Jacob Peter Brady
+Author-email: jacob.brady0449@gmail.com
+License: GNU GPLv3
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX :: Linux
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)

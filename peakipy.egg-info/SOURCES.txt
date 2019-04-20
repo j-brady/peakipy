@@ -1,0 +1,17 @@
+README.md
+setup.py
+peakipy/__init__.py
+peakipy/core.py
+peakipy.egg-info/PKG-INFO
+peakipy.egg-info/SOURCES.txt
+peakipy.egg-info/dependency_links.txt
+peakipy.egg-info/requires.txt
+peakipy.egg-info/top_level.txt
+scripts/check_fits
+scripts/edit_fits
+scripts/edit_fits_script
+scripts/fit_peaks
+scripts/read_peaklist
+scripts/spec
+test/test_core.py
+test/test_data.py

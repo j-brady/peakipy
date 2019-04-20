@@ -65,6 +65,24 @@
              Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
 
        Clusters of peaks are selected
+
+
+    peakipy - deconvolute overlapping NMR peaks
+    Copyright (C) 2019  Jacob Peter Brady
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 import os
 from pathlib import Path
@@ -76,7 +94,7 @@ import nmrglue as ng
 from docopt import docopt
 from scipy import ndimage
 from skimage.morphology import square, binary_closing, opening, disk, rectangle
-from skimage.filters import threshold_otsu, threshold_adaptive
+from skimage.filters import threshold_otsu 
 
 from peakipy.core import make_mask, Pseudo3D, run_log
 
@@ -111,6 +129,7 @@ analysis_to_pipe = {
 sparky_to_pipe = {
     "index": "INDEX",
     # "": "X_AXIS",
+
     # "": "Y_AXIS",
     # "": "DX",
     # "": "DY",
@@ -352,27 +371,27 @@ class Peaklist:
         for ind, group in self.df.groupby("CLUSTID"):
             self.df.loc[group.index, "MEMCNT"] = len(group)
 
-    def adaptive_clusters(self, block_size, offset, l_struc=None):
+    # def adaptive_clusters(self, block_size, offset, l_struc=None):
 
-        self.thresh = threshold_otsu(self.data[0])
+    #     self.thresh = threshold_otsu(self.data[0])
 
-        peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+    #     peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
-        binary_adaptive = threshold_adaptive(
-            self.data[0], block_size=block_size, offset=offset
-        )
-
-        labeled_array, num_features = ndimage.label(binary_adaptive, l_struc)
-        # print(labeled_array, num_features)
-
-        self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
-
-        #  renumber "0" clusters
-        max_clustid = self.df["CLUSTID"].max()
-        n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
-        self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
-            max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
-        )
+    #     binary_adaptive = threshold_adaptive(
+    #         self.data[0], block_size=block_size, offset=offset
+    #     )
+ 
+    #     labeled_array, num_features = ndimage.label(binary_adaptive, l_struc)
+    #     # print(labeled_array, num_features)
+ 
+    #     self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+ 
+    #     #  renumber "0" clusters
+    #     max_clustid = self.df["CLUSTID"].max()
+    #     n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
+    #     self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+    #         max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+    #     )
 
     def mask_method(self, x_radius=0.04, y_radius=0.4, l_struc=None):
 
