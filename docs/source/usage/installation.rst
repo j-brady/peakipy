@@ -45,7 +45,7 @@ With setup.py
 ``cd peakipy; python setup.py install``
 
 
-At this point the package should be installed and the main scripts (``read_peaklist.py``, ``edit_fits.py``, ``fit_peaks.py`` and ``check_fits.py``) should have been added to your path.
+At this point the package should be installed and the main scripts (``read_peaklist``, ``edit_fits``, ``fit_peaks`` and ``check_fits``) should have been added to your path.
 
 
 Requirements

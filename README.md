@@ -31,7 +31,7 @@ You can also install peakipy with `setup.py`. You will need python3.6 or greater
 cd peakipy; python setup.py install
 ```
 
-At this point the package should be installed and the main scripts (`read_peaklist.py`, `edit_fits.py`, `fit_peaks.py` and `check_fits.py`)
+At this point the package should be installed and the main scripts (`read_peaklist`, `edit_fits`, `fit_peaks` and `check_fits`)
 should have been added to your path.
 
 ## Inputs
@@ -41,10 +41,10 @@ should have been added to your path.
 
 There are four main scripts.
 
-1. `read_peaklist.py` converts your peak list and selects clusters of peaks.
-2. `edit_fits.py` is used to check and adjust fit parameters interactively (i.e clusters and mask radii) if initial clustering is not satisfactory.
-3. `fit_peaks.py` fits clusters of peaks.
-4. `check_fits.py` is used to check individual fits or groups of fits and make plots.
+1. `read_peaklist` converts your peak list and selects clusters of peaks.
+2. `edit_fits` is used to check and adjust fit parameters interactively (i.e clusters and mask radii) if initial clustering is not satisfactory.
+3. `fit_peaks` fits clusters of peaks.
+4. `check_fits` is used to check individual fits or groups of fits and make plots.
 
 Below is a description of how to run these scripts.
 You can also use the `-h` or `--help` flags for instructions on how to run the programs.
@@ -65,7 +65,7 @@ Number  #       Position F1     Position F2     Sampled None    Assign F1       
 ```
 
 Note that the Position F1 and Position F2 are actually the wrong way round (i.e. F1=x and F2=y). I think this happens by default with Analysis2, however, you can chastise me for being an idiot if I'm wrong.
-`read_peaklist.py` will flip them around, so beware.
+`read_peaklist` will flip them around, so beware.
 If you have "correctly" labelled columns then you can use `--posF1=<column_name>` and `-posF2=<column_name>` to define which column names map to `Y_PPM` and `X_PPM`, respectively.
 
 
@@ -114,25 +114,25 @@ If you have a 3D cube with shape (F2_size,F1_size,ID) then you would run the scr
 would be `--dims=1,2,0` i.e the indices required to reorder to 0,1,2).
 The default dimension order is ID,F1,F2.
 
-## Running read_peaklist.py
+## Running read_peaklist
 
-Here is an example of how to run read_peaklist.py
+Here is an example of how to run read_peaklist
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --sparky --show
+read_peaklist peaks.sparky test.ft2 --sparky --show
 ```
 
 This will convert your peak list into a `pandas DataFrame` and use `threshold_otsu` from `scikit-image` to determine a
  cutoff for selecting overlapping peaks.
 These are subsequently grouped into clusters ("CLUSTID" column a la NMRPipe!).
 The new peak list with selected clusters is saved as a csv file `peaks.csv` to be used as input for either
-`edit_fits.py` or `fit_peaks.py`.
-It is possible to set the threshold value manually using the `--thres` option. However, it may be preferable to adjust this parameter within the `edit_fits.py` script.
+`edit_fits` or `fit_peaks`.
+It is possible to set the threshold value manually using the `--thres` option. However, it may be preferable to adjust this parameter within the `edit_fits` script.
 
 
 Clustered peaks are colour coded and singlet peaks are black (shown below).
-If you want to edit this plot after running `read_peaklist.py` then you can edit `show_clusters.yml` and re-plot using
-`spec.py show_clusters.yml`.
+If you want to edit this plot after running `read_peaklist` then you can edit `show_clusters.yml` and re-plot using
+`spec show_clusters.yml`.
 
 
 ![Clustered peaks](images/clusters.png)
@@ -140,7 +140,7 @@ If you want to edit this plot after running `read_peaklist.py` then you can edit
 The threshold level can be adjusted with the `--thres` option like so
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --sparky --show --thres=1e6
+read_peaklist peaks.sparky test.ft2 --sparky --show --thres=1e6
 ```
 
 This will exclude signals below 1e6.
@@ -148,7 +148,7 @@ This will exclude signals below 1e6.
 It is also possible to adjust the clustering behaviour by changing the structuring element used for binary closing.
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --struc_el=disk --struc_size=4, --show
+read_peaklist peaks.sparky test.ft2 --dims=0,1,2 --struc_el=disk --struc_size=4, --show
 ```
 
 The above would use a disk shaped structuring element with a radius of 4 points (see the [scikit-image.morphology](http://scikit-image.org/docs/dev/api/skimage.morphology.html) module for more information).
@@ -156,19 +156,19 @@ The above would use a disk shaped structuring element with a radius of 4 points 
 The radii used for masking the data to be fitted can be adjusted by setting the `--f2radius` and `--f1radius` flags like so (values given in ppm)...
 
 ```bash
-read_peaklist.py peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
+read_peaklist peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
 ```
 
 If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using
-`edit_fits.py`.
+`edit_fits`.
 
 ```bash
-edit_fits.py <peaklist> <nmrdata>
+edit_fits <peaklist> <nmrdata>
 ```
 
 This command will start a `bokeh` server and cause a tab to open in your internet browser in which you can interactively edit peak fitting parameters.
 
-![Using edit_fits.py](images/bokeh.png)
+![Using edit_fits](images/bokeh.png)
 
 Use the table on the right to select the cluster(s) you are interested and double click to edit values in the table.
 For example if you think peak1 should be fitted with peak2 but they have different clustids then you can simply change peak2's clustid to match peak1's.
@@ -178,32 +178,32 @@ parameters for fitting (including the X and Y radii for the fitting mask, using 
 
 The effect of changing these parameters can be visualised by clicking on the `Fit selected` button which will cause a `matplotlib` wireframe plot to popup. Note that you must close this `matplotlib` interactive window before continuing with parameter adjustments (I will try and add a 3D visualisation that works in the browser...).
 You will need to have your interactive backend correctly configured by editing your
-matplotlibrc file. If you don't know where that is then you can find it by importing matplotlib into your Python interpreter and typing `matplotlib.get_data_path()`.
+matplotlibrc file. If you don't know where that is then you can find it by importing matplotlib into yourthon interpreter and typing `matplotlib.get_data_path()`.
 
 To test other peak clustering settings you can adjust the contour level (akin to changing `--thres`) or adjust the dimensions of the structuring element used for binary closing.
 
 ![Example fit](images/fit.png)
 
 If you like the parameters you have chosen then you can save the peak list using the `save` button. If you want to return to your edited peak
-list at a later stage then run `edit_fits.py` with the edited peak list as your `<peaklist>` argument.
+list at a later stage then run `edit_fits` with the edited peak list as your `<peaklist>` argument.
 
 Clicking `Quit` closes the bokeh server.
 
-Following this (or before), `fit_peaks.py` can be run using your (edited) peak list generated by (`edit_peaks.py`) `read_peaklist.py`.
+Following this (or before), `fit_peaks` can be run using your (edited) peak list generated by (`edit_peaks`) `read_peaklist`.
 
 For example...
 
 ```bash
-fit_peaks.py edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV
+fit_peaks edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV
 ```
 
 Fits that are likely to need checking are flagged in the `log.txt` file.
 
 If you have a `vclist` style file containing your delay values then you can run
-`fit_peaks.py` with the `--vclist` flag.
+`fit_peaks` with the `--vclist` flag.
 
 ```bash
-fit_peaks.py edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV --vclist=vclist
+fit_peaks edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV --vclist=vclist
 ```
 This will result in an extra column being added to your `fits.csv` file called `vclist`
 containing the corresponding values.
@@ -213,7 +213,7 @@ containing the corresponding values.
 Peaks can be excluded from being fitted either by directly commenting the line in
 the `.csv` file containing the peak list i.e add a `#` at the start of the line
 you want to exclude. Alternatively, peaks can be excluded by changing the value
-in the column entitled `include` from `yes` to `no`. The easiest way to do this is via the `edit_peaks.py` script.
+in the column entitled `include` from `yes` to `no`. The easiest way to do this is via the `edit_peaks` script.
 
 ## Protocol
 
@@ -234,18 +234,18 @@ Initial parameters for FWHM, peak centers and fraction are fitted from the sum o
 etc...
 ```
 
-2. If `--plot=<path>` option selected the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (clustid) of the fit. Adding `--show` option calls `plt.show()` on each fit so you can see what it looks like. However, using `check_fits.py` should be preferable since plotting the fits during fitting
+2. If `--plot=<path>` option selected the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (clustid) of the fit. Adding `--show` option calls `plt.show()` on each fit so you can see what it looks like. However, using `check_fits` should be preferable since plotting the fits during fitting
 slows down the process a lot.
 
-3. To plot fits for all planes or interactively check them you can run `check_fits.py`
+3. To plot fits for all planes or interactively check them you can run `check_fits`
 
 ```bash
-check_fits.py fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf
+check_fits fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf
 ```
-Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf. Calling `check_fits.py`
+Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf. Calling `check_fits`
 with the `--first` flag results in only the first plane of each fit being plotted.
 
-Run `check_fits.py -h` for more options.
+Run `check_fits -h` for more options.
 
 You can explore the output data conveniently with `pandas`.
 
@@ -302,7 +302,7 @@ A sanity check... Peak intensities were fit using the nlinLS program from NMRPip
 
 ## Homage to FuDA
 
-If you would rather use FuDA then try running `read_peaklist.py` with the `--fuda` flag to create a FuDA parameter file
+If you would rather use FuDA then try running `read_peaklist` with the `--fuda` flag to create a FuDA parameter file
 (params.fuda) and peak list (peaks.fuda).
 This should hopefully save you some time on configuration.
 

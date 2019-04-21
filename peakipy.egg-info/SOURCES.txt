@@ -9,7 +9,7 @@ peakipy.egg-info/requires.txt
 peakipy.egg-info/top_level.txt
 scripts/check_fits
 scripts/edit_fits
-scripts/edit_fits_script
+scripts/edit_fits_script.py
 scripts/fit_peaks
 scripts/read_peaklist
 scripts/spec

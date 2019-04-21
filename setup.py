@@ -11,7 +11,7 @@ scripts = [
     "read_peaklist",
     "spec",
     "edit_fits",
-    "edit_fits_script",
+    "edit_fits_script.py",
 ]
 scripts = [f"scripts/{script}" for script in scripts]
 [os.system(f"chmod +x {script}") for script in scripts]
@@ -32,7 +32,7 @@ requirements = [
 
 setup(
     name="peakipy",
-    version="0.1.2",
+    version="0.1.6",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     author="Jacob Peter Brady",
     author_email="jacob.brady0449@gmail.com",
