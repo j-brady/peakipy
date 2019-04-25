@@ -90,7 +90,7 @@ args = docopt(__doc__)
 schema = Schema({
         '<peaklist>': And(os.path.exists, open, error='FILE should be readable'),
         '<data>': And(os.path.exists, Use(ng.pipe.read, error='<data> should be NMRPipe format 2D or 3D cube')),
-        '<output>': And(os.path.exists, error='PATH should exist'),
+        '<output>': Use(str),
         '--max_cluster_size': And(Use(int), lambda n: 0 < n),
         '--lineshape': Or('PV','L','G', error="Must be either PV, L or G"),
         '--fix': Or(Use(lambda x: [i for i in x.split(',') if (i=='fraction') or (i=='center') or (i=='sigma')])),
@@ -397,10 +397,10 @@ if vclist:
 output = Path(args["<output>"])
 suffix = output.suffix
 if suffix == ".csv":
-    df.to_csv(output, float_format="%.4f")
+    df.to_csv(output, float_format="%.4f", index=False)
 
 elif suffix == ".tab":
-    df.to_csv(output, sep="\t", float_format="%.4f")
+    df.to_csv(output, sep="\t", float_format="%.4f", index=False)
 
 else:
     df.to_pickle(output)
