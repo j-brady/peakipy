@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: peakipy
-Version: 0.1.6
+Version: 0.1.7
 Summary: Some functions and scripts for deconvoluting NMR peaks interactively
 Home-page: https://j-brady.github.io/peakipy
 Author: Jacob Peter Brady

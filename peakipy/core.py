@@ -219,6 +219,8 @@ def to_prefix(x):
         ["/", "or"],
         ["?", "maybe"],
         ["\\", ""],
+        ["(", "_"],
+        [")", "_"],
     ]
     for p in to_replace:
         prefix = prefix.replace(*p)

@@ -115,7 +115,6 @@ to_fix = args.get("--fix")
 verb = args.get("--verb")
 if verb:
     print("Using ", args)
-log = open("log.txt", "w")
 
 # path to peaklist
 peaklist = Path(args.get("<peaklist>"))
@@ -170,7 +169,9 @@ else:
 plot = args.get("--plot")
 if plot == "None":
     plot = None
+    log = open("log.txt", "w")
 else:
+    log = open("~log.txt", "w")
     plot.mkdir(parents=True, exist_ok=True)
 
 # get dims from command line input
