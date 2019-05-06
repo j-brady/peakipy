@@ -426,6 +426,7 @@ p.add_tools(
             ("Assignment", "@ASS"),
             ("CLUSTID", "@CLUSTID"),
             ("RADII", "@X_RADIUS_PPM{0.000}, @Y_RADIUS_PPM{0.000}"),
+            (f"{f2_label},{f1_label}", "$x{0.000} ppm, $y{0.000} ppm"),
         ],
         mode="mouse",
         # add renderers
