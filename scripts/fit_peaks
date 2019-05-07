@@ -19,7 +19,7 @@
 
         --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
 
-        --lineshape=<G/L/PV>                   lineshape to fit [default: PV]
+        --lineshape=<G/L/PV/PV_G/PV_L/G_L>     lineshape to fit [default: PV]
 
         --fix=<fraction,sigma,center>          Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
@@ -92,7 +92,7 @@ schema = Schema({
         '<data>': And(os.path.exists, Use(ng.pipe.read, error='<data> should be NMRPipe format 2D or 3D cube')),
         '<output>': Use(str),
         '--max_cluster_size': And(Use(int), lambda n: 0 < n),
-        '--lineshape': Or('PV','L','G', error="Must be either PV, L or G"),
+        '--lineshape': Or('PV','L','G','PV_G','PV_L','G_L', error="Must be either PV, L, G, PV_G, PV_L, G_L"),
         '--fix': Or(Use(lambda x: [i for i in x.split(',') if (i=='fraction') or (i=='center') or (i=='sigma')])),
         '--dims': Use(lambda n: [int(i) for i in eval(n)], error="--dims should be list of integers e.g. --dims=0,1,2"),
         '--vclist': Or('None', And(os.path.exists, Use(np.genfromtxt, error=f"cannot open {args.get('--vclist')}"))),

@@ -47,6 +47,46 @@ spi = sqrt(pi)
 s2 = sqrt(2.0)
 tiny = 1.0e-13
 
+def gaussian(x, center=0.0, sigma=1.0):
+    """Return a 1-dimensional Gaussian function.
+    gaussian(x, center, sigma) =
+        (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+    """
+    return (1.0 / (sqrt(2 * π) * sigma)) * exp(
+        -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
+    )
+
+def lorentzian(x, center=0.0, sigma=1.0):
+    """Return a 1-dimensional Lorentzian function.
+    lorentzian(x, center, sigma) =
+        (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+    """
+    return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
+
+def pseudo_voigt(x,  center=0.0, sigma=1.0, fraction=0.5):
+    """ Pseudo-voigt function
+
+    Arguments
+    =========
+
+        -- x: data
+        -- center: center of peak
+        -- sigma: sigma of lineshape
+        -- fraction: fraction of lorentzian lineshape (between 0 and 1)
+
+    Description
+    ===========
+
+    Superposition of Gaussian and Lorentzian function
+
+    math: 1-fraction * G(x,center,\sigma_g) + fraction * L(x, center, \sigma)
+
+    """
+    sigma_g = sigma / sqrt(2 * log2)
+    pv = (1 - fraction) * gaussian(x, center, sigma_g) + fraction * lorentzian(
+        x, center, sigma
+    )
+    return pv
 
 def pvoigt2d(
     XY,
@@ -59,7 +99,9 @@ def pvoigt2d(
 ):
     """ 2D pseudo-voigt model
 
-        Arguments:
+        Arguments
+        =========
+
             -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
             -- amplitude: peak amplitude (gaussian and lorentzian)
             -- center_x: position of peak in x
@@ -68,39 +110,132 @@ def pvoigt2d(
             -- sigma_y: linewidth in y
             -- fraction: fraction of lorenztian in fit
 
-        Returns:
+        Returns
+        =======
+
             -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
 
-    def gaussian(x, center=0.0, sigma=1.0):
-        """Return a 1-dimensional Gaussian function.
-        gaussian(x, center, sigma) =
-            (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
-        """
-        return (1.0 / (sqrt(2 * π) * sigma)) * exp(
-            -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
-        )
-
-    def lorentzian(x, center=0.0, sigma=1.0):
-        """Return a 1-dimensional Lorentzian function.
-        lorentzian(x, center, sigma) =
-            (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
-        """
-        return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
     x, y = XY
-    sigma_gx = sigma_x / sqrt(2 * log2)
-    sigma_gy = sigma_y / sqrt(2 * log2)
+    #sigma_gx = sigma_x / sqrt(2 * log2)
+    #sigma_gy = sigma_y / sqrt(2 * log2)
     # fraction same for both dimensions
     # super position of gaussian and lorentzian
     # then convoluted for x y
-    pv_x = (1 - fraction) * gaussian(x, center_x, sigma_gx) + fraction * lorentzian(
-        x, center_x, sigma_x
-    )
-    pv_y = (1 - fraction) * gaussian(y, center_y, sigma_gy) + fraction * lorentzian(
-        y, center_y, sigma_y
-    )
+    #pv_x = (1 - fraction) * gaussian(x, center_x, sigma_gx) + fraction * lorentzian(
+    #    x, center_x, sigma_x
+    #)
+    pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
+    pv_y = pseudo_voigt(y, center_y, sigma_y, fraction)
+    #pv_y = (1 - fraction) * gaussian(y, center_y, sigma_gy) + fraction * lorentzian(
+    #    y, center_y, sigma_y
+    #)
+    return amplitude * pv_x * pv_y
+
+
+def pv_l(
+    XY,
+    amplitude=1.0,
+    center_x=0.5,
+    center_y=0.5,
+    sigma_x=1.0,
+    sigma_y=1.0,
+    fraction=0.5,
+):
+    """ 2D lineshape model with pseudo-voigt in x and lorentzian in y
+
+        Arguments
+        =========
+
+            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+            -- amplitude: peak amplitude (gaussian and lorentzian)
+            -- center_x: position of peak in x
+            -- center_y: position of peak in y
+            -- sigma_x: linewidth in x
+            -- sigma_y: linewidth in y
+            -- fraction: fraction of lorenztian in fit
+
+        Returns
+        =======
+
+            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+
+    """
+
+
+    x, y = XY
+    pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
+    pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0) # lorentzian
+    return amplitude * pv_x * pv_y
+
+
+def pv_g(
+    XY,
+    amplitude=1.0,
+    center_x=0.5,
+    center_y=0.5,
+    sigma_x=1.0,
+    sigma_y=1.0,
+    fraction=0.5,
+):
+    """ 2D lineshape model with pseudo-voigt in x and gaussian in y
+
+        Arguments
+        =========
+
+            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+            -- amplitude: peak amplitude (gaussian and lorentzian)
+            -- center_x: position of peak in x
+            -- center_y: position of peak in y
+            -- sigma_x: linewidth in x
+            -- sigma_y: linewidth in y
+            -- fraction: fraction of lorenztian in fit
+
+        Returns
+        =======
+
+            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+
+    """
+    x, y = XY
+    pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
+    pv_y = pseudo_voigt(y, center_y, sigma_y, 0.0) # gaussian
+    return amplitude * pv_x * pv_y
+
+
+def gaussian_lorentzian(
+    XY,
+    amplitude=1.0,
+    center_x=0.5,
+    center_y=0.5,
+    sigma_x=1.0,
+    sigma_y=1.0,
+    fraction=0.5,
+):
+    """ 2D lineshape model with gaussian in x and lorentzian in y
+
+        Arguments
+        =========
+
+            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+            -- amplitude: peak amplitude (gaussian and lorentzian)
+            -- center_x: position of peak in x
+            -- center_y: position of peak in y
+            -- sigma_x: linewidth in x
+            -- sigma_y: linewidth in y
+            -- fraction: fraction of lorenztian in fit
+
+        Returns
+        =======
+
+            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+
+    """
+    x, y = XY
+    pv_x = pseudo_voigt(x, center_x, sigma_x, 0.0) # gaussian
+    pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0) # lorentzian
     return amplitude * pv_x * pv_y
 
 
@@ -340,14 +475,24 @@ def fit_first_plane(
             group -- pandas data from containing group of peaks using groupby("CLUSTID")
             data  -- NMR data
             uc_dics -- unit conversion dics
-            lineshape -- PV/G/L
+            lineshape -- PV/G/L/G_L/PV_L/PV_G
             xy_bounds -- None or (x_bound, y_bound)
             plot -- if True show wireframe plots
 
     """
     shape = data.shape
     mask = np.zeros(shape, dtype=bool)
-    mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds)
+    if (lineshape=="PV") or (lineshape=="G") or (lineshape=="L"):
+        mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds)
+
+    elif lineshape=="G_L":
+        mod, p_guess = make_models(gaussian_lorentzian, group, data, lineshape="PV", xy_bounds=xy_bounds)
+
+    elif lineshape=="PV_G":
+        mod, p_guess = make_models(pv_g, group, data, lineshape="PV", xy_bounds=xy_bounds)
+
+    elif lineshape=="PV_L":
+        mod, p_guess = make_models(pv_l, group, data, lineshape="PV", xy_bounds=xy_bounds)
 
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]

@@ -478,10 +478,10 @@ button = Button(label="Save", button_type="success")
 button.on_event(ButtonClick, save_peaks)
 # call fit_peaks
 fit_button = Button(label="Fit selected", button_type="primary")
-radio_button_group = RadioButtonGroup(labels=["PV", "G", "L"], active=0)
-lineshapes = {0: "PV", 1: "G", 2: "L"}
+radio_button_group = RadioButtonGroup(labels=["PV", "G", "L","PV_L","PV_G","G_L"], active=0)
+lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_L", 4: "PV_G", 5: "G_L"}
 ls_div = Div(
-    text="Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G) or Lorentzian (L)"
+    text="Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G), Lorentzian (L), PV/G, PV/L, G/L. PV/G fits a PV lineshape to the direct dimension and a G lineshape to the indirect."
 )
 clust_div = Div(
     text="""If you want to adjust how the peaks are automatically clustered then try changing the

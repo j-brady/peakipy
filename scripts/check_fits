@@ -51,7 +51,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.widgets import Button
 
-from peakipy.core import make_mask, pvoigt2d, make_models, Pseudo3D, run_log
+from peakipy.core import make_mask, pvoigt2d, pv_g, pv_l, gaussian_lorentzian, make_models, Pseudo3D, run_log
 
 
 if __name__ == "__main__":
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         clusters = [int(i) for i in clusters.split(",")]
         # only use these clusters
         fits = fits[fits.clustid.isin(clusters)]
-
+    
     groups = fits.groupby("clustid")
 
     # make plotting meshes
@@ -157,18 +157,34 @@ if __name__ == "__main__":
             for plane_id, plane in group.groupby("plane"):
                 sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
                 shape = sim_data.shape
-                for amp, c_x, c_y, s_x, s_y, frac in zip(
+                for amp, c_x, c_y, s_x, s_y, frac, ls in zip(
                     plane.amp,
                     plane.center_x,
                     plane.center_y,
                     plane.sigma_x,
                     plane.sigma_y,
                     plane.fraction,
+                    plane.lineshape,
                 ):
                     #print(amp)
-                    sim_data += pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
-                        shape
-                    )
+                    if (ls == "G") or (ls == "L") or (ls == "PV"):
+                        sim_data += pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                            shape
+                        )
+                    elif ls == "PV_L":
+                        sim_data += pv_l(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                            shape
+                        )
+
+                    elif ls == "PV_G":
+                        sim_data += pv_g(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                            shape
+                        )
+
+                    elif ls == "G_L":
+                        sim_data += gaussian_lorentzian(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                            shape
+                        )
 
                 masked_data = pseudo3D.data[plane_id].copy()
                 masked_sim_data = sim_data.copy()
