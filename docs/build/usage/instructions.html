@@ -46,7 +46,7 @@
 </div>
 <p>Note that the Position F1 and Position F2 are actually the wrong way round (i.e. F1=x and F2=y). I think this happens by default with Analysis2, however, you can chastise me for being an idiot if I’m wrong.
 <code class="docutils literal notranslate"><span class="pre">read_peaklist</span></code> will flip them around, so beware.
-If you have “correctly” labelled columns then you can use <code class="docutils literal notranslate"><span class="pre">--posF1=&lt;column_name&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">-posF2=&lt;column_name&gt;</span></code> to define which column names map to <code class="docutils literal notranslate"><span class="pre">Y_PPM</span></code> and <code class="docutils literal notranslate"><span class="pre">X_PPM</span></code>, respectively.</p>
+If you have “correctly” labelled columns then you can use <code class="docutils literal notranslate"><span class="pre">--posF1=&lt;column_name&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">--posF2=&lt;column_name&gt;</span></code> to define which column names map to <code class="docutils literal notranslate"><span class="pre">Y_PPM</span></code> and <code class="docutils literal notranslate"><span class="pre">X_PPM</span></code>, respectively.</p>
 </div>
 <div class="section" id="sparky-peak-list">
 <h2>Sparky peak list<a class="headerlink" href="#sparky-peak-list" title="Permalink to this headline">¶</a></h2>
@@ -82,14 +82,14 @@ If you have “correctly” labelled columns then you can use <code class="docut
 </div>
 <div class="section" id="nmrpipe-data">
 <h2>NMRPipe Data<a class="headerlink" href="#nmrpipe-data" title="Permalink to this headline">¶</a></h2>
-<p>The input data should be either a NMRPipe 2D or 3D cube. The dimension order can be specified with the <code class="docutils literal notranslate"><span class="pre">--dims</span></code> flag.
+<p>The input data should be either an NMRPipe 2D or 3D cube. The dimension order can be specified with the <code class="docutils literal notranslate"><span class="pre">--dims</span></code> flag.
 For example, if you have a 2D spectrum with shape (F1_size,F2_size) then you should call the scripts using <code class="docutils literal notranslate"><span class="pre">--dims=0,1</span></code>.
 If you have a 3D cube with shape (F2_size,F1_size,ID) then you would run the scripts with <code class="docutils literal notranslate"><span class="pre">--dims=2,1,0</span></code> ([F2,ID,F1]
 would be <code class="docutils literal notranslate"><span class="pre">--dims=1,2,0</span></code> i.e the indices required to reorder to 0,1,2).
 The default dimension order is ID,F1,F2.</p>
 </div>
-<div class="section" id="read-peaklist-py">
-<h2>read_peaklist.py<a class="headerlink" href="#read-peaklist-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="read-peaklist">
+<h2>read_peaklist<a class="headerlink" href="#read-peaklist" title="Permalink to this headline">¶</a></h2>
 <p>Here is an example of how to run read_peaklist:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">read_peaklist</span> <span class="n">peaks</span><span class="o">.</span><span class="n">sparky</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">sparky</span> <span class="o">--</span><span class="n">show</span>
 </pre></div>
@@ -101,7 +101,7 @@ The new peak list with selected clusters is saved as a csv file <code class="doc
 It is possible to set the threshold value manually using the <code class="docutils literal notranslate"><span class="pre">--thres</span></code> option. However, it may be preferable to adjust this parameter within the <code class="docutils literal notranslate"><span class="pre">edit_fits</span></code> script.</p>
 <p>Clustered peaks are colour coded and singlet peaks are black (shown below).
 If you want to edit this plot after running <code class="docutils literal notranslate"><span class="pre">read_peaklist</span></code> then you can edit <code class="docutils literal notranslate"><span class="pre">show_clusters.yml</span></code> and re-plot using
-<code class="docutils literal notranslate"><span class="pre">spec.py</span> <span class="pre">show_clusters.yml</span></code>. Below is an example of a clustered peak list.</p>
+<code class="docutils literal notranslate"><span class="pre">spec</span> <span class="pre">show_clusters.yml</span></code>. Below is an example of a clustered peak list.</p>
 <img alt="../_images/clusters.png" src="../_images/clusters.png" />
 <p>The threshold level can be adjusted with the <code class="docutils literal notranslate"><span class="pre">--thres</span></code> option like so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">read_peaklist</span> <span class="n">peaks</span><span class="o">.</span><span class="n">sparky</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">sparky</span> <span class="o">--</span><span class="n">show</span> <span class="o">--</span><span class="n">thres</span><span class="o">=</span><span class="mf">1e6</span>
@@ -118,8 +118,8 @@ If you want to edit this plot after running <code class="docutils literal notran
 </pre></div>
 </div>
 </div>
-<div class="section" id="edit-fits-py">
-<h2>edit_fits.py<a class="headerlink" href="#edit-fits-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="edit-fits">
+<h2>edit_fits<a class="headerlink" href="#edit-fits" title="Permalink to this headline">¶</a></h2>
 <p>If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using <code class="docutils literal notranslate"><span class="pre">edit_fits</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">edit_fits</span> <span class="o">&lt;</span><span class="n">peaklist</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">nmrdata</span><span class="o">&gt;</span>
 </pre></div>
@@ -131,15 +131,27 @@ For example if you think peak1 should be fitted with peak2 but they have differe
 <p>Once a set of peaks is selected (or at least one peak within a cluster) you can manually adjust their starting
 parameters for fitting (including the X and Y radii for the fitting mask, using the sliders).</p>
 <p>The effect of changing these parameters can be visualised by clicking on the <code class="docutils literal notranslate"><span class="pre">Fit</span> <span class="pre">selected</span></code> button which will cause a <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> wireframe plot to popup. Note that you must close this <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> interactive window before continuing with parameter adjustments (I will try and add a 3D visualisation that works in the browser…).
-You will need to have your interactive backend correctly configured by editing your matplotlibrc file. If you don’t know where that is then you can find it by importing matplotlib into your Python interpreter and typing <code class="docutils literal notranslate"><span class="pre">matplotlib.get_data_path()</span></code>.</p>
+You will need to have your interactive backend correctly configured by editing your matplotlibrc file. If you don’t know where that is then you can find it by importing matplotlib into your Python interpreter and typing <code class="docutils literal notranslate"><span class="pre">matplotlib.get_data_path()</span></code>. If you have trouble with opening interactive matplotlib my first suggestion is to check that you have a <code class="docutils literal notranslate"><span class="pre">matplotlibrc</span></code> file placed in your home directory <code class="docutils literal notranslate"><span class="pre">~/.matplotlib/matplotlibrc</span></code> with the backend option set to either <code class="docutils literal notranslate"><span class="pre">TkAgg</span></code> or <code class="docutils literal notranslate"><span class="pre">Agg</span></code>. These usually work…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">backend</span><span class="p">:</span> <span class="n">TkAgg</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">backend</span><span class="p">:</span> <span class="n">Agg</span>
+</pre></div>
+</div>
+<p>or for Mac users</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">backend</span><span class="p">:</span> <span class="n">macosx</span>
+</pre></div>
+</div>
+<p>for example.</p>
 <p>To test other peak clustering settings you can adjust the contour level (akin to changing <code class="docutils literal notranslate"><span class="pre">--thres</span></code>) or adjust the dimensions of the structuring element used for binary closing.</p>
 <img alt="../_images/fit.png" src="../_images/fit.png" />
 <p>If you like the parameters you have chosen then you can save the peak list using the <code class="docutils literal notranslate"><span class="pre">save</span></code> button. If you want to return to your edited peak
 list at a later stage then run <code class="docutils literal notranslate"><span class="pre">edit_fits</span></code> with the edited peak list as your <code class="docutils literal notranslate"><span class="pre">&lt;peaklist&gt;</span></code> argument.</p>
 <p>Clicking <code class="docutils literal notranslate"><span class="pre">Quit</span></code> closes the bokeh server.</p>
 </div>
-<div class="section" id="fit-peaks-py">
-<h2>fit_peaks.py<a class="headerlink" href="#fit-peaks-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fit-peaks">
+<h2>fit_peaks<a class="headerlink" href="#fit-peaks" title="Permalink to this headline">¶</a></h2>
 <p>Once you are satisfied with your fitting parameters <code class="docutils literal notranslate"><span class="pre">fit_peaks</span></code> can be run using the peak list generated by <code class="docutils literal notranslate"><span class="pre">read_peaklist</span></code> or <code class="docutils literal notranslate"><span class="pre">edit_peaks</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">edited_peaks.csv</span></code>).</p>
 <p>For example…</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fit_peaks</span> <span class="n">edited_peaks</span><span class="o">.</span><span class="n">csv</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="o">--</span><span class="n">dims</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="o">--</span><span class="n">lineshape</span><span class="o">=</span><span class="n">PV</span>
@@ -153,13 +165,17 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
 </div>
 <p>This will result in an extra column being added to your <code class="docutils literal notranslate"><span class="pre">fits.csv</span></code> file called <code class="docutils literal notranslate"><span class="pre">vclist</span></code> containing the corresponding delay values.</p>
 </div>
-<div class="section" id="check-fits-py">
-<h2>check_fits.py<a class="headerlink" href="#check-fits-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="check-fits">
+<h2>check_fits<a class="headerlink" href="#check-fits" title="Permalink to this headline">¶</a></h2>
 <p>To plot fits for all planes or interactively check them you can run <code class="docutils literal notranslate"><span class="pre">check_fits</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">check_fits</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">dims</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="o">--</span><span class="n">clusters</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span> <span class="o">--</span><span class="n">show</span> <span class="o">--</span><span class="n">outname</span><span class="o">=</span><span class="n">plot</span><span class="o">.</span><span class="n">pdf</span>
 </pre></div>
 </div>
-<p>Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf. Calling <code class="docutils literal notranslate"><span class="pre">check_fits</span></code> with the <code class="docutils literal notranslate"><span class="pre">--first</span></code> flag results in only the first plane of each fit being plotted.</p>
+<p>Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf. Calling <code class="docutils literal notranslate"><span class="pre">check_fits</span></code> with the <code class="docutils literal notranslate"><span class="pre">--first</span></code> flag results in only the first plane of each fit being plotted. The colour or output plots can be changed using the <code class="docutils literal notranslate"><span class="pre">--colors</span></code> like so</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">check_fits</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">dims</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="o">--</span><span class="n">clusters</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span> <span class="o">--</span><span class="n">show</span> <span class="o">--</span><span class="n">outname</span><span class="o">=</span><span class="n">plot</span><span class="o">.</span><span class="n">pdf</span> <span class="o">--</span><span class="n">colors</span><span class="o">=</span><span class="n">green</span><span class="p">,</span><span class="n">purple</span>
+</pre></div>
+</div>
+<p>Only valid matplotlib color names can be used.</p>
 <p>Run <code class="docutils literal notranslate"><span class="pre">check_fits</span> <span class="pre">-h</span></code> for more options.</p>
 </div>
 <div class="section" id="excluding-peaks">
@@ -239,10 +255,10 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
 <li class="toctree-l2"><a class="reference internal" href="#sparky-peak-list">Sparky peak list</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nmrpipe-peak-list">NMRPipe peak list</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nmrpipe-data">NMRPipe Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#read-peaklist-py">read_peaklist.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#edit-fits-py">edit_fits.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#fit-peaks-py">fit_peaks.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#check-fits-py">check_fits.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#read-peaklist">read_peaklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#edit-fits">edit_fits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fit-peaks">fit_peaks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#check-fits">check_fits</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#excluding-peaks">Excluding peaks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#protocol">Protocol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a></li>

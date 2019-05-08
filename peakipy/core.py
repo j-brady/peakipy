@@ -79,7 +79,7 @@ def pseudo_voigt(x,  center=0.0, sigma=1.0, fraction=0.5):
 
     Superposition of Gaussian and Lorentzian function
 
-    math: 1-fraction * G(x,center,\sigma_g) + fraction * L(x, center, \sigma)
+    :math: `(1-fraction) G(x,center,\sigma_g) + (fraction) L(x, center, \sigma)`
 
     """
     sigma_g = sigma / sqrt(2 * log2)
@@ -183,7 +183,7 @@ def pv_g(
     """ 2D lineshape model with pseudo-voigt in x and gaussian in y
 
         Arguments
-        =========
+        ---------
 
             -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
             -- amplitude: peak amplitude (gaussian and lorentzian)
@@ -194,7 +194,7 @@ def pv_g(
             -- fraction: fraction of lorenztian in fit
 
         Returns
-        =======
+        -------
 
             -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 

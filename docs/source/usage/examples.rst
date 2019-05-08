@@ -19,7 +19,7 @@ To fit the peaks simply run ::
 
         fit_peaks test.csv test1.ft2 fits.csv --lineshape=G
 
-This will output another `.csv` file called `fits.csv` containing the fitted intensities. In this case the peaks are fit to a Gaussian lineshape.
+This will output another `.csv` file called `fits.csv` containing the fitted intensities. In this case the peaks are fit to a Gaussian lineshape (in both dimensions).
 
 To generate plots of fits or inspect them interactively you can run ::
 
@@ -27,7 +27,7 @@ To generate plots of fits or inspect them interactively you can run ::
 
 .. image:: ../../../images/egplot.png
 
-This will plot the fit for the first plane of cluster 30 saving the output in `plots.pdf`. Omitting the ``--first`` flag will result in a multi-page pdf with each plane plotted on a seperate page. If you do not want to interactively display the fits then just omit the ``--show`` flag. 
+This will plot the fit for the first plane of cluster 30 saving the output in `plots.pdf`. Omitting the ``--first`` flag will result in a multi-page pdf with each plane plotted on a seperate page. If you do not want to interactively display the fits then just omit the ``--show`` flag. If you would like to plot all the fits then omit the ``--clusters`` flag. 
 
 If you find that you need to adjust the parameters of specific fits you can run ::
 
@@ -40,3 +40,6 @@ Which will open a ``Bokeh`` server in which you can adjust individual parameters
 To save your edited peak list just click ``Save``. You can open it again later ::
 
         edit_fits edited_peaks.csv test1.ft2 
+
+
+Your fitted intensities can be accessed conveniently through the ``fits.csv`` output file using ``pandas`` or a spreadsheet.

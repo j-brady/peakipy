@@ -26,10 +26,11 @@ With pip
 
 ``pip install peakipy``
 
-You can also clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
 
 With poetry
 ^^^^^^^^^^^
+
+Clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
 
 ``cd peakipy; poetry install``
 
@@ -41,6 +42,8 @@ Otherwise refer to the `poetry documentation <https://poetry.eustace.io/docs/>`_
 
 With setup.py
 ^^^^^^^^^^^^^
+
+After cloning the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
 
 ``cd peakipy; python setup.py install``
 

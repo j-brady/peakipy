@@ -48,13 +48,13 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fit_peaks</span> <span class="n">test</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="o">--</span><span class="n">lineshape</span><span class="o">=</span><span class="n">G</span>
 </pre></div>
 </div>
-<p>This will output another <cite>.csv</cite> file called <cite>fits.csv</cite> containing the fitted intensities. In this case the peaks are fit to a Gaussian lineshape.</p>
+<p>This will output another <cite>.csv</cite> file called <cite>fits.csv</cite> containing the fitted intensities. In this case the peaks are fit to a Gaussian lineshape (in both dimensions).</p>
 <p>To generate plots of fits or inspect them interactively you can run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">check_fits</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">outname</span><span class="o">=</span><span class="n">plots</span><span class="o">.</span><span class="n">pdf</span> <span class="o">--</span><span class="n">clusters</span><span class="o">=</span><span class="mi">30</span> <span class="o">--</span><span class="n">show</span> <span class="o">--</span><span class="n">first</span>
 </pre></div>
 </div>
 <img alt="../_images/egplot.png" src="../_images/egplot.png" />
-<p>This will plot the fit for the first plane of cluster 30 saving the output in <cite>plots.pdf</cite>. Omitting the <code class="docutils literal notranslate"><span class="pre">--first</span></code> flag will result in a multi-page pdf with each plane plotted on a seperate page. If you do not want to interactively display the fits then just omit the <code class="docutils literal notranslate"><span class="pre">--show</span></code> flag.</p>
+<p>This will plot the fit for the first plane of cluster 30 saving the output in <cite>plots.pdf</cite>. Omitting the <code class="docutils literal notranslate"><span class="pre">--first</span></code> flag will result in a multi-page pdf with each plane plotted on a seperate page. If you do not want to interactively display the fits then just omit the <code class="docutils literal notranslate"><span class="pre">--show</span></code> flag. If you would like to plot all the fits then omit the <code class="docutils literal notranslate"><span class="pre">--clusters</span></code> flag.</p>
 <p>If you find that you need to adjust the parameters of specific fits you can run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">edit_fits</span> <span class="n">test</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span>
 </pre></div>
@@ -65,6 +65,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">edit_fits</span> <span class="n">edited_peaks</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span>
 </pre></div>
 </div>
+<p>Your fitted intensities can be accessed conveniently through the <code class="docutils literal notranslate"><span class="pre">fits.csv</span></code> output file using <code class="docutils literal notranslate"><span class="pre">pandas</span></code> or a spreadsheet.</p>
 </div>
 </div>
 

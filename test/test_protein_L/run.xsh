@@ -7,12 +7,12 @@
 import pandas as pd
 
 # read pipe peaklist
-read_peaklist.py test.tab test1.ft2 --pipe --f1radius=0.35 --f2radius=0.035
+read_peaklist test.tab test1.ft2 --pipe --f1radius=0.35 --f2radius=0.035
 
 # convert Nlin tab to peakipy 
-read_peaklist.py nlin.tab test1.ft2 --pipe
+read_peaklist nlin.tab test1.ft2 --pipe
 
 # fit peaks with peakipy
-fit_peaks.py test.csv test1.ft2 fits.csv --lineshape=G
+fit_peaks test.csv test1.ft2 fits.csv --lineshape=G
 
 python compare.py
