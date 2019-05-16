@@ -32,7 +32,7 @@ requirements = [
 
 setup(
     name="peakipy",
-    version="0.1.7",
+    version="0.1.8",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     author="Jacob Peter Brady",
     author_email="jacob.brady0449@gmail.com",

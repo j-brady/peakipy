@@ -1,8 +1,0 @@
-[console_scripts]
-check_fits=peakipy:scripts.check_fits
-edit_fits=peakipy:scripts.edit_fits
-edit_fits_script=peakipy:scripts.edit_fits_script
-fit_peaks=peakipy:scripts.fit_peaks
-read_peaklist=peakipy:scripts.read_peaklist
-spec=peakipy:scripts.spec
-
