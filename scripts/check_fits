@@ -39,6 +39,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
+import json
 from sys import exit
 from pathlib import Path
 
@@ -61,8 +62,17 @@ if __name__ == "__main__":
     fits = Path(args.get("<fits>"))
     fits = pd.read_csv(fits)
 
-    dims = args.get("--dims")
-    dims = [int(i) for i in eval(dims)]
+    
+    # get dims from config file
+    config_path = Path("peakipy.config")
+    if config_path.exists:
+        config = json.load(open(config_path))
+        print(f"Using config file with --dims={config.get('--dims')}")
+        dims = config.get("--dims",[0,1,2])
+
+    else:
+        dims = args.get("--dims")
+        dims = [int(i) for i in eval(dims)]
 
     data_path = args.get("<nmrdata>")
     dic, data = ng.pipe.read(data_path)

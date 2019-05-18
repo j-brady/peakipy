@@ -30,6 +30,7 @@
 
 """
 import os
+import json
 
 from docopt import docopt
 from pathlib import Path
@@ -346,6 +347,14 @@ source.data = {col: df[col] for col in df.columns}
 _dims = args.get("--dims")
 dims = [int(i) for i in _dims.split(",")]
 
+# read dims from config
+config_path = Path("peakipy.config")
+if config_path.exists:
+    config = json.load(open(config_path))
+    print(f"Using config file with --dims={config.get('--dims')}")
+    dims = config.get("--dims",[0,1,2])
+    
+
 # read pipe data
 data_path = args.get("<data>")
 dic, data = ng.pipe.read(data_path)
@@ -375,7 +384,7 @@ ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 f2_label = pseudo3D.f2_label
 f1_label = pseudo3D.f1_label
 #  make bokeh figure
-tools = ["redo", "undo", "tap", "box_zoom", "wheel_zoom", "pan", "reset"]
+tools = ["redo", "undo", "tap", "box_zoom","lasso_select","box_select", "wheel_zoom", "pan", "reset"]
 p = figure(
     x_range=(ppm_f2_0, ppm_f2_1),
     y_range=(ppm_f1_0, ppm_f1_1),
@@ -423,6 +432,7 @@ el = p.ellipse(
 p.add_tools(
     HoverTool(
         tooltips=[
+            ("Index", "$index"),
             ("Assignment", "@ASS"),
             ("CLUSTID", "@CLUSTID"),
             ("RADII", "@X_RADIUS_PPM{0.000}, @Y_RADIUS_PPM{0.000}"),
@@ -431,7 +441,7 @@ p.add_tools(
         mode="mouse",
         # add renderers
         renderers=[el],
-    )
+    ),
 )
 # p.toolbar.active_scroll = "auto"
 
@@ -477,7 +487,7 @@ savefilename = TextInput(
 button = Button(label="Save", button_type="success")
 button.on_event(ButtonClick, save_peaks)
 # call fit_peaks
-fit_button = Button(label="Fit selected", button_type="primary")
+fit_button = Button(label="Fit selected cluster", button_type="primary")
 radio_button_group = RadioButtonGroup(labels=["PV", "G", "L","PV_L","PV_G","G_L"], active=0)
 lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_L", 4: "PV_G", 5: "G_L"}
 ls_div = Div(

@@ -9,4 +9,6 @@ test/**/*.png
 dist/
 log.txt
 run_log.txt
+pip-wheel-metadata
+peakipy.egg-info
 #doc/build/

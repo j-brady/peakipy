@@ -85,6 +85,7 @@
 
 """
 import os
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -531,6 +532,14 @@ if __name__ == "__main__":
     else:
         outname = outname + ".pkl"
         data.to_pickle(outname)
+
+    # write config file  
+    with open("peakipy.config","w") as config:
+        # add dims
+        config_dic = dict([("--dims",dims),
+                           ("<data>",pipe_ft_file)]) 
+        # write json 
+        config.write(json.dumps(config_dic))
 
     run_log()
 

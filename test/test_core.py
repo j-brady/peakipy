@@ -136,6 +136,8 @@ class TestCoreFunctions(unittest.TestCase):
     def test_to_prefix(self):
 
         names = [
+            (1, "_1_"),
+            (1.0, "_1_0_"),
             (" one", "_one_"),
             (" one/two", "_oneortwo_"),
             (" one?two", "_onemaybetwo_"),

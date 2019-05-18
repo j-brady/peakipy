@@ -56,6 +56,7 @@
 
 """
 import os
+import json
 from pathlib import Path
 
 import nmrglue as ng
@@ -107,6 +108,12 @@ try:
     args = schema.validate(args)
 except SchemaError as e:
     exit(e)
+
+config_path = Path("peakipy.config")
+if config_path.exists:
+    config = json.load(open(config_path))
+    print(f"Using config file with --dims={config.get('--dims')}")
+    args["--dims"] = config.get("--dims",[0,1,2])
 
 lineshape = args.get("--lineshape")
 # params to fix

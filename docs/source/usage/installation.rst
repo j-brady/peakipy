@@ -26,6 +26,37 @@ With pip
 
 ``pip install peakipy``
 
+Below is an example of an installation script and a basic use case ::
+
+        #!/bin/bash
+
+        ##############################
+        # make a virtual environment #
+        ##############################
+        python3.7 -m venv peakipy_env;
+        source peakipy_env/bin/activate;
+
+        ##############################
+        # install peakipy            #
+        ##############################
+        pip install --upgrade pip;
+        pip install peakipy;
+
+        ##############################
+        #  process some data!        #
+        ##############################
+        read_peaklist peaks.a2 test.ft2 --a2 --f1radius=0.213 --show;
+        edit_fits peaks.csv test.ft2; # adjust fitting parameters
+        fit_peaks peaks.csv test.ft2 fits.csv --vclist=vclist; # assuming you saved edited peaklist as peaks.csv
+        # interactive checking
+        check_fits fits.csv test.ft2 --clusters=86,96,104 --colors=purple,green --show --outname=~tmp.pdf;
+        # plots all the fits (first plane only)
+        check_fits fits.csv test.ft2 --first --colors=purple,green;
+
+
+
+Run this above code by sourcing the file e.g. ``source file_containing_commands``
+
 
 With poetry
 ^^^^^^^^^^^

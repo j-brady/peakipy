@@ -343,8 +343,13 @@ def to_prefix(x):
         -- prefix: _Peak_assignment_
 
     """
+    # must be string
+    if type(x) != str:
+        x = str(x)
+
     prefix = "_" + x
     to_replace = [
+        [".", "_"],
         [" ", ""],
         ["{", "_"],
         ["}", "_"],
