@@ -95,7 +95,7 @@ import nmrglue as ng
 from docopt import docopt
 from scipy import ndimage
 from skimage.morphology import square, binary_closing, opening, disk, rectangle
-from skimage.filters import threshold_otsu 
+from skimage.filters import threshold_otsu
 
 from peakipy.core import make_mask, Pseudo3D, run_log
 
@@ -130,7 +130,6 @@ analysis_to_pipe = {
 sparky_to_pipe = {
     "index": "INDEX",
     # "": "X_AXIS",
-
     # "": "Y_AXIS",
     # "": "DX",
     # "": "DY",
@@ -381,12 +380,12 @@ class Peaklist:
     #     binary_adaptive = threshold_adaptive(
     #         self.data[0], block_size=block_size, offset=offset
     #     )
- 
+
     #     labeled_array, num_features = ndimage.label(binary_adaptive, l_struc)
     #     # print(labeled_array, num_features)
- 
+
     #     self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
- 
+
     #     #  renumber "0" clusters
     #     max_clustid = self.df["CLUSTID"].max()
     #     n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
@@ -533,12 +532,11 @@ if __name__ == "__main__":
         outname = outname + ".pkl"
         data.to_pickle(outname)
 
-    # write config file  
-    with open("peakipy.config","w") as config:
-        # add dims
-        config_dic = dict([("--dims",dims),
-                           ("<data>",pipe_ft_file)]) 
-        # write json 
+    # write config file
+    with open("peakipy.config", "w") as config:
+        #  add dims
+        config_dic = dict([("--dims", dims), ("<data>", pipe_ft_file)])
+        # write json
         config.write(json.dumps(config_dic))
 
     run_log()

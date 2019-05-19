@@ -1,0 +1,5 @@
+############################################################
+
+Cluster 25 containing 2 peaks - slope=0.959
+Cluster 25 containing 2 peaks - chi2=0.331
+

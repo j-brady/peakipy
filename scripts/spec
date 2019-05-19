@@ -120,7 +120,7 @@ if __name__ == "__main__":
         make_yaml_file(name=arguments["<new_yaml_file>"])
         exit()
 
-    params = yaml.load(open(arguments["<yaml_file>"], "r"),  Loader=yaml.FullLoader)
+    params = yaml.load(open(arguments["<yaml_file>"], "r"), Loader=yaml.FullLoader)
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

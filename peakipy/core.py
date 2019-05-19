@@ -31,6 +31,7 @@ import matplotlib.pyplot as plt
 from numpy import sqrt, log, pi, exp
 from lmfit import Model, report_fit
 from lmfit.models import LinearModel
+from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Button
 
@@ -47,6 +48,7 @@ spi = sqrt(pi)
 s2 = sqrt(2.0)
 tiny = 1.0e-13
 
+
 def gaussian(x, center=0.0, sigma=1.0):
     """Return a 1-dimensional Gaussian function.
     gaussian(x, center, sigma) =
@@ -56,6 +58,7 @@ def gaussian(x, center=0.0, sigma=1.0):
         -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
     )
 
+
 def lorentzian(x, center=0.0, sigma=1.0):
     """Return a 1-dimensional Lorentzian function.
     lorentzian(x, center, sigma) =
@@ -63,7 +66,8 @@ def lorentzian(x, center=0.0, sigma=1.0):
     """
     return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
-def pseudo_voigt(x,  center=0.0, sigma=1.0, fraction=0.5):
+
+def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
     """ Pseudo-voigt function
 
     Arguments
@@ -88,6 +92,7 @@ def pseudo_voigt(x,  center=0.0, sigma=1.0, fraction=0.5):
     )
     return pv
 
+
 def pvoigt2d(
     XY,
     amplitude=1.0,
@@ -108,7 +113,7 @@ def pvoigt2d(
             -- center_y: position of peak in y
             -- sigma_x: linewidth in x
             -- sigma_y: linewidth in y
-            -- fraction: fraction of lorenztian in fit
+            -- fraction: fraction of lorentzian in fit
 
         Returns
         =======
@@ -117,21 +122,20 @@ def pvoigt2d(
 
     """
 
-
     x, y = XY
-    #sigma_gx = sigma_x / sqrt(2 * log2)
-    #sigma_gy = sigma_y / sqrt(2 * log2)
+    # sigma_gx = sigma_x / sqrt(2 * log2)
+    # sigma_gy = sigma_y / sqrt(2 * log2)
     # fraction same for both dimensions
     # super position of gaussian and lorentzian
     # then convoluted for x y
-    #pv_x = (1 - fraction) * gaussian(x, center_x, sigma_gx) + fraction * lorentzian(
+    # pv_x = (1 - fraction) * gaussian(x, center_x, sigma_gx) + fraction * lorentzian(
     #    x, center_x, sigma_x
-    #)
+    # )
     pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
     pv_y = pseudo_voigt(y, center_y, sigma_y, fraction)
-    #pv_y = (1 - fraction) * gaussian(y, center_y, sigma_gy) + fraction * lorentzian(
+    # pv_y = (1 - fraction) * gaussian(y, center_y, sigma_gy) + fraction * lorentzian(
     #    y, center_y, sigma_y
-    #)
+    # )
     return amplitude * pv_x * pv_y
 
 
@@ -155,7 +159,7 @@ def pv_l(
             -- center_y: position of peak in y
             -- sigma_x: linewidth in x
             -- sigma_y: linewidth in y
-            -- fraction: fraction of lorenztian in fit
+            -- fraction: fraction of lorentzian in fit
 
         Returns
         =======
@@ -164,10 +168,9 @@ def pv_l(
 
     """
 
-
     x, y = XY
     pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
-    pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0) # lorentzian
+    pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0)  # lorentzian
     return amplitude * pv_x * pv_y
 
 
@@ -191,7 +194,7 @@ def pv_g(
             -- center_y: position of peak in y
             -- sigma_x: linewidth in x
             -- sigma_y: linewidth in y
-            -- fraction: fraction of lorenztian in fit
+            -- fraction: fraction of lorentzian in fit
 
         Returns
         -------
@@ -201,7 +204,45 @@ def pv_g(
     """
     x, y = XY
     pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
-    pv_y = pseudo_voigt(y, center_y, sigma_y, 0.0) # gaussian
+    pv_y = pseudo_voigt(y, center_y, sigma_y, 0.0)  # gaussian
+    return amplitude * pv_x * pv_y
+
+
+def pv_pv(
+    XY,
+    amplitude=1.0,
+    center_x=0.5,
+    center_y=0.5,
+    sigma_x=1.0,
+    sigma_y=1.0,
+    fraction_x=0.5,
+    fraction_y=0.5,
+):
+    """ 2D lineshape model with pseudo-voigt in x and pseudo-voigt in y
+        i.e. fraction_x and fraction_y params
+
+        Arguments
+        =========
+
+            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+            -- amplitude: peak amplitude (gaussian and lorentzian)
+            -- center_x: position of peak in x
+            -- center_y: position of peak in y
+            -- sigma_x: linewidth in x
+            -- sigma_y: linewidth in y
+            -- fraction_x: fraction of lorentzian in x
+            -- fraction_y: fraction of lorentzian in y
+
+        Returns
+        =======
+
+            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+
+    """
+
+    x, y = XY
+    pv_x = pseudo_voigt(x, center_x, sigma_x, fraction_x)
+    pv_y = pseudo_voigt(y, center_y, sigma_y, fraction_y)
     return amplitude * pv_x * pv_y
 
 
@@ -225,7 +266,7 @@ def gaussian_lorentzian(
             -- center_y: position of peak in y
             -- sigma_x: linewidth in x
             -- sigma_y: linewidth in y
-            -- fraction: fraction of lorenztian in fit
+            -- fraction: fraction of lorentzian in fit
 
         Returns
         =======
@@ -234,8 +275,8 @@ def gaussian_lorentzian(
 
     """
     x, y = XY
-    pv_x = pseudo_voigt(x, center_x, sigma_x, 0.0) # gaussian
-    pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0) # lorentzian
+    pv_x = pseudo_voigt(x, center_x, sigma_x, 0.0)  # gaussian
+    pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0)  # lorentzian
     return amplitude * pv_x * pv_y
 
 
@@ -325,6 +366,9 @@ def make_param_dict(peaks, data, lineshape="PV"):
             param_dict[str_form("fraction")] = 0.0
         elif lineshape == "L":
             param_dict[str_form("fraction")] = 1.0
+        elif lineshape == "PV_PV":
+            param_dict[str_form("fraction_x")] = 0.5
+            param_dict[str_form("fraction_y")] = 0.5
         else:
             param_dict[str_form("fraction")] = 0.5
 
@@ -374,7 +418,7 @@ def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
             -- model
             -- peaks: instance of pandas.df.groupby("CLUSTID")
             -- data: NMR data
-            -- lineshape: PV/G/L
+            -- lineshape: PV/G/L/PV_PV
             -- xy_bounds: tuple containing bounds for peak centers (+/-x, +/-y)
 
         Returns:
@@ -436,10 +480,10 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
                     y_bound = xy_bounds[1]
                     params[k].min = v - y_bound
                     params[k].max = v + y_bound
-                #pass
+                # pass
                 print(
-                   "setting limit of %s, min = %.3e, max = %.3e"
-                   % (k, params[k].min, params[k].max)
+                    "setting limit of %s, min = %.3e, max = %.3e"
+                    % (k, params[k].min, params[k].max)
                 )
         elif "sigma" in k:
             params[k].min = 0.0
@@ -460,9 +504,10 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
 
     # return params
 
+
 def run_log(log_name="run_log.txt"):
     """ Write log file containing time script was run and with which arguments"""
-    with open(log_name,'a') as log:
+    with open(log_name, "a") as log:
         sys_argv = sys.argv
         sys_argv[0] = Path(sys_argv[0]).name
         run_args = " ".join(sys_argv)
@@ -472,7 +517,16 @@ def run_log(log_name="run_log.txt"):
 
 
 def fit_first_plane(
-    group, data, uc_dics, lineshape="PV", xy_bounds=None, plot=None, show=True, verbose=False, log=None, noise=1.,
+    group,
+    data,
+    uc_dics,
+    lineshape="PV",
+    xy_bounds=None,
+    plot=None,
+    show=True,
+    verbose=False,
+    log=None,
+    noise=1.0,
 ):
     """
         Arguments:
@@ -487,17 +541,30 @@ def fit_first_plane(
     """
     shape = data.shape
     mask = np.zeros(shape, dtype=bool)
-    if (lineshape=="PV") or (lineshape=="G") or (lineshape=="L"):
-        mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds)
+    if (lineshape == "PV") or (lineshape == "G") or (lineshape == "L"):
+        mod, p_guess = make_models(
+            pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
+        )
 
-    elif lineshape=="G_L":
-        mod, p_guess = make_models(gaussian_lorentzian, group, data, lineshape="PV", xy_bounds=xy_bounds)
+    elif lineshape == "G_L":
+        mod, p_guess = make_models(
+            gaussian_lorentzian, group, data, lineshape="PV", xy_bounds=xy_bounds
+        )
 
-    elif lineshape=="PV_G":
-        mod, p_guess = make_models(pv_g, group, data, lineshape="PV", xy_bounds=xy_bounds)
+    elif lineshape == "PV_G":
+        mod, p_guess = make_models(
+            pv_g, group, data, lineshape="PV", xy_bounds=xy_bounds
+        )
 
-    elif lineshape=="PV_L":
-        mod, p_guess = make_models(pv_l, group, data, lineshape="PV", xy_bounds=xy_bounds)
+    elif lineshape == "PV_L":
+        mod, p_guess = make_models(
+            pv_l, group, data, lineshape="PV", xy_bounds=xy_bounds
+        )
+
+    elif lineshape == "PV_PV":
+        mod, p_guess = make_models(
+            pv_pv, group, data, lineshape="PV_PV", xy_bounds=xy_bounds
+        )
 
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
@@ -513,14 +580,14 @@ def fit_first_plane(
 
     max_x, min_x = (
         int(np.ceil(max(group.X_AXISf) + x_radius + 1)),
-        int(np.floor(min(group.X_AXISf) - x_radius )),
+        int(np.floor(min(group.X_AXISf) - x_radius)),
     )
     max_y, min_y = (
         int(np.ceil(max(group.Y_AXISf) + y_radius + 1)),
-        int(np.floor(min(group.Y_AXISf) - y_radius )),
+        int(np.floor(min(group.Y_AXISf) - y_radius)),
     )
 
-    # deal with peaks on the edge of spectrum
+    #  deal with peaks on the edge of spectrum
     if min_y < 0:
         min_y = 0
 
@@ -551,10 +618,10 @@ def fit_first_plane(
     z_sim[~mask] = np.nan
     z_plot = data.copy()
     z_plot[~mask] = np.nan
-    #print(z_plot.shape,z_sim.shape)
-    # calculate difference between fitted height 
-    # also if peak position changed significantly from start then add warning
-    # figure out tolerence 
+    # print(z_plot.shape,z_sim.shape)
+    # calculate difference between fitted height
+    #  also if peak position changed significantly from start then add warning
+    #  figure out tolerence
     _z_plot = z_plot[~np.isnan(z_plot)]
     _z_sim = z_sim[~np.isnan(z_sim)]
     _z_plot_min = np.min(_z_plot)
@@ -562,57 +629,57 @@ def fit_first_plane(
 
     norm_z = (_z_plot - _z_plot_min) / (_z_plot_max - _z_plot_min)
     norm_sim = (_z_sim - _z_plot_min) / (_z_plot_max - _z_plot_min)
-    chi2 = np.sum((norm_z - norm_sim) ** 2.0 / np.abs(norm_sim))
-    #_norm_z = norm_z[~np.isnan(norm_z)]
-    #_norm_sim = norm_sim[~np.isnan(norm_sim)]
+    chi2 = np.sum((norm_z - norm_sim)**2. / np.abs(norm_sim))
+    # _norm_z = norm_z[~np.isnan(norm_z)]
+    # _norm_sim = norm_sim[~np.isnan(norm_sim)]
 
     linmod = LinearModel()
-    linpars = linmod.guess(_z_sim,x=_z_plot)
-    linfit = linmod.fit(_z_sim,x=_z_plot,params=linpars)
-    #_sigma = np.sqrt(np.sum((_z_plot-_z_sim)**2.)/len(_z_plot))
-    #plt.plot(_z_plot,linfit.best_fit,"--",label=f"{linfit.fit_report()}:Sigma={_sigma}")
-    #plt.scatter(_z_plot,_z_sim,marker="o")
-    #plt.xlabel("z_plot")
-    #plt.ylabel("z_sim")
-    #plt.legend()
-    #plt.savefig(f"test/{peak.CLUSTID}.pdf")
-    #plt.close()
-    #chi2 = np.sum(np.abs(_z_sim - _z_plot)/ np.abs(_z_plot)) / len(_z_plot)
-    #chi2 = np.sqrt(np.sum((_z_plot - _z_sim) ** 2.0) / np.sum(_z_sim ** 2.0 ))# / len(_z_plot)
-    #chi2 = (np.sum((_z_plot - _z_sim) ** 2.0 / _z_sim**2)/len(_z_sim))**0.5
+    linpars = linmod.guess(_z_sim, x=_z_plot)
+    linfit = linmod.fit(_z_sim, x=_z_plot, params=linpars)
+    # _sigma = np.sqrt(np.sum((_z_plot-_z_sim)**2.)/len(_z_plot))
+    # plt.plot(_z_plot,linfit.best_fit,"--",label=f"{linfit.fit_report()}:Sigma={_sigma}")
+    # plt.scatter(_z_plot,_z_sim,marker="o")
+    # plt.xlabel("z_plot")
+    # plt.ylabel("z_sim")
+    # plt.legend()
+    # plt.savefig(f"test/{peak.CLUSTID}.pdf")
+    # plt.close()
+    # chi2 = np.sum(np.abs(_z_sim - _z_plot)/ np.abs(_z_plot)) / len(_z_plot)
+    # chi2 = np.sqrt(np.sum((_z_plot - _z_sim) ** 2.0) / np.sum(_z_sim ** 2.0 ))# / len(_z_plot)
+    # chi2 = (np.sum((_z_plot - _z_sim) ** 2.0 / _z_sim**2)/len(_z_sim))**0.5
     slope = linfit.params["slope"].value
     #  number of peaks in cluster
     n_peaks = len(group)
-    fit_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - slope={slope:.3f}" 
-    if (slope > 1.05) or (slope < 0.95): 
+    fit_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - slope={slope:.3f}"
+    if (slope > 1.05) or (slope < 0.95):
         fit_str += " - NEEDS CHECKING"
         print(fit_str)
     else:
         print(fit_str)
-    
-    #for index, peak in group.iterrows():
+
+    # for index, peak in group.iterrows():
 
     #    init_prefix = peak.prefix
     #    init_cenx = peak.X_AXISf
     #    init_ceny = peak.Y_AXISf
     #    print(init_prefix, init_cenx, init_ceny)
 
-        #if out.
+    # if out.
     chi2 = chi2 / n_peaks
     chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-    #if chi2 < 1:
+    # if chi2 < 1:
     #    print(chi_str)
-    #print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f}, mean-std = {mean_err-std_err:.3f} ")
-    #else:
+    # print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f}, mean-std = {mean_err-std_err:.3f} ")
+    # else:
     #    chi_str += " - NEEDS CHECKING"
     #    print(chi_str)
-        #print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f} ")
+    # print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f} ")
 
     if log != None:
-        log.write("".join("#" for _ in range(60))+"\n\n")
+        log.write("".join("#" for _ in range(60)) + "\n\n")
         log.write(fit_str + "\n")
         log.write(chi_str + "\n\n")
-        #pass
+        # pass
     else:
         pass
 
@@ -630,6 +697,9 @@ def fit_first_plane(
 
         ax.set_title("$\chi^2$=" + f"{chi2:.3f}")
 
+        residual = z_sim - z_plot
+        cset = ax.contourf(x_plot, y_plot, residual, zdir='z', offset=np.nanmin(z_plot)*1.1, alpha=0.5, cmap=cm.coolwarm)
+        fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
         # plot raw data
         ax.plot_wireframe(x_plot, y_plot, z_plot, color="k")
 
@@ -834,8 +904,10 @@ class Pseudo3D:
 #    ppm_f2 = uc_f2.ppm_scale()
 #    ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 
+
 class Fit:
     """ Class for fitting planes: NOT CURRENTLY USED """
+
     def __init__(
         self,
         group,
@@ -877,12 +949,14 @@ class Fit:
         summed_planes = self.data.sum(axis=0)
         # create boolean mask
         self.mask = np.zeros(self.data.shape, dtype=bool)
-        # make models
-        self.mod, self.p_guess = make_models(self.model, self.group, self.data, lineshape=self.lineshape)
+        #  make models
+        self.mod, self.p_guess = make_models(
+            self.model, self.group, self.data, lineshape=self.lineshape
+        )
 
         ## get initial peak centers
-        #self.cen_x = [self.p_guess[k].value for k in self.p_guess if "center_x" in k]
-        #self.cen_y = [self.p_guess[k].value for k in self.p_guess if "center_y" in k]
+        # self.cen_x = [self.p_guess[k].value for k in self.p_guess if "center_x" in k]
+        # self.cen_y = [self.p_guess[k].value for k in self.p_guess if "center_y" in k]
 
         for index, peak in self.group.iterrows():
             # generate boolean mask based on peak locations and radii
@@ -895,27 +969,27 @@ class Fit:
         y_radius = self.group.Y_RADIUS.max()
         self.max_x, self.min_x = (
             int(np.ceil(max(self.group.X_AXISf) + x_radius + 1)),
-            int(np.floor(min(self.group.X_AXISf) - x_radius )),
+            int(np.floor(min(self.group.X_AXISf) - x_radius)),
         )
         self.max_y, self.min_y = (
             int(np.ceil(max(self.group.Y_AXISf) + y_radius + 1)),
-            int(np.floor(min(self.group.Y_AXISf) - y_radius )),
+            int(np.floor(min(self.group.Y_AXISf) - y_radius)),
         )
-        #self.max_x, self.min_x = (
+        # self.max_x, self.min_x = (
         #    int(np.ceil(max(self.group.X_AXISf) + x_radius + 2)),
         #    int(np.floor(min(self.group.X_AXISf) - x_radius - 1)),
-        #)
-        #self.max_y, self.min_y = (
+        # )
+        # self.max_y, self.min_y = (
         #    int(np.ceil(max(self.group.Y_AXISf) + y_radius + 2)),
         #    int(np.floor(min(self.group.Y_AXISf) - y_radius - 1)),
-        #)
+        # )
 
         peak_slices = self.data[mask]
 
         # must be a better way to make the meshgrid
         # starts from 1
-        #x = np.arange(1, data.shape[-1] + 1)
-        #y = np.arange(1, data.shape[-2] + 1)
+        # x = np.arange(1, data.shape[-1] + 1)
+        # y = np.arange(1, data.shape[-2] + 1)
         x = np.arange(data.shape[-1])
         y = np.arange(data.shape[-2])
         self.xy_grid = np.meshgrid(x, y)
@@ -923,7 +997,7 @@ class Fit:
 
         # mask mesh data
         xy_slices = [x_grid[mask], y_grid[mask]]
-        # fit data
+        #  fit data
         self.out = self.mod.fit(peak_slices, XY=xy_slices, params=self.p_guess)
         if verbose:
             print(self.out.fit_report())
@@ -946,8 +1020,12 @@ class Fit:
         n_peaks = len(group)
         chi2 = chi2 / n_peaks
         if chi2 < 1:
-            chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-            print(f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}")
+            chi_str = (
+                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
+            )
+            print(
+                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
+            )
         else:
             chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
             print(
@@ -1002,7 +1080,8 @@ class Fit:
             #  this is dumb as !£$@
             Z_lab = [
                 data[
-                    int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
+                    int(round(uc_dics["f1"](y, "ppm"))),
+                    int(round(uc_dics["f2"](x, "ppm"))),
                 ]
                 for x, y in zip(X_lab, Y_lab)
             ]

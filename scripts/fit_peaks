@@ -5,36 +5,36 @@
         fit_peaks.py <peaklist> <data> <output> [options]
 
     Arguments:
-        <peaklist>                             peaklist output from read_peaklist.py
-        <data>                                 2D or pseudo3D NMRPipe data (single file)
-        <output>                               output peaklist "<output>.csv" will output CSV
-                                               format file, "<output>.tab" will give a tab delimited output
-                                               while "<output>.pkl" results in Pandas pickle of DataFrame
+        <peaklist>                                  peaklist output from read_peaklist.py
+        <data>                                      2D or pseudo3D NMRPipe data (single file)
+        <output>                                    output peaklist "<output>.csv" will output CSV
+                                                    format file, "<output>.tab" will give a tab delimited output
+                                                    while "<output>.pkl" results in Pandas pickle of DataFrame
 
     Options:
-        -h --help                              Show this page
-        -v --version                           Show version
+        -h --help                                   Show this page
+        -v --version                                Show version
 
-        --dims=<ID,F1,F2>                      Dimension order [default: 0,1,2]
+        --dims=<ID,F1,F2>                           Dimension order [default: 0,1,2]
 
-        --max_cluster_size=<max_cluster_size>  Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
+        --max_cluster_size=<max_cluster_size>       Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
 
-        --lineshape=<G/L/PV/PV_G/PV_L/G_L>     lineshape to fit [default: PV]
+        --lineshape=<G/L/PV/PV_PV/PV_G/PV_L/G_L>    lineshape to fit [default: PV]
 
-        --fix=<fraction,sigma,center>          Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
+        --fix=<fraction,sigma,center>               Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
-        --xy_bounds=<x_ppm,y_ppm>              Bound X and Y peak centers during fit [default: None]
-                                               This can be set like so --xy_bounds=0.1,0.5
+        --xy_bounds=<x_ppm,y_ppm>                   Bound X and Y peak centers during fit [default: None]
+                                                    This can be set like so --xy_bounds=0.1,0.5
 
-        --vclist=<fname>                       Bruker style vclist [default: None]
+        --vclist=<fname>                            Bruker style vclist [default: None]
 
-        --plot=<dir>                           Whether to plot wireframe fits for each peak
-                                               (saved into <dir>) [default: None]
+        --plot=<dir>                                Whether to plot wireframe fits for each peak
+                                                    (saved into <dir>) [default: None]
 
-        --show                                 Whether to show (using plt.show()) wireframe
-                                               fits for each peak. Only works if --plot is also selected
+        --show                                      Whether to show (using plt.show()) wireframe
+                                                    fits for each peak. Only works if --plot is also selected
 
-        --verb                                 Print what's going on
+        --verb                                      Print what's going on
 
 
 
@@ -76,10 +76,11 @@ from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_
 def norm(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
 
+
 def check_xybounds(x):
     x = x.split(",")
     if len(x) == 2:
-        xy_bounds = float(x[0]),float(x[1])
+        xy_bounds = float(x[0]), float(x[1])
         return xy_bounds
     else:
         print("xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
@@ -88,21 +89,57 @@ def check_xybounds(x):
 
 args = docopt(__doc__)
 
-schema = Schema({
-        '<peaklist>': And(os.path.exists, open, error='FILE should be readable'),
-        '<data>': And(os.path.exists, Use(ng.pipe.read, error='<data> should be NMRPipe format 2D or 3D cube')),
-        '<output>': Use(str),
-        '--max_cluster_size': And(Use(int), lambda n: 0 < n),
-        '--lineshape': Or('PV','L','G','PV_G','PV_L','G_L', error="Must be either PV, L, G, PV_G, PV_L, G_L"),
-        '--fix': Or(Use(lambda x: [i for i in x.split(',') if (i=='fraction') or (i=='center') or (i=='sigma')])),
-        '--dims': Use(lambda n: [int(i) for i in eval(n)], error="--dims should be list of integers e.g. --dims=0,1,2"),
-        '--vclist': Or('None', And(os.path.exists, Use(np.genfromtxt, error=f"cannot open {args.get('--vclist')}"))),
-        '--plot': Or('None',Use(lambda f: Path(f))),
-        '--xy_bounds': Or('None', Use(check_xybounds, error="xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")),
+schema = Schema(
+    {
+        "<peaklist>": And(os.path.exists, open, error="FILE should be readable"),
+        "<data>": And(
+            os.path.exists,
+            Use(ng.pipe.read, error="<data> should be NMRPipe format 2D or 3D cube"),
+        ),
+        "<output>": Use(str),
+        "--max_cluster_size": And(Use(int), lambda n: 0 < n),
+        "--lineshape": Or(
+            "PV",
+            "L",
+            "G",
+            "PV_PV",
+            "PV_G",
+            "PV_L",
+            "G_L",
+            error="Must be either PV, L, G, PV_PV, PV_G, PV_L, G_L",
+        ),
+        "--fix": Or(
+            Use(
+                lambda x: [
+                    i
+                    for i in x.split(",")
+                    if (i == "fraction") or (i == "center") or (i == "sigma")
+                ]
+            )
+        ),
+        "--dims": Use(
+            lambda n: [int(i) for i in eval(n)],
+            error="--dims should be list of integers e.g. --dims=0,1,2",
+        ),
+        "--vclist": Or(
+            "None",
+            And(
+                os.path.exists,
+                Use(np.genfromtxt, error=f"cannot open {args.get('--vclist')}"),
+            ),
+        ),
+        "--plot": Or("None", Use(lambda f: Path(f))),
+        "--xy_bounds": Or(
+            "None",
+            Use(
+                check_xybounds,
+                error="xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
+            ),
+        ),
         object: object,
-        },
-        #ignore_extra_keys=True,
-        )
+    },
+    # ignore_extra_keys=True,
+)
 
 try:
     args = schema.validate(args)
@@ -110,15 +147,15 @@ except SchemaError as e:
     exit(e)
 
 config_path = Path("peakipy.config")
-if config_path.exists:
+if config_path.exists():
     config = json.load(open(config_path))
     print(f"Using config file with --dims={config.get('--dims')}")
-    args["--dims"] = config.get("--dims",[0,1,2])
+    args["--dims"] = config.get("--dims", [0, 1, 2])
 
 lineshape = args.get("--lineshape")
 # params to fix
 to_fix = args.get("--fix")
-#print(to_fix)
+# print(to_fix)
 verb = args.get("--verb")
 if verb:
     print("Using ", args)
@@ -150,7 +187,7 @@ if max_cluster_size == 999:
     max_cluster_size = peaks.MEMCNT.max()
     if peaks.MEMCNT.max() > 10:
         print(
-        f"""
+            f"""
             ##################################################################
             You have some clusters of as many as {max_cluster_size} peaks.
             You may want to consider reducing the size of your clusters as the
@@ -199,7 +236,7 @@ if len(dims) != len(data.shape):
     exit()
 
 noise = threshold_otsu(data)
-#print(noise)
+# print(noise)
 
 # point per Hz
 pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
@@ -257,7 +294,6 @@ sigma_ys = []
 sigma_xs = []
 # sigma_x_errs = []
 
-fractions = []
 names = []
 indices = []
 assign = []
@@ -268,6 +304,12 @@ y_radii = []
 x_radii_ppm = []
 y_radii_ppm = []
 lineshapes = []
+
+if lineshape == "PV_PV":
+    fractions_x = []
+    fractions_y = []
+else:
+    fractions = []
 
 # group peaks based on CLUSTID
 groups = peaks.groupby("CLUSTID")
@@ -283,7 +325,7 @@ for name, group in groups:
             peak_str = "peaks"
 
         print(
-        f"""
+            f"""
 
             ####################################
             Fitting cluster of {len_group} {peak_str}
@@ -328,7 +370,15 @@ for name, group in groups:
             cen_y, cen_y_err, cy_name = get_params(first.params, "center_y")
             sig_x, sig_x_err, name = get_params(first.params, "sigma_x")
             sig_y, sig_y_err, name = get_params(first.params, "sigma_y")
-            frac, frac_err, name = get_params(first.params, "fraction")
+
+            if lineshape == "PV_PV":
+                frac_x, frac_err_x, name = get_params(first.params, "fraction_x")
+                frac_y, frac_err_y, name = get_params(first.params, "fraction_y")
+                fractions_x.extend(frac_x)
+                fractions_y.extend(frac_y)
+            else:
+                frac, frac_err, name = get_params(first.params, "fraction")
+                fractions.extend(frac)
 
             amps.extend(amp)
             amp_errs.extend(amp_err)
@@ -342,7 +392,6 @@ for name, group in groups:
             # sigma_x_errs.extend(sig_x_err)
             sigma_ys.extend(sig_y)
             # sigma_y_errs.extend(sig_y_err)
-            fractions.extend(frac)
             # add plane number, this should map to vclist
             planes.extend([num for _ in amp])
             lineshapes.extend([lineshape for _ in amp])
@@ -370,7 +419,6 @@ df_dic = {
     # "sigma_x_err": sigma_x_errs,
     "sigma_y": sigma_ys,
     # "sigma_y_err": sigma_y_errs,
-    "fraction": fractions,
     "clustid": clustids,
     "plane": planes,
     "x_radius": x_radii,
@@ -379,6 +427,12 @@ df_dic = {
     "y_radius_ppm": y_radii_ppm,
     "lineshape": lineshapes,
 }
+
+if lineshape == "PV_PV":
+    df_dic["fraction_x"] = fractions_x
+    df_dic["fraction_y"] = fractions_y
+else:
+    df_dic["fraction"] = fractions
 
 #  make dataframe
 df = pd.DataFrame(df_dic)

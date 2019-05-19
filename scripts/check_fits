@@ -49,10 +49,21 @@ import nmrglue as ng
 import matplotlib.pyplot as plt
 from docopt import docopt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.widgets import Button
 
-from peakipy.core import make_mask, pvoigt2d, pv_g, pv_l, gaussian_lorentzian, make_models, Pseudo3D, run_log
+from peakipy.core import (
+    make_mask,
+    pvoigt2d,
+    pv_pv,
+    pv_g,
+    pv_l,
+    gaussian_lorentzian,
+    make_models,
+    Pseudo3D,
+    run_log,
+)
 
 
 if __name__ == "__main__":
@@ -62,13 +73,12 @@ if __name__ == "__main__":
     fits = Path(args.get("<fits>"))
     fits = pd.read_csv(fits)
 
-    
     # get dims from config file
     config_path = Path("peakipy.config")
-    if config_path.exists:
+    if config_path.exists():
         config = json.load(open(config_path))
         print(f"Using config file with --dims={config.get('--dims')}")
-        dims = config.get("--dims",[0,1,2])
+        dims = config.get("--dims", [0, 1, 2])
 
     else:
         dims = args.get("--dims")
@@ -84,7 +94,7 @@ if __name__ == "__main__":
     clusters = args.get("--clusters")
     ccount = eval(args.get("--ccount"))
     rcount = eval(args.get("--rcount"))
-    colors = args.get("--colors").strip().split(',')
+    colors = args.get("--colors").strip().split(",")
 
     if type(ccount) == int:
         ccount = ccount
@@ -99,7 +109,9 @@ if __name__ == "__main__":
     if (type(colors) == list) and len(colors) == 2:
         data_color, fit_color = colors
     else:
-        raise TypeError("colors should be valid pair for matplotlib. i.e. g,b or green,blue")
+        raise TypeError(
+            "colors should be valid pair for matplotlib. i.e. g,b or green,blue"
+        )
 
     if clusters == "None":
         pass
@@ -107,7 +119,7 @@ if __name__ == "__main__":
         clusters = [int(i) for i in clusters.split(",")]
         # only use these clusters
         fits = fits[fits.clustid.isin(clusters)]
-    
+
     groups = fits.groupby("clustid")
 
     # make plotting meshes
@@ -135,8 +147,8 @@ if __name__ == "__main__":
                 int(np.ceil(max(group.center_y) + y_radius + 1)),
                 int(np.floor(min(group.center_y) - y_radius)),
             )
-            
-            # deal with peaks on the edge of spectrum
+
+            #  deal with peaks on the edge of spectrum
             if min_y < 0:
                 min_y = 0
 
@@ -167,34 +179,51 @@ if __name__ == "__main__":
             for plane_id, plane in group.groupby("plane"):
                 sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
                 shape = sim_data.shape
-                for amp, c_x, c_y, s_x, s_y, frac, ls in zip(
-                    plane.amp,
-                    plane.center_x,
-                    plane.center_y,
-                    plane.sigma_x,
-                    plane.sigma_y,
-                    plane.fraction,
-                    plane.lineshape,
-                ):
-                    #print(amp)
-                    if (ls == "G") or (ls == "L") or (ls == "PV"):
-                        sim_data += pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
-                            shape
-                        )
-                    elif ls == "PV_L":
-                        sim_data += pv_l(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                try:
+                    for amp, c_x, c_y, s_x, s_y, frac_x, frac_y, ls in zip(
+                        plane.amp,
+                        plane.center_x,
+                        plane.center_y,
+                        plane.sigma_x,
+                        plane.sigma_y,
+                        plane.fraction_x,
+                        plane.fraction_y,
+                        plane.lineshape,
+                    ):
+
+                        sim_data += pv_pv(XY, amp, c_x, c_y, s_x, s_y, frac_x, frac_y).reshape(
                             shape
                         )
 
-                    elif ls == "PV_G":
-                        sim_data += pv_g(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
-                            shape
-                        )
+                except:
+                    for amp, c_x, c_y, s_x, s_y, frac, ls in zip(
+                        plane.amp,
+                        plane.center_x,
+                        plane.center_y,
+                        plane.sigma_x,
+                        plane.sigma_y,
+                        plane.fraction,
+                        plane.lineshape,
+                    ):
+                        # print(amp)
+                        if (ls == "G") or (ls == "L") or (ls == "PV"):
+                            sim_data += pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                                shape
+                            )
+                        elif ls == "PV_L":
+                            sim_data += pv_l(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                                shape
+                            )
 
-                    elif ls == "G_L":
-                        sim_data += gaussian_lorentzian(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
-                            shape
-                        )
+                        elif ls == "PV_G":
+                            sim_data += pv_g(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
+                                shape
+                            )
+
+                        elif ls == "G_L":
+                            sim_data += gaussian_lorentzian(
+                                XY, amp, c_x, c_y, s_x, s_y, frac
+                            ).reshape(shape)
 
                 masked_data = pseudo3D.data[plane_id].copy()
                 masked_sim_data = sim_data.copy()
@@ -209,6 +238,10 @@ if __name__ == "__main__":
 
                 masked_data = masked_data[min_y:max_y, min_x:max_x]
                 sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
+
+                residual = sim_plot - masked_data
+                cset = ax.contourf(x_plot, y_plot, residual, zdir='z', offset=np.nanmin(masked_data)*1.1, alpha=0.5, cmap=cm.coolwarm)
+                fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
 
                 ax.plot_wireframe(
                     x_plot,
@@ -249,6 +282,7 @@ if __name__ == "__main__":
                 pdf.savefig()
 
                 if show:
+
                     def exit_program(event):
                         exit()
 

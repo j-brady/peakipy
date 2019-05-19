@@ -164,7 +164,7 @@ def recluster_peaks(event):
 
 
 def update_memcnt(df):
-    
+
     for ind, group in df.groupby("CLUSTID"):
         df.loc[group.index, "MEMCNT"] = len(group)
 
@@ -303,7 +303,7 @@ def exit_edit_peaks(event):
     exit()
 
 
-# Script starts here
+#  Script starts here
 
 args = docopt(__doc__)
 path = Path(args.get("<peaklist>"))
@@ -343,17 +343,20 @@ df["color"] = df.apply(
 source = ColumnDataSource(data=dict())
 source.data = {col: df[col] for col in df.columns}
 
-# get dim numbers
-_dims = args.get("--dims")
-dims = [int(i) for i in _dims.split(",")]
 
-# read dims from config
+#  read dims from config
 config_path = Path("peakipy.config")
-if config_path.exists:
+if config_path.exists():
     config = json.load(open(config_path))
     print(f"Using config file with --dims={config.get('--dims')}")
-    dims = config.get("--dims",[0,1,2])
-    
+    dims = config.get("--dims", [0, 1, 2])
+    _dims = ",".join(str(i) for i in dims)
+
+else:
+    # get dim numbers from commandline
+    _dims = args.get("--dims")
+    dims = [int(i) for i in _dims.split(",")]
+
 
 # read pipe data
 data_path = args.get("<data>")
@@ -384,7 +387,17 @@ ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
 f2_label = pseudo3D.f2_label
 f1_label = pseudo3D.f1_label
 #  make bokeh figure
-tools = ["redo", "undo", "tap", "box_zoom","lasso_select","box_select", "wheel_zoom", "pan", "reset"]
+tools = [
+    "redo",
+    "undo",
+    "tap",
+    "box_zoom",
+    "lasso_select",
+    "box_select",
+    "wheel_zoom",
+    "pan",
+    "reset",
+]
 p = figure(
     x_range=(ppm_f2_0, ppm_f2_1),
     y_range=(ppm_f1_0, ppm_f1_1),
@@ -441,7 +454,7 @@ p.add_tools(
         mode="mouse",
         # add renderers
         renderers=[el],
-    ),
+    )
 )
 # p.toolbar.active_scroll = "auto"
 
@@ -488,10 +501,12 @@ button = Button(label="Save", button_type="success")
 button.on_event(ButtonClick, save_peaks)
 # call fit_peaks
 fit_button = Button(label="Fit selected cluster", button_type="primary")
-radio_button_group = RadioButtonGroup(labels=["PV", "G", "L","PV_L","PV_G","G_L"], active=0)
-lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_L", 4: "PV_G", 5: "G_L"}
+radio_button_group = RadioButtonGroup(
+    labels=["PV", "G", "L", "PV_L", "PV_G", "PV_PV", "G_L"], active=0
+)
+lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_L", 4: "PV_G", 5: "PV_PV", 6: "G_L"}
 ls_div = Div(
-    text="Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G), Lorentzian (L), PV/G, PV/L, G/L. PV/G fits a PV lineshape to the direct dimension and a G lineshape to the indirect."
+    text="Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G), Lorentzian (L), PV/G, PV/L, PV_PV, G/L. PV/G fits a PV lineshape to the direct dimension and a G lineshape to the indirect."
 )
 clust_div = Div(
     text="""If you want to adjust how the peaks are automatically clustered then try changing the
@@ -505,7 +520,7 @@ selected_df = df.copy()
 
 fit_button.on_event(ButtonClick, fit_selected)
 
-#selected_columns = [
+# selected_columns = [
 #    "ASS",
 #    "CLUSTID",
 #    "X_PPM",
@@ -517,22 +532,54 @@ fit_button.on_event(ButtonClick, fit_selected)
 #    "VOL",
 #    "include",
 #    "MEMCNT",
-#]
+# ]
 #
-#columns = [TableColumn(field=field, title=field) for field in selected_columns]
+# columns = [TableColumn(field=field, title=field) for field in selected_columns]
 columns = [
-        TableColumn(field="ASS", title="Assignment"),
-        TableColumn(field="CLUSTID", title="Cluster", editor=IntEditor()),
-        TableColumn(field="X_PPM", title=f"{f2_label}", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
-        TableColumn(field="Y_PPM", title=f"{f1_label}", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
-        TableColumn(field="X_RADIUS_PPM", title=f"{f2_label} radius (ppm)", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
-        TableColumn(field="Y_RADIUS_PPM", title=f"{f1_label} radius (ppm)", editor=NumberEditor(step=0.0001), formatter=NumberFormatter(format="0.0000")),
-        TableColumn(field="XW_HZ", title=f"{f2_label} LW (Hz)", editor=NumberEditor(step=0.01), formatter=NumberFormatter(format="0.00")),
-        TableColumn(field="YW_HZ", title=f"{f1_label} LW (Hz)", editor=NumberEditor(step=0.01), formatter=NumberFormatter(format="0.00")),
-        TableColumn(field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")),
-        TableColumn(field="include", title="Include", editor=SelectEditor(options=["yes","no"])),
-        TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
-        ]
+    TableColumn(field="ASS", title="Assignment"),
+    TableColumn(field="CLUSTID", title="Cluster", editor=IntEditor()),
+    TableColumn(
+        field="X_PPM",
+        title=f"{f2_label}",
+        editor=NumberEditor(step=0.0001),
+        formatter=NumberFormatter(format="0.0000"),
+    ),
+    TableColumn(
+        field="Y_PPM",
+        title=f"{f1_label}",
+        editor=NumberEditor(step=0.0001),
+        formatter=NumberFormatter(format="0.0000"),
+    ),
+    TableColumn(
+        field="X_RADIUS_PPM",
+        title=f"{f2_label} radius (ppm)",
+        editor=NumberEditor(step=0.0001),
+        formatter=NumberFormatter(format="0.0000"),
+    ),
+    TableColumn(
+        field="Y_RADIUS_PPM",
+        title=f"{f1_label} radius (ppm)",
+        editor=NumberEditor(step=0.0001),
+        formatter=NumberFormatter(format="0.0000"),
+    ),
+    TableColumn(
+        field="XW_HZ",
+        title=f"{f2_label} LW (Hz)",
+        editor=NumberEditor(step=0.01),
+        formatter=NumberFormatter(format="0.00"),
+    ),
+    TableColumn(
+        field="YW_HZ",
+        title=f"{f1_label} LW (Hz)",
+        editor=NumberEditor(step=0.01),
+        formatter=NumberFormatter(format="0.00"),
+    ),
+    TableColumn(field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")),
+    TableColumn(
+        field="include", title="Include", editor=SelectEditor(options=["yes", "no"])
+    ),
+    TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
+]
 
 data_table = DataTable(
     source=source, columns=columns, editable=True, fit_columns=True, width=800

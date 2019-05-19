@@ -168,7 +168,7 @@ class TestCoreFunctions(unittest.TestCase):
 
         data = np.ones((20, 20))
 
-        lineshapes = ["PV", "L", "G"]
+        lineshapes = ["PV", "L", "G", "PV_PV"]
 
         for lineshape in lineshapes:
 
@@ -185,6 +185,12 @@ class TestCoreFunctions(unittest.TestCase):
             if lineshape == "L":
                 self.assertEqual(p_guess["_one_fraction"].vary, False)
                 self.assertEqual(p_guess["_one_fraction"].value, 1.0)
+
+            if lineshape == "PV_PV":
+                self.assertEqual(p_guess["_one_fraction_x"].vary, True)
+                self.assertEqual(p_guess["_one_fraction_x"].value, 0.5)
+                self.assertEqual(p_guess["_one_fraction_y"].vary, True)
+                self.assertEqual(p_guess["_one_fraction_y"].value, 0.5)
 
     def test_Pseudo3D(self):
 
