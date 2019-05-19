@@ -10,6 +10,7 @@ from peakipy.core import (
     make_mask,
     fix_params,
     pvoigt2d,
+    pv_pv,
     get_params,
     make_param_dict,
     to_prefix,
@@ -172,21 +173,23 @@ class TestCoreFunctions(unittest.TestCase):
 
         for lineshape in lineshapes:
 
-            mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
-
             if lineshape == "PV":
+                mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
                 self.assertEqual(p_guess["_one_fraction"].vary, True)
                 self.assertEqual(p_guess["_one_fraction"].value, 0.5)
 
             if lineshape == "G":
+                mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
                 self.assertEqual(p_guess["_one_fraction"].vary, False)
                 self.assertEqual(p_guess["_one_fraction"].value, 0.0)
 
             if lineshape == "L":
+                mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
                 self.assertEqual(p_guess["_one_fraction"].vary, False)
                 self.assertEqual(p_guess["_one_fraction"].value, 1.0)
 
             if lineshape == "PV_PV":
+                mod, p_guess = make_models(pv_pv, peaks, data, lineshape)
                 self.assertEqual(p_guess["_one_fraction_x"].vary, True)
                 self.assertEqual(p_guess["_one_fraction_x"].value, 0.5)
                 self.assertEqual(p_guess["_one_fraction_y"].vary, True)
