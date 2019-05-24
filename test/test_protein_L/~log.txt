@@ -1,5 +1,15 @@
 ############################################################
 
-Cluster 25 containing 2 peaks - slope=0.959
-Cluster 25 containing 2 peaks - chi2=0.331
+Cluster 24 containing 1 peaks - slope=0.955
+Cluster 24 containing 1 peaks - chi2=8.27, redchi=0.17
+
+############################################################
+
+Cluster 25 containing 2 peaks - slope=0.962
+Cluster 25 containing 2 peaks - chi2=13.76, redchi=0.18
+
+############################################################
+
+Cluster 27 containing 1 peaks - slope=0.960
+Cluster 27 containing 1 peaks - chi2=3.99, redchi=0.08
 

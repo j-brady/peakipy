@@ -239,7 +239,7 @@ if __name__ == "__main__":
                 masked_data = masked_data[min_y:max_y, min_x:max_x]
                 sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
 
-                residual = sim_plot - masked_data
+                residual = masked_data - sim_plot
                 cset = ax.contourf(x_plot, y_plot, residual, zdir='z', offset=np.nanmin(masked_data)*1.1, alpha=0.5, cmap=cm.coolwarm)
                 fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
 

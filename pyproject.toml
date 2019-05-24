@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "peakipy"
-version = "0.1.9"
+version = "0.1.10"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 

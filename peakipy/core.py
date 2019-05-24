@@ -601,7 +601,6 @@ def fit_first_plane(
         max_x = shape[-1]
 
     peak_slices = data.copy()[mask]
-
     # must be a better way to make the meshgrid
     x = np.arange(shape[-1])
     y = np.arange(shape[-2])
@@ -609,44 +608,22 @@ def fit_first_plane(
     X, Y = XY
 
     XY_slices = [X.copy()[mask], Y.copy()[mask]]
-    out = mod.fit(peak_slices, XY=XY_slices, params=p_guess)
+    weights = 1./np.array([noise]*len(np.ravel(peak_slices)))
+    out = mod.fit(peak_slices, XY=XY_slices, params=p_guess, weights=weights)
     if verbose:
         print(out.fit_report())
 
-    # calculate chi2
     z_sim = mod.eval(XY=XY, params=out.params)
     z_sim[~mask] = np.nan
     z_plot = data.copy()
     z_plot[~mask] = np.nan
-    # print(z_plot.shape,z_sim.shape)
-    # calculate difference between fitted height
     #  also if peak position changed significantly from start then add warning
-    #  figure out tolerence
     _z_plot = z_plot[~np.isnan(z_plot)]
     _z_sim = z_sim[~np.isnan(z_sim)]
-    _z_plot_min = np.min(_z_plot)
-    _z_plot_max = np.max(_z_plot)
-
-    norm_z = (_z_plot - _z_plot_min) / (_z_plot_max - _z_plot_min)
-    norm_sim = (_z_sim - _z_plot_min) / (_z_plot_max - _z_plot_min)
-    chi2 = np.sum((norm_z - norm_sim)**2. / np.abs(norm_sim))
-    # _norm_z = norm_z[~np.isnan(norm_z)]
-    # _norm_sim = norm_sim[~np.isnan(norm_sim)]
 
     linmod = LinearModel()
     linpars = linmod.guess(_z_sim, x=_z_plot)
     linfit = linmod.fit(_z_sim, x=_z_plot, params=linpars)
-    # _sigma = np.sqrt(np.sum((_z_plot-_z_sim)**2.)/len(_z_plot))
-    # plt.plot(_z_plot,linfit.best_fit,"--",label=f"{linfit.fit_report()}:Sigma={_sigma}")
-    # plt.scatter(_z_plot,_z_sim,marker="o")
-    # plt.xlabel("z_plot")
-    # plt.ylabel("z_sim")
-    # plt.legend()
-    # plt.savefig(f"test/{peak.CLUSTID}.pdf")
-    # plt.close()
-    # chi2 = np.sum(np.abs(_z_sim - _z_plot)/ np.abs(_z_plot)) / len(_z_plot)
-    # chi2 = np.sqrt(np.sum((_z_plot - _z_sim) ** 2.0) / np.sum(_z_sim ** 2.0 ))# / len(_z_plot)
-    # chi2 = (np.sum((_z_plot - _z_sim) ** 2.0 / _z_sim**2)/len(_z_sim))**0.5
     slope = linfit.params["slope"].value
     #  number of peaks in cluster
     n_peaks = len(group)
@@ -657,23 +634,9 @@ def fit_first_plane(
     else:
         print(fit_str)
 
-    # for index, peak in group.iterrows():
-
-    #    init_prefix = peak.prefix
-    #    init_cenx = peak.X_AXISf
-    #    init_ceny = peak.Y_AXISf
-    #    print(init_prefix, init_cenx, init_ceny)
-
-    # if out.
-    chi2 = chi2 / n_peaks
-    chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-    # if chi2 < 1:
-    #    print(chi_str)
-    # print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f}, mean-std = {mean_err-std_err:.3f} ")
-    # else:
-    #    chi_str += " - NEEDS CHECKING"
-    #    print(chi_str)
-    # print(f"mean_err = {mean_err:.3f}, std_err = {std_err:.3f} ")
+    chi2 = out.chisqr
+    redchi = out.redchi
+    chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.2f}, redchi={redchi:.2f}"
 
     if log != None:
         log.write("".join("#" for _ in range(60)) + "\n\n")
@@ -695,18 +658,18 @@ def fit_first_plane(
         z_plot = z_plot[min_y:max_y, min_x:max_x]
         z_sim = z_sim[min_y:max_y, min_x:max_x]
 
-        ax.set_title("$\chi^2$=" + f"{chi2:.3f}")
+        ax.set_title("$\chi^2$=" + f"{chi2:.2f}, " + "$\chi_{red}^2$=" + f"{redchi:.3f}")
 
-        residual = z_sim - z_plot
+        residual = z_plot - z_sim
         cset = ax.contourf(x_plot, y_plot, residual, zdir='z', offset=np.nanmin(z_plot)*1.1, alpha=0.5, cmap=cm.coolwarm)
         fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
         # plot raw data
-        ax.plot_wireframe(x_plot, y_plot, z_plot, color="k")
+        ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
 
         ax.set_xlabel("F2 ppm")
         ax.set_ylabel("F1 ppm")
         ax.plot_wireframe(
-            x_plot, y_plot, z_sim, colors="r", linestyle="--", label="fit"
+            x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
         )
         ax.invert_xaxis()
         ax.invert_yaxis()
@@ -734,10 +697,10 @@ def fit_first_plane(
 
         for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
             # print(l, x, y, z)
-            ax.text(x, y, z * 1.4, l, None)
+            ax.text(x, y, z * 1.2, l, None)
 
         # plt.colorbar(contf)
-        plt.legend()
+        plt.legend(bbox_to_anchor=(1.2,1.1))
 
         name = group.CLUSTID.iloc[0]
         if show:
@@ -745,10 +708,17 @@ def fit_first_plane(
 
             def exit_program(event):
                 exit()
+            def next_plot(event):
+                plt.close()
 
             axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
             bnexit = Button(axexit, "Exit")
             bnexit.on_clicked(exit_program)
+
+            axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
+            bnnext = Button(axnext, "Next")
+            bnnext.on_clicked(next_plot)
+
             plt.show()
         else:
             plt.savefig(plot_path / f"{name}.png", dpi=300)

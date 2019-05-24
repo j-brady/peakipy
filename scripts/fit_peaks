@@ -203,11 +203,11 @@ else:
 
 # read vclist
 vclist = args.get("--vclist")
-if vclist == "None":
-    vclist = False
-else:
+if type(vclist) == np.ndarray: 
     vclist_data = vclist
     vclist = True
+else:
+    vclist = False
 
 # plot results or not
 plot = args.get("--plot")
@@ -361,7 +361,7 @@ for name, group in groups:
 
         for num, d in enumerate(data):
 
-            first.fit(data=d[mask], params=first.params)
+            first.fit(data=d[mask], params=first.params, weights=1./np.array([noise]*len(np.ravel(d[mask]))))
             if verb:
                 print(first.fit_report())
 
