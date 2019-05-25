@@ -188,7 +188,7 @@ Run ``check_fits -h`` for more options.
 Excluding peaks
 ---------------
 
-Peaks can be excluded from being fitted either by directly commenting the line in the ``.csv`` file containing the peak list i.e add a `#` at the start of the line you want to exclude. Alternatively, peaks can be excluded by changing the value in the column entitled ``include`` from ``yes`` to ``no``. The easiest way to do this is via the ``edit_peaks`` script.
+Peaks can be excluded from fitting by changing the value in the ``include`` column from ``yes`` to ``no`` (in the ``.csv`` file containing your peak list). The easiest way to do this is via the ``edit_peaks`` script.
 
 
 Protocol

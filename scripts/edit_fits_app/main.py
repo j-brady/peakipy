@@ -304,6 +304,7 @@ def exit_edit_peaks(event):
 
 
 #  Script starts here
+
 args = docopt(__doc__)
 path = Path(args.get("<peaklist>"))
 

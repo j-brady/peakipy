@@ -1,295 +1,295 @@
 ############################################################
 
 Cluster 1 containing 1 peaks - slope=0.953
-Cluster 1 containing 1 peaks - chi2=0.587
+Cluster 1 containing 1 peaks - chi2=4.81, redchi=0.10
 
 ############################################################
 
-Cluster 2 containing 1 peaks - slope=0.952
-Cluster 2 containing 1 peaks - chi2=0.469
+Cluster 2 containing 1 peaks - slope=0.951
+Cluster 2 containing 1 peaks - chi2=11.04, redchi=0.23
 
 ############################################################
 
 Cluster 3 containing 1 peaks - slope=0.945 - NEEDS CHECKING
-Cluster 3 containing 1 peaks - chi2=0.467
+Cluster 3 containing 1 peaks - chi2=7.63, redchi=0.16
 
 ############################################################
 
 Cluster 4 containing 1 peaks - slope=0.955
-Cluster 4 containing 1 peaks - chi2=0.562
+Cluster 4 containing 1 peaks - chi2=7.55, redchi=0.15
 
 ############################################################
 
 Cluster 5 containing 1 peaks - slope=0.956
-Cluster 5 containing 1 peaks - chi2=0.604
+Cluster 5 containing 1 peaks - chi2=5.07, redchi=0.10
 
 ############################################################
 
 Cluster 6 containing 1 peaks - slope=0.970
-Cluster 6 containing 1 peaks - chi2=0.464
+Cluster 6 containing 1 peaks - chi2=2.41, redchi=0.05
 
 ############################################################
 
-Cluster 7 containing 2 peaks - slope=0.950 - NEEDS CHECKING
-Cluster 7 containing 2 peaks - chi2=0.480
+Cluster 7 containing 1 peaks - slope=0.927 - NEEDS CHECKING
+Cluster 7 containing 1 peaks - chi2=14.65, redchi=0.28
 
 ############################################################
 
 Cluster 8 containing 1 peaks - slope=0.957
-Cluster 8 containing 1 peaks - chi2=0.559
+Cluster 8 containing 1 peaks - chi2=4.85, redchi=0.10
 
 ############################################################
 
 Cluster 9 containing 1 peaks - slope=0.935 - NEEDS CHECKING
-Cluster 9 containing 1 peaks - chi2=0.578
+Cluster 9 containing 1 peaks - chi2=9.68, redchi=0.19
 
 ############################################################
 
 Cluster 10 containing 1 peaks - slope=0.967
-Cluster 10 containing 1 peaks - chi2=0.446
+Cluster 10 containing 1 peaks - chi2=5.45, redchi=0.11
 
 ############################################################
 
 Cluster 11 containing 1 peaks - slope=0.954
-Cluster 11 containing 1 peaks - chi2=0.628
+Cluster 11 containing 1 peaks - chi2=3.87, redchi=0.08
 
 ############################################################
 
 Cluster 12 containing 1 peaks - slope=0.952
-Cluster 12 containing 1 peaks - chi2=0.657
+Cluster 12 containing 1 peaks - chi2=6.95, redchi=0.14
 
 ############################################################
 
 Cluster 13 containing 1 peaks - slope=0.952
-Cluster 13 containing 1 peaks - chi2=0.581
+Cluster 13 containing 1 peaks - chi2=7.78, redchi=0.16
 
 ############################################################
 
 Cluster 14 containing 1 peaks - slope=0.948 - NEEDS CHECKING
-Cluster 14 containing 1 peaks - chi2=0.674
+Cluster 14 containing 1 peaks - chi2=16.55, redchi=0.32
 
 ############################################################
 
 Cluster 15 containing 1 peaks - slope=0.959
-Cluster 15 containing 1 peaks - chi2=0.597
+Cluster 15 containing 1 peaks - chi2=4.85, redchi=0.09
 
 ############################################################
 
 Cluster 16 containing 1 peaks - slope=0.953
-Cluster 16 containing 1 peaks - chi2=0.720
+Cluster 16 containing 1 peaks - chi2=4.54, redchi=0.09
 
 ############################################################
 
 Cluster 17 containing 1 peaks - slope=0.959
-Cluster 17 containing 1 peaks - chi2=0.442
+Cluster 17 containing 1 peaks - chi2=6.29, redchi=0.13
 
 ############################################################
 
 Cluster 18 containing 1 peaks - slope=0.959
-Cluster 18 containing 1 peaks - chi2=0.463
+Cluster 18 containing 1 peaks - chi2=5.77, redchi=0.12
 
 ############################################################
 
-Cluster 19 containing 1 peaks - slope=0.967
-Cluster 19 containing 1 peaks - chi2=0.512
+Cluster 19 containing 1 peaks - slope=0.968
+Cluster 19 containing 1 peaks - chi2=4.09, redchi=0.08
 
 ############################################################
 
 Cluster 20 containing 1 peaks - slope=0.941 - NEEDS CHECKING
-Cluster 20 containing 1 peaks - chi2=0.666
+Cluster 20 containing 1 peaks - chi2=20.84, redchi=0.43
 
 ############################################################
 
 Cluster 21 containing 1 peaks - slope=0.966
-Cluster 21 containing 1 peaks - chi2=0.655
+Cluster 21 containing 1 peaks - chi2=8.11, redchi=0.16
 
 ############################################################
 
-Cluster 22 containing 1 peaks - slope=0.954
-Cluster 22 containing 1 peaks - chi2=0.623
+Cluster 22 containing 1 peaks - slope=0.953
+Cluster 22 containing 1 peaks - chi2=16.77, redchi=0.34
 
 ############################################################
 
 Cluster 23 containing 1 peaks - slope=0.955
-Cluster 23 containing 1 peaks - chi2=0.509
+Cluster 23 containing 1 peaks - chi2=4.99, redchi=0.10
 
 ############################################################
 
 Cluster 24 containing 1 peaks - slope=0.955
-Cluster 24 containing 1 peaks - chi2=0.536
+Cluster 24 containing 1 peaks - chi2=8.27, redchi=0.17
 
 ############################################################
 
-Cluster 25 containing 2 peaks - slope=0.959
-Cluster 25 containing 2 peaks - chi2=0.331
+Cluster 25 containing 2 peaks - slope=0.962
+Cluster 25 containing 2 peaks - chi2=13.76, redchi=0.18
 
 ############################################################
 
-Cluster 26 containing 1 peaks - slope=0.967
-Cluster 26 containing 1 peaks - chi2=0.443
+Cluster 26 containing 1 peaks - slope=0.973
+Cluster 26 containing 1 peaks - chi2=5.43, redchi=0.11
 
 ############################################################
 
 Cluster 27 containing 1 peaks - slope=0.960
-Cluster 27 containing 1 peaks - chi2=0.500
+Cluster 27 containing 1 peaks - chi2=3.99, redchi=0.08
 
 ############################################################
 
 Cluster 28 containing 1 peaks - slope=0.959
-Cluster 28 containing 1 peaks - chi2=0.689
+Cluster 28 containing 1 peaks - chi2=8.40, redchi=0.17
 
 ############################################################
 
 Cluster 29 containing 1 peaks - slope=0.958
-Cluster 29 containing 1 peaks - chi2=0.710
+Cluster 29 containing 1 peaks - chi2=7.15, redchi=0.13
 
 ############################################################
 
 Cluster 30 containing 3 peaks - slope=0.956
-Cluster 30 containing 3 peaks - chi2=0.288
+Cluster 30 containing 3 peaks - chi2=17.85, redchi=0.17
 
 ############################################################
 
 Cluster 31 containing 1 peaks - slope=0.957
-Cluster 31 containing 1 peaks - chi2=0.612
+Cluster 31 containing 1 peaks - chi2=12.76, redchi=0.25
 
 ############################################################
 
 Cluster 32 containing 1 peaks - slope=0.967
-Cluster 32 containing 1 peaks - chi2=0.630
+Cluster 32 containing 1 peaks - chi2=4.33, redchi=0.08
 
 ############################################################
 
 Cluster 33 containing 1 peaks - slope=0.952
-Cluster 33 containing 1 peaks - chi2=0.535
+Cluster 33 containing 1 peaks - chi2=20.56, redchi=0.42
 
 ############################################################
 
 Cluster 34 containing 1 peaks - slope=0.961
-Cluster 34 containing 1 peaks - chi2=0.392
+Cluster 34 containing 1 peaks - chi2=6.85, redchi=0.14
 
 ############################################################
 
 Cluster 35 containing 1 peaks - slope=0.954
-Cluster 35 containing 1 peaks - chi2=0.729
+Cluster 35 containing 1 peaks - chi2=15.37, redchi=0.30
 
 ############################################################
 
-Cluster 36 containing 1 peaks - slope=0.970
-Cluster 36 containing 1 peaks - chi2=0.740
+Cluster 36 containing 1 peaks - slope=0.974
+Cluster 36 containing 1 peaks - chi2=6.61, redchi=0.13
 
 ############################################################
 
 Cluster 37 containing 1 peaks - slope=0.951
-Cluster 37 containing 1 peaks - chi2=0.542
+Cluster 37 containing 1 peaks - chi2=13.43, redchi=0.27
 
 ############################################################
 
-Cluster 38 containing 1 peaks - slope=0.953
-Cluster 38 containing 1 peaks - chi2=0.489
+Cluster 38 containing 1 peaks - slope=0.954
+Cluster 38 containing 1 peaks - chi2=16.36, redchi=0.33
 
 ############################################################
 
 Cluster 39 containing 1 peaks - slope=0.955
-Cluster 39 containing 1 peaks - chi2=0.477
+Cluster 39 containing 1 peaks - chi2=6.16, redchi=0.13
 
 ############################################################
 
 Cluster 40 containing 1 peaks - slope=0.958
-Cluster 40 containing 1 peaks - chi2=0.500
+Cluster 40 containing 1 peaks - chi2=6.23, redchi=0.13
 
 ############################################################
 
 Cluster 41 containing 1 peaks - slope=0.960
-Cluster 41 containing 1 peaks - chi2=0.580
+Cluster 41 containing 1 peaks - chi2=5.08, redchi=0.10
 
 ############################################################
 
 Cluster 42 containing 1 peaks - slope=0.952
-Cluster 42 containing 1 peaks - chi2=0.542
+Cluster 42 containing 1 peaks - chi2=6.14, redchi=0.12
 
 ############################################################
 
-Cluster 43 containing 1 peaks - slope=0.971
-Cluster 43 containing 1 peaks - chi2=0.580
+Cluster 43 containing 1 peaks - slope=0.972
+Cluster 43 containing 1 peaks - chi2=10.94, redchi=0.22
 
 ############################################################
 
-Cluster 44 containing 1 peaks - slope=0.961
-Cluster 44 containing 1 peaks - chi2=0.747
+Cluster 44 containing 1 peaks - slope=0.962
+Cluster 44 containing 1 peaks - chi2=9.16, redchi=0.18
 
 ############################################################
 
 Cluster 45 containing 1 peaks - slope=0.962
-Cluster 45 containing 1 peaks - chi2=0.624
+Cluster 45 containing 1 peaks - chi2=6.75, redchi=0.13
 
 ############################################################
 
 Cluster 46 containing 1 peaks - slope=0.966
-Cluster 46 containing 1 peaks - chi2=0.530
+Cluster 46 containing 1 peaks - chi2=6.14, redchi=0.13
 
 ############################################################
 
-Cluster 47 containing 1 peaks - slope=0.949 - NEEDS CHECKING
-Cluster 47 containing 1 peaks - chi2=0.574
+Cluster 47 containing 1 peaks - slope=0.948 - NEEDS CHECKING
+Cluster 47 containing 1 peaks - chi2=23.33, redchi=0.49
 
 ############################################################
 
 Cluster 48 containing 1 peaks - slope=0.956
-Cluster 48 containing 1 peaks - chi2=0.526
+Cluster 48 containing 1 peaks - chi2=11.16, redchi=0.22
 
 ############################################################
 
 Cluster 49 containing 1 peaks - slope=0.961
-Cluster 49 containing 1 peaks - chi2=0.525
+Cluster 49 containing 1 peaks - chi2=7.45, redchi=0.15
 
 ############################################################
 
 Cluster 50 containing 1 peaks - slope=0.974
-Cluster 50 containing 1 peaks - chi2=0.324
+Cluster 50 containing 1 peaks - chi2=2.14, redchi=0.04
 
 ############################################################
 
 Cluster 51 containing 1 peaks - slope=0.958
-Cluster 51 containing 1 peaks - chi2=0.413
+Cluster 51 containing 1 peaks - chi2=9.35, redchi=0.19
 
 ############################################################
 
 Cluster 52 containing 1 peaks - slope=0.951
-Cluster 52 containing 1 peaks - chi2=0.506
+Cluster 52 containing 1 peaks - chi2=14.57, redchi=0.31
 
 ############################################################
 
 Cluster 53 containing 1 peaks - slope=0.969
-Cluster 53 containing 1 peaks - chi2=0.386
+Cluster 53 containing 1 peaks - chi2=3.63, redchi=0.07
 
 ############################################################
 
 Cluster 54 containing 1 peaks - slope=0.951
-Cluster 54 containing 1 peaks - chi2=0.602
+Cluster 54 containing 1 peaks - chi2=17.20, redchi=0.35
 
 ############################################################
 
 Cluster 55 containing 1 peaks - slope=0.954
-Cluster 55 containing 1 peaks - chi2=0.537
+Cluster 55 containing 1 peaks - chi2=9.13, redchi=0.18
 
 ############################################################
 
 Cluster 56 containing 1 peaks - slope=0.953
-Cluster 56 containing 1 peaks - chi2=0.674
+Cluster 56 containing 1 peaks - chi2=9.73, redchi=0.19
 
 ############################################################
 
 Cluster 57 containing 1 peaks - slope=0.963
-Cluster 57 containing 1 peaks - chi2=0.921
+Cluster 57 containing 1 peaks - chi2=7.28, redchi=0.15
 
 ############################################################
 
 Cluster 58 containing 1 peaks - slope=0.955
-Cluster 58 containing 1 peaks - chi2=0.625
+Cluster 58 containing 1 peaks - chi2=10.88, redchi=0.22
 
 ############################################################
 
 Cluster 59 containing 1 peaks - slope=0.962
-Cluster 59 containing 1 peaks - chi2=0.482
+Cluster 59 containing 1 peaks - chi2=3.25, redchi=0.06
 

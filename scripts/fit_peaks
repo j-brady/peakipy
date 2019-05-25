@@ -165,7 +165,7 @@ peaklist = Path(args.get("<peaklist>"))
 
 # determine filetype
 if peaklist.suffix == ".csv":
-    peaks = pd.read_csv(peaklist, comment="#")
+    peaks = pd.read_csv(peaklist)  # , comment="#")
 else:
     # assume that file is a pickle
     peaks = pd.read_pickle(peaklist)
@@ -203,7 +203,7 @@ else:
 
 # read vclist
 vclist = args.get("--vclist")
-if type(vclist) == np.ndarray: 
+if type(vclist) == np.ndarray:
     vclist_data = vclist
     vclist = True
 else:
@@ -361,7 +361,11 @@ for name, group in groups:
 
         for num, d in enumerate(data):
 
-            first.fit(data=d[mask], params=first.params, weights=1./np.array([noise]*len(np.ravel(d[mask]))))
+            first.fit(
+                data=d[mask],
+                params=first.params,
+                weights=1.0 / np.array([noise] * len(np.ravel(d[mask]))),
+            )
             if verb:
                 print(first.fit_report())
 
