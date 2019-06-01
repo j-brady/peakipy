@@ -636,7 +636,7 @@ def fit_first_plane(
 
     chi2 = out.chisqr
     redchi = out.redchi
-    chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.2f}, redchi={redchi:.2f}"
+    chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}, redchi={redchi:.3f}"
 
     if log != None:
         log.write("".join("#" for _ in range(60)) + "\n\n")
@@ -658,7 +658,7 @@ def fit_first_plane(
         z_plot = z_plot[min_y:max_y, min_x:max_x]
         z_sim = z_sim[min_y:max_y, min_x:max_x]
 
-        ax.set_title("$\chi^2$=" + f"{chi2:.2f}, " + "$\chi_{red}^2$=" + f"{redchi:.3f}")
+        ax.set_title("$\chi^2$=" + f"{chi2:.3f}, " + "$\chi_{red}^2$=" + f"{redchi:.4f}")
 
         residual = z_plot - z_sim
         cset = ax.contourf(x_plot, y_plot, residual, zdir='z', offset=np.nanmin(z_plot)*1.1, alpha=0.5, cmap=cm.coolwarm)

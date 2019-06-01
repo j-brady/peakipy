@@ -157,7 +157,7 @@ sparky_to_pipe = {
 
 
 class Peaklist:
-    """ Read analysis or sparky peak list and convert to NMRPipe-ish format also find peak clusters
+    """ Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
 
     Parameters
     ----------

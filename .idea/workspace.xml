@@ -2,29 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/peakipy/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/check_fits.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/check_fits.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/fit_peaks.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fit_peaks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/read_peaklist.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/read_peaklist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/_test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/_test.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/_test.tab" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/_test.tab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/axt.tab" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/axt.tab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/clusters.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/clusters.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/compare.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/compare.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/correlation.html" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/correlation.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/correlation.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/correlation.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/fits.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/fits.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/nlin.tab" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/nlin.tab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/run.xsh" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/run.xsh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/test.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/test.tab" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/test.tab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~tmp.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~tmp.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~tmp_out.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~tmp_out.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/check_fits" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/check_fits" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/edit_fits_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/edit_fits_script.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/fit_peaks" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fit_peaks" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/read_peaklist" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/read_peaklist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_ddx4/fits.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/fits.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_ddx4/log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/18.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/18.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/22.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/22.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_ddx4/~log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/~log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_ddx4/~tmp.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/~tmp.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~plot.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~plot.pdf" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -73,14 +62,18 @@
         <counts>
           <entry key="project.closed" value="2" />
           <entry key="project.open.time.5" value="1" />
-          <entry key="project.open.time.9" value="1" />
-          <entry key="project.opened" value="2" />
+          <entry key="project.open.time.9" value="2" />
+          <entry key="project.opened" value="3" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
+          <entry key="check_fits" value="1" />
+          <entry key="edit_fits" value="1" />
+          <entry key="fit_peaks" value="2" />
           <entry key="md" value="10" />
-          <entry key="py" value="29" />
+          <entry key="py" value="37" />
+          <entry key="read_peaklist" value="1" />
           <entry key="toml" value="1" />
         </counts>
       </usages-collector>
@@ -88,39 +81,103 @@
         <counts>
           <entry key="Markdown" value="10" />
           <entry key="PLAIN_TEXT" value="1" />
-          <entry key="Python" value="29" />
+          <entry key="Python" value="42" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
+          <entry key="check_fits" value="19" />
+          <entry key="fit_peaks" value="37" />
           <entry key="md" value="3107" />
-          <entry key="py" value="2269" />
+          <entry key="py" value="3632" />
+          <entry key="read_peaklist" value="14" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Bash" value="10" />
           <entry key="Markdown" value="3097" />
-          <entry key="Python" value="2269" />
+          <entry key="Python" value="3702" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file pinned="false" current-in-tab="true">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="5">
-                <caret line="77" column="14" selection-start-line="77" selection-start-column="14" selection-end-line="77" selection-end-column="14" />
+              <first_editor relative-caret-position="195">
+                <caret line="89" column="14" selection-start-line="89" selection-start-column="14" selection-end-line="89" selection-end-column="14" />
               </first_editor>
               <second_editor />
             </state>
           </provider>
         </entry>
       </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/edit_fits">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="204">
+              <caret line="17" column="24" selection-start-line="17" selection-start-column="24" selection-end-line="17" selection-end-column="24" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/read_peaklist">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3591">
+              <caret line="306" column="33" selection-start-line="306" selection-start-column="33" selection-end-line="306" selection-end-column="33" />
+              <folding>
+                <element signature="e#3740#3749#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/fit_peaks">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="15">
+              <caret line="371" column="35" selection-start-line="371" selection-start-column="35" selection-end-line="371" selection-end-column="35" />
+              <folding>
+                <element signature="e#2744#2753#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/peakipy/core.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="349">
+              <caret line="1033" selection-start-line="1033" selection-end-line="1033" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/scripts/check_fits">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="151">
+              <caret line="276" selection-start-line="276" selection-end-line="276" />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>plt</find>
+      <find>Model</find>
+      <find>udic</find>
+      <find>uc_f1</find>
+      <find>data</find>
+      <find>pseu</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -134,17 +191,21 @@
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/examples/test_deconv_ccpn.py" />
         <option value="$PROJECT_DIR$/peak_deconvolution/core.py" />
-        <option value="$PROJECT_DIR$/peakipy/core.py" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/scripts/read_peaklist.py" />
         <option value="$PROJECT_DIR$/scripts/check_fits.py" />
         <option value="$PROJECT_DIR$/scripts/fit_peaks.py" />
+        <option value="$PROJECT_DIR$/scripts/read_peaklist" />
+        <option value="$PROJECT_DIR$/scripts/fit_peaks" />
+        <option value="$PROJECT_DIR$/peakipy/core.py" />
+        <option value="$PROJECT_DIR$/scripts/edit_fits_script.py" />
+        <option value="$PROJECT_DIR$/scripts/check_fits" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-9" />
-    <option name="y" value="-883" />
+    <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="777" />
   </component>
@@ -207,9 +268,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="-883" width="1280" height="777" extended-state="0" />
+    <frame x="-9" y="23" width="1280" height="777" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24543288" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16679905" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -220,7 +282,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.31970802" />
+      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.15182482" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32868218" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -268,9 +330,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="320">
           <caret line="190" column="44" selection-start-line="190" selection-start-column="44" selection-end-line="190" selection-end-column="44" />
-          <folding>
-            <element signature="e#345#354#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -278,16 +337,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="309">
           <caret line="490" column="46" selection-start-line="490" selection-start-column="46" selection-end-line="490" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6932">
-          <caret line="495" column="12" selection-start-line="495" selection-start-column="12" selection-end-line="495" selection-end-column="12" />
-          <folding>
-            <element signature="e#45#69#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -301,10 +350,58 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="5">
-            <caret line="77" column="14" selection-start-line="77" selection-start-column="14" selection-end-line="77" selection-end-column="14" />
+          <first_editor relative-caret-position="195">
+            <caret line="89" column="14" selection-start-line="89" selection-start-column="14" selection-end-line="89" selection-end-column="14" />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/edit_fits">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="17" column="24" selection-start-line="17" selection-start-column="24" selection-end-line="17" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/edit_fits_script.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="177" column="39" selection-start-line="177" selection-start-column="39" selection-end-line="177" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/read_peaklist">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3591">
+          <caret line="306" column="33" selection-start-line="306" selection-start-column="33" selection-end-line="306" selection-end-column="33" />
+          <folding>
+            <element signature="e#3740#3749#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/fit_peaks">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="371" column="35" selection-start-line="371" selection-start-column="35" selection-end-line="371" selection-end-column="35" />
+          <folding>
+            <element signature="e#2744#2753#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="349">
+          <caret line="1033" selection-start-line="1033" selection-end-line="1033" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/check_fits">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="276" selection-start-line="276" selection-end-line="276" />
         </state>
       </provider>
     </entry>

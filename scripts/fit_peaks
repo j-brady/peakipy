@@ -61,20 +61,13 @@ from pathlib import Path
 
 import nmrglue as ng
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 
-from lmfit import Model
-from mpl_toolkits.mplot3d import Axes3D
 from docopt import docopt
 from skimage.filters import threshold_otsu
 from schema import Schema, And, Or, Use, SchemaError
 
 from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_log
-
-
-def norm(data):
-    return (data - np.min(data)) / (np.max(data) - np.min(data))
 
 
 def check_xybounds(x):
@@ -163,7 +156,7 @@ if verb:
 # path to peaklist
 peaklist = Path(args.get("<peaklist>"))
 
-# determine filetype
+# determine file type
 if peaklist.suffix == ".csv":
     peaks = pd.read_csv(peaklist)  # , comment="#")
 else:
@@ -372,8 +365,8 @@ for name, group in groups:
             amp, amp_err, name = get_params(first.params, "amplitude")
             cen_x, cen_x_err, cx_name = get_params(first.params, "center_x")
             cen_y, cen_y_err, cy_name = get_params(first.params, "center_y")
-            sig_x, sig_x_err, name = get_params(first.params, "sigma_x")
-            sig_y, sig_y_err, name = get_params(first.params, "sigma_y")
+            sig_x, sig_x_err, sx_name = get_params(first.params, "sigma_x")
+            sig_y, sig_y_err, sy_name = get_params(first.params, "sigma_y")
 
             if lineshape == "PV_PV":
                 frac_x, frac_err_x, name = get_params(first.params, "fraction_x")

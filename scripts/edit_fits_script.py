@@ -75,7 +75,7 @@ from peakipy.core import Pseudo3D
 
 
 def clusters(
-    df, data, thres=None, struc_el="square", struc_size=(3,), iterations=1, l_struc=None
+    df, data, thres=None, struc_el="square", struc_size=(3,)
 ):
     """ Find clusters of peaks
 
@@ -173,6 +173,9 @@ def update_memcnt(df):
         lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
         axis=1,
     )
+    # change color of excluded peaks
+    include_no = df.include == "no"
+    df.loc[include_no, "color"] = "ghostwhite"
     # update source data
     source.data = {col: df[col] for col in df.columns}
     return df
@@ -230,7 +233,59 @@ def select_callback(attrname, old, new):
 
 
 def peak_pick_callback(event):
-    print(event.x, event.y)
+    # global so that df is updated globally
+    global df
+    x_radius_ppm = 0.035
+    y_radius_ppm = 0.35
+    x_radius = x_radius_ppm * pt_per_ppm_f2
+    y_radius = y_radius_ppm * pt_per_ppm_f1
+    x_diameter_ppm = x_radius_ppm*2.
+    y_diameter_ppm = y_radius_ppm*2.
+    clustid = df.CLUSTID.max()+1
+    index = df.INDEX.max()+1
+    x_ppm = event.x
+    y_ppm = event.y
+    x_axis = uc_f2.f(x_ppm,'ppm')
+    y_axis = uc_f1.f(y_ppm,'ppm')
+    xw_hz = 20.0
+    yw_hz = 20.0
+    xw = xw_hz * pt_per_hz_f2
+    yw = yw_hz * pt_per_hz_f1
+    assignment = f'test_peak_{index}_{clustid}'
+    height = data[0][int(y_axis),int(x_axis)]
+    volume = height
+    print(f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}""")
+
+    new_peak = {
+        'INDEX': index,
+        'X_PPM': x_ppm,
+        'Y_PPM': y_ppm,
+        'HEIGHT': height,
+        'VOL': volume,
+        'XW_HZ': xw_hz,
+        'YW_HZ': yw_hz,
+        'X_AXIS': x_axis,
+        'Y_AXIS': y_axis,
+        'X_AXISf': x_axis,
+        'Y_AXISf': y_axis,
+        'XW': xw,
+        'YW': yw,
+        'ASS': assignment,
+        'X_RADIUS_PPM': x_radius_ppm,
+        'Y_RADIUS_PPM': y_radius_ppm,
+        'X_RADIUS': x_radius,
+        'Y_RADIUS': y_radius,
+        'CLUSTID': clustid,
+        'MEMCNT': 1,
+        'X_DIAMETER_PPM': x_diameter_ppm,
+        'Y_DIAMETER_PPM': y_diameter_ppm,
+        'Edited': True,
+        'include': 'yes',
+        'color': 'black',
+    }
+    df = df.append(new_peak, ignore_index=True)
+    update_memcnt(df)
+
 
 
 def slider_callback(attrname, old, new):
@@ -331,7 +386,6 @@ if "include" in df.columns:
     pass
 else:
     df["include"] = df.apply(lambda _: "yes", axis=1)
-#    df["color"] = df.Edited.apply(lambda x: 'red' if x else 'black')
 
 # color clusters
 df["color"] = df.apply(
@@ -373,6 +427,9 @@ f1pts = pseudo3D.f1_size
 #  points per ppm
 pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
+#  points per hz
+pt_per_hz_f1 = pseudo3D.pt_per_hz_f1
+pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
 
 # get ppm limits for ppm scales
 uc_f1 = pseudo3D.uc_f1
@@ -387,8 +444,8 @@ f2_label = pseudo3D.f2_label
 f1_label = pseudo3D.f1_label
 #  make bokeh figure
 tools = [
-    "redo",
-    "undo",
+    #"redo",
+    #"undo",
     "tap",
     "box_zoom",
     "lasso_select",

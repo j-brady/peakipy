@@ -255,6 +255,7 @@ if __name__ == "__main__":
                     x_plot,
                     y_plot,
                     sim_plot,
+                    #colors=[cm.coolwarm(i) for i in np.ravel(residual)],
                     colors=fit_color,
                     linestyle="--",
                     label="fit",
@@ -273,6 +274,9 @@ if __name__ == "__main__":
                 )
                 ax.set_ylabel(pseudo3D.f1_label)
                 ax.set_xlabel(pseudo3D.f2_label)
+
+                ax.invert_xaxis()
+                ax.invert_yaxis()
 
                 plt.legend()
                 names = ",".join(plane.assignment)
