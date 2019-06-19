@@ -74,9 +74,7 @@ from bokeh.palettes import PuBuGn9, Category20
 from peakipy.core import Pseudo3D
 
 
-def clusters(
-    df, data, thres=None, struc_el="square", struc_size=(3,)
-):
+def clusters(df, data, thres=None, struc_el="square", struc_size=(3,)):
     """ Find clusters of peaks
 
     Need to update these docs.
@@ -118,7 +116,7 @@ def clusters(
         closed_data = thresh_data
         print(f"Not using any closing function")
 
-    labeled_array, num_features = ndimage.label(closed_data, l_struc)
+    labeled_array, num_features = ndimage.label(closed_data)#, l_struc)
     # print(labeled_array, num_features)
 
     df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
@@ -239,53 +237,52 @@ def peak_pick_callback(event):
     y_radius_ppm = 0.35
     x_radius = x_radius_ppm * pt_per_ppm_f2
     y_radius = y_radius_ppm * pt_per_ppm_f1
-    x_diameter_ppm = x_radius_ppm*2.
-    y_diameter_ppm = y_radius_ppm*2.
-    clustid = df.CLUSTID.max()+1
-    index = df.INDEX.max()+1
+    x_diameter_ppm = x_radius_ppm * 2.0
+    y_diameter_ppm = y_radius_ppm * 2.0
+    clustid = df.CLUSTID.max() + 1
+    index = df.INDEX.max() + 1
     x_ppm = event.x
     y_ppm = event.y
-    x_axis = uc_f2.f(x_ppm,'ppm')
-    y_axis = uc_f1.f(y_ppm,'ppm')
+    x_axis = uc_f2.f(x_ppm, "ppm")
+    y_axis = uc_f1.f(y_ppm, "ppm")
     xw_hz = 20.0
     yw_hz = 20.0
     xw = xw_hz * pt_per_hz_f2
     yw = yw_hz * pt_per_hz_f1
-    assignment = f'test_peak_{index}_{clustid}'
-    height = data[0][int(y_axis),int(x_axis)]
+    assignment = f"test_peak_{index}_{clustid}"
+    height = data[0][int(y_axis), int(x_axis)]
     volume = height
     print(f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}""")
 
     new_peak = {
-        'INDEX': index,
-        'X_PPM': x_ppm,
-        'Y_PPM': y_ppm,
-        'HEIGHT': height,
-        'VOL': volume,
-        'XW_HZ': xw_hz,
-        'YW_HZ': yw_hz,
-        'X_AXIS': x_axis,
-        'Y_AXIS': y_axis,
-        'X_AXISf': x_axis,
-        'Y_AXISf': y_axis,
-        'XW': xw,
-        'YW': yw,
-        'ASS': assignment,
-        'X_RADIUS_PPM': x_radius_ppm,
-        'Y_RADIUS_PPM': y_radius_ppm,
-        'X_RADIUS': x_radius,
-        'Y_RADIUS': y_radius,
-        'CLUSTID': clustid,
-        'MEMCNT': 1,
-        'X_DIAMETER_PPM': x_diameter_ppm,
-        'Y_DIAMETER_PPM': y_diameter_ppm,
-        'Edited': True,
-        'include': 'yes',
-        'color': 'black',
+        "INDEX": index,
+        "X_PPM": x_ppm,
+        "Y_PPM": y_ppm,
+        "HEIGHT": height,
+        "VOL": volume,
+        "XW_HZ": xw_hz,
+        "YW_HZ": yw_hz,
+        "X_AXIS": x_axis,
+        "Y_AXIS": y_axis,
+        "X_AXISf": x_axis,
+        "Y_AXISf": y_axis,
+        "XW": xw,
+        "YW": yw,
+        "ASS": assignment,
+        "X_RADIUS_PPM": x_radius_ppm,
+        "Y_RADIUS_PPM": y_radius_ppm,
+        "X_RADIUS": x_radius,
+        "Y_RADIUS": y_radius,
+        "CLUSTID": clustid,
+        "MEMCNT": 1,
+        "X_DIAMETER_PPM": x_diameter_ppm,
+        "Y_DIAMETER_PPM": y_diameter_ppm,
+        "Edited": True,
+        "include": "yes",
+        "color": "black",
     }
     df = df.append(new_peak, ignore_index=True)
     update_memcnt(df)
-
 
 
 def slider_callback(attrname, old, new):
@@ -444,8 +441,8 @@ f2_label = pseudo3D.f2_label
 f1_label = pseudo3D.f1_label
 #  make bokeh figure
 tools = [
-    #"redo",
-    #"undo",
+    # "redo",
+    # "undo",
     "tap",
     "box_zoom",
     "lasso_select",
