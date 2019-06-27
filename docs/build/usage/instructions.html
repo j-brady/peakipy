@@ -149,6 +149,7 @@ You will need to have your interactive backend correctly configured by editing y
 <p>If you like the parameters you have chosen then you can save the peak list using the <code class="docutils literal notranslate"><span class="pre">save</span></code> button. If you want to return to your edited peak
 list at a later stage then run <code class="docutils literal notranslate"><span class="pre">edit_fits</span></code> with the edited peak list as your <code class="docutils literal notranslate"><span class="pre">&lt;peaklist&gt;</span></code> argument.</p>
 <p>Clicking <code class="docutils literal notranslate"><span class="pre">Quit</span></code> closes the bokeh server.</p>
+<p>Peaks can be added via the <code class="docutils literal notranslate"><span class="pre">tap</span></code> button on the right side of the spectrum. Once the tap button is activated then peaks are added to the spectrum by double clicking at the desired position.</p>
 </div>
 <div class="section" id="fit-peaks">
 <h2>fit_peaks<a class="headerlink" href="#fit-peaks" title="Permalink to this headline">¶</a></h2>
@@ -180,7 +181,7 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
 </div>
 <div class="section" id="excluding-peaks">
 <h2>Excluding peaks<a class="headerlink" href="#excluding-peaks" title="Permalink to this headline">¶</a></h2>
-<p>Peaks can be excluded from being fitted either by directly commenting the line in the <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file containing the peak list i.e add a <cite>#</cite> at the start of the line you want to exclude. Alternatively, peaks can be excluded by changing the value in the column entitled <code class="docutils literal notranslate"><span class="pre">include</span></code> from <code class="docutils literal notranslate"><span class="pre">yes</span></code> to <code class="docutils literal notranslate"><span class="pre">no</span></code>. The easiest way to do this is via the <code class="docutils literal notranslate"><span class="pre">edit_peaks</span></code> script.</p>
+<p>Peaks can be excluded from fitting by changing the value in the <code class="docutils literal notranslate"><span class="pre">include</span></code> column from <code class="docutils literal notranslate"><span class="pre">yes</span></code> to <code class="docutils literal notranslate"><span class="pre">no</span></code> (in the <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file containing your peak list). The easiest way to do this is via the <code class="docutils literal notranslate"><span class="pre">edit_peaks</span></code> script.</p>
 </div>
 <div class="section" id="protocol">
 <h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h2>
@@ -197,6 +198,7 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 </li>
+<li><p><code class="docutils literal notranslate"><span class="pre">log.txt</span></code> contains fit reports for all fits</p></li>
 <li><p>If <code class="docutils literal notranslate"><span class="pre">--plot=&lt;path&gt;</span></code> option selected when running <code class="docutils literal notranslate"><span class="pre">fit_peaks</span></code>, the first plane of each fit will be plotted in &lt;path&gt; with the files named according to the cluster ID (clustid) of the fit. Adding <code class="docutils literal notranslate"><span class="pre">--show</span></code> option calls <code class="docutils literal notranslate"><span class="pre">plt.show()</span></code> on each fit so you can see what it looks like. However, using <code class="docutils literal notranslate"><span class="pre">check_fits</span></code> should be preferable since plotting the fits during fitting slows down the process a lot.</p></li>
 </ol>
 <p>You can explore the output data conveniently with <code class="docutils literal notranslate"><span class="pre">pandas</span></code>.</p>

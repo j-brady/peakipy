@@ -255,7 +255,7 @@ if __name__ == "__main__":
                     x_plot,
                     y_plot,
                     sim_plot,
-                    #colors=[cm.coolwarm(i) for i in np.ravel(residual)],
+                    # colors=[cm.coolwarm(i) for i in np.ravel(residual)],
                     colors=fit_color,
                     linestyle="--",
                     label="fit",

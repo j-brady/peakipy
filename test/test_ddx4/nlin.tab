@@ -1,0 +1,21 @@
+REMARK NLINLS: Nonlinear Spectral Modeling, NMRPipe Version 8.9 2017.109.12.43
+REMARK Files: axt.tab test.ft2 Jtype: PEAK Dim: 2 Iter: 750 Eval: 750
+REMARK X PROFILE (+/-4) GAUSS1D
+REMARK Y PROFILE (+/-4) GAUSS1D
+REMARK Model-Based Volumes at +/-3 LW in Pts Scale: 1.000000
+REMARK Constraint on X_AXIS: (1*X_AXIS + -1):(1*X_AXIS + 1)
+REMARK Constraint on XW: (0*XW + 0):(0*XW + 5.48)
+REMARK Constraint on Y_AXIS: (1*Y_AXIS + -1):(1*Y_AXIS + 1)
+REMARK Constraint on YW: (0*YW + 0):(0*YW + 5.61)
+REMARK Fixed Parameters: None
+REMARK F77 Optimization Modules
+
+REMARK Updated Variables: X_PPM Y_PPM X_HZ Y_HZ XW_HZ YW_HZ
+
+VARS   INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT
+FORMAT %5d %9.3f %9.3f %6.3f %6.3f %8.3f %8.3f %9.3f %9.3f %7.3f %7.3f %8.3f %8.3f %4d %4d %4d %4d %+e %+e %+e %.5f %d %s %4d %4d
+
+    1   309.283   461.763  0.059  0.020    8.238  108.839  6592.513  8827.184   5.480   5.610   32.161   21.328  306  312  460  463 +8.354273e+06 +7.369643e+03 +2.910158e+08 0.00000 1 None    1    3
+    2   317.454   466.524  0.008  0.006    8.178  108.616  6544.560  8809.084   5.480   5.203   32.161   19.780  314  322  464  470 +1.829486e+07 +7.468241e+03 +5.910634e+08 0.00000 1 None    1    3
+    3   321.855   471.221  0.034  0.178    8.145  108.396  6518.731  8791.227   5.480   5.610   32.161   21.328  319  324  465  473 +8.217492e+06 +7.371479e+03 +2.862511e+08 0.00000 1 None    1    3
+    4   328.606   475.236  0.045  0.023    8.096  108.208  6479.111  8775.963   5.480   5.610   32.161   21.328  327  331  475  476 +6.607221e+06 +7.464953e+03 +2.301584e+08 0.00000 1 None    2    1

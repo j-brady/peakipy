@@ -197,10 +197,11 @@ class TestCoreFunctions(unittest.TestCase):
 
     def test_Pseudo3D(self):
 
-        datasets = [("test/test_protein_L/test1.ft2",[0, 1, 2]),
-
-                    ("test/test_protein_L/test_tp.ft2", [2, 1, 0]),
-                ("test/test_protein_L/test_tp2.ft2",[1, 2, 0])]
+        datasets = [
+            ("test/test_protein_L/test1.ft2", [0, 1, 2]),
+            ("test/test_protein_L/test_tp.ft2", [2, 1, 0]),
+            ("test/test_protein_L/test_tp2.ft2", [1, 2, 0]),
+        ]
 
         # expected shape
         data_shape = (4, 256, 546)

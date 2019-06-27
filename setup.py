@@ -20,7 +20,7 @@ requirements = [
         "pandas>=0.24.0",
         "numpy>=1.16",
         "matplotlib>=3.0",
-        "PyYAML>=3.13",
+        "PyYAML>=5.1",
         "nmrglue>=0.6.0",
         "scipy>=1.2",
         "docopt>=0.6.2",
@@ -32,7 +32,7 @@ requirements = [
 
 setup(
     name="peakipy",
-    version="0.1.11",
+    version="0.1.14",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     author="Jacob Peter Brady",
     author_email="jacob.brady0449@gmail.com",

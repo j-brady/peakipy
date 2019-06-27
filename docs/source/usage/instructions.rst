@@ -148,6 +148,8 @@ list at a later stage then run ``edit_fits`` with the edited peak list as your `
 
 Clicking ``Quit`` closes the bokeh server.
 
+Peaks can be added via the ``tap`` button on the right side of the spectrum. Once the tap button is activated then peaks are added to the spectrum by double clicking at the desired position.
+
 fit_peaks
 ---------
 
@@ -207,7 +209,10 @@ Outputs
         1,_None_,None,197443035.67109975,3671708.463467884,158.44747896487527,9.264911100915297,1.1610674220702277,1.160506074898704,0.0,1,1,4.773,3.734,0.035,0.35,G,2.3221348441404555,2.321012149797408,9.336283145411077,129.6698850201278,0.008514304888101518,0.10878688239041588,0.017028609776203036,0.21757376478083176,13.628064792721176,17.645884354478063
         etc...
 
-2. If ``--plot=<path>`` option selected when running ``fit_peaks``, the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (clustid) of the fit. Adding ``--show`` option calls ``plt.show()`` on each fit so you can see what it looks like. However, using ``check_fits`` should be preferable since plotting the fits during fitting slows down the process a lot.
+
+2. ``log.txt`` contains fit reports for all fits
+
+3. If ``--plot=<path>`` option selected when running ``fit_peaks``, the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (clustid) of the fit. Adding ``--show`` option calls ``plt.show()`` on each fit so you can see what it looks like. However, using ``check_fits`` should be preferable since plotting the fits during fitting slows down the process a lot.
 
 You can explore the output data conveniently with ``pandas``. ::
 

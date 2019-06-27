@@ -23,13 +23,16 @@
 import sys
 from datetime import datetime
 from pathlib import Path
+from dataclasses import dataclass
 
 import numpy as np
 import nmrglue as ng
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from numpy import sqrt, log, pi, exp
 from lmfit import Model, report_fit
+from lmfit.model import ModelResult
 from lmfit.models import LinearModel
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -541,6 +544,7 @@ def fit_first_plane(
     """
     shape = data.shape
     mask = np.zeros(shape, dtype=bool)
+
     if (lineshape == "PV") or (lineshape == "G") or (lineshape == "L"):
         mod, p_guess = make_models(
             pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
@@ -608,7 +612,7 @@ def fit_first_plane(
     X, Y = XY
 
     XY_slices = [X.copy()[mask], Y.copy()[mask]]
-    weights = 1./np.array([noise]*len(np.ravel(peak_slices)))
+    weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
     out = mod.fit(peak_slices, XY=XY_slices, params=p_guess, weights=weights)
     if verbose:
         print(out.fit_report())
@@ -618,6 +622,7 @@ def fit_first_plane(
     z_plot = data.copy()
     z_plot[~mask] = np.nan
     #  also if peak position changed significantly from start then add warning
+
     _z_plot = z_plot[~np.isnan(z_plot)]
     _z_sim = z_sim[~np.isnan(z_sim)]
 
@@ -627,105 +632,278 @@ def fit_first_plane(
     slope = linfit.params["slope"].value
     #  number of peaks in cluster
     n_peaks = len(group)
-    fit_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - slope={slope:.3f}"
+
+    chi2 = out.chisqr
+    redchi = out.redchi
+
+    fit_str = f"""
+    Cluster {peak.CLUSTID} containing {n_peaks} peaks - slope={slope:.3f}
+
+        chi^2 = {chi2:.5f}
+        redchi = {redchi:.5f}
+
+    """
     if (slope > 1.05) or (slope < 0.95):
-        fit_str += " - NEEDS CHECKING"
+        fit_str += """
+        🧐🧐🧐🧐🧐🧐--- NEEDS CHECKING ---🧐🧐🧐🧐🧐🧐
+        """
         print(fit_str)
     else:
         print(fit_str)
 
-    chi2 = out.chisqr
-    redchi = out.redchi
-    chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}, redchi={redchi:.3f}"
-
     if log != None:
         log.write("".join("#" for _ in range(60)) + "\n\n")
-        log.write(fit_str + "\n")
-        log.write(chi_str + "\n\n")
+        log.write(fit_str + "\n\n")
         # pass
     else:
         pass
 
-    if plot != None:
-        plot_path = Path(plot)
+    return FitResult(
+        out=out,
+        mask=mask,
+        fit_str=fit_str,
+        log=log,
+        group=group,
+        uc_dics=uc_dics,
+        min_x=min_x,
+        min_y=min_y,
+        max_x=max_x,
+        max_y=max_y,
+        X=X,
+        Y=Y,
+        Z=z_plot,
+        Z_sim=z_sim
+    )
+#   if plot != None:
+#       plot_path = Path(plot)
 
-        # plotting
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-        # slice out plot area
-        x_plot = uc_dics["f2"].ppm(X[min_y:max_y, min_x:max_x])
-        y_plot = uc_dics["f1"].ppm(Y[min_y:max_y, min_x:max_x])
-        z_plot = z_plot[min_y:max_y, min_x:max_x]
-        z_sim = z_sim[min_y:max_y, min_x:max_x]
+#       # plotting
+#       fig = plt.figure()
+#       ax = fig.add_subplot(111, projection="3d")
+#       # slice out plot area
+#       x_plot = uc_dics["f2"].ppm(X[min_y:max_y, min_x:max_x])
+#       y_plot = uc_dics["f1"].ppm(Y[min_y:max_y, min_x:max_x])
+#       z_plot = z_plot[min_y:max_y, min_x:max_x]
+#       z_sim = z_sim[min_y:max_y, min_x:max_x]
 
-        ax.set_title("$\chi^2$=" + f"{chi2:.3f}, " + "$\chi_{red}^2$=" + f"{redchi:.4f}")
+#       ax.set_title(
+#           "$\chi^2$=" + f"{chi2:.3f}, " + "$\chi_{red}^2$=" + f"{redchi:.4f}"
+#       )
 
-        residual = z_plot - z_sim
-        cset = ax.contourf(x_plot, y_plot, residual, zdir='z', offset=np.nanmin(z_plot)*1.1, alpha=0.5, cmap=cm.coolwarm)
-        fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
-        # plot raw data
-        ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
+#       residual = z_plot - z_sim
+#       cset = ax.contourf(
+#           x_plot,
+#           y_plot,
+#           residual,
+#           zdir="z",
+#           offset=np.nanmin(z_plot) * 1.1,
+#           alpha=0.5,
+#           cmap=cm.coolwarm,
+#       )
+#       fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+#       # plot raw data
+#       ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
 
-        ax.set_xlabel("F2 ppm")
-        ax.set_ylabel("F1 ppm")
-        ax.plot_wireframe(
-            x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
-        )
-        ax.invert_xaxis()
-        ax.invert_yaxis()
-        # Annotate plots
-        labs = []
-        Z_lab = []
-        Y_lab = []
-        X_lab = []
-        for k, v in out.params.valuesdict().items():
-            if "amplitude" in k:
-                Z_lab.append(v)
-                # get prefix
-                labs.append(" ".join(k.split("_")[:-1]))
-            elif "center_x" in k:
-                X_lab.append(uc_dics["f2"].ppm(v))
-            elif "center_y" in k:
-                Y_lab.append(uc_dics["f1"].ppm(v))
-        #  this is dumb as !£$@
-        Z_lab = [
-            data[
-                int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
+#       ax.set_xlabel("F2 ppm")
+#       ax.set_ylabel("F1 ppm")
+#       ax.plot_wireframe(
+#           x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
+#       )
+#       ax.invert_xaxis()
+#       ax.invert_yaxis()
+#       # Annotate plots
+#       labs = []
+#       Z_lab = []
+#       Y_lab = []
+#       X_lab = []
+#       for k, v in out.params.valuesdict().items():
+#           if "amplitude" in k:
+#               Z_lab.append(v)
+#               # get prefix
+#               labs.append(" ".join(k.split("_")[:-1]))
+#           elif "center_x" in k:
+#               X_lab.append(uc_dics["f2"].ppm(v))
+#           elif "center_y" in k:
+#               Y_lab.append(uc_dics["f1"].ppm(v))
+#       #  this is dumb as !£$@
+#       Z_lab = [
+#           data[
+#               int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
+#           ]
+#           for x, y in zip(X_lab, Y_lab)
+#       ]
+
+#       for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
+#           # print(l, x, y, z)
+#           ax.text(x, y, z * 1.2, l, None)
+
+#       # plt.colorbar(contf)
+#       plt.legend(bbox_to_anchor=(1.2, 1.1))
+
+#       name = group.CLUSTID.iloc[0]
+#       if show:
+#           plt.savefig(plot_path / f"{name}.png", dpi=300)
+
+#           def exit_program(event):
+#               exit()
+
+#           def next_plot(event):
+#               plt.close()
+
+#           axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
+#           bnexit = Button(axexit, "Exit")
+#            bnexit.on_clicked(exit_program)
+#
+#            axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
+#            bnnext = Button(axnext, "Next")
+#            bnnext.on_clicked(next_plot)
+#
+#            plt.show()
+#        else:
+#            plt.savefig(plot_path / f"{name}.png", dpi=300)
+#        #    print(p_guess)
+#        # close plot
+#        plt.close()
+    #return out, mask
+
+
+class FitResult:
+
+    def __init__(self,
+                 out: ModelResult,
+                 mask: np.array,
+                 fit_str: str,
+                 log: str,
+                 group: pd.core.groupby.generic.DataFrameGroupBy,
+                 uc_dics: dict,
+                 min_x: float,
+                 min_y: float,
+                 max_x: float,
+                 max_y: float,
+                 X: np.array,
+                 Y: np.array,
+                 Z: np.array,
+                 Z_sim: np.array,
+                 ):
+        """ Store output of fit_first_plane function """
+        self.out = out
+        self.mask = mask
+        self.fit_str = fit_str
+        self.log = log
+        self.group = group
+        self.uc_dics = uc_dics
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+        self.X = X
+        self.Y = Y
+        self.Z = Z
+        self.Z_sim = Z_sim
+
+    def check_shifts(self):
+        """ Calculate difference between initial peak positions 
+            and check whether they moved too much from original
+            position
+            
+        """
+        pass
+
+    def plot(self, plot_path, show=False, nomp=True):
+        """ Matplotlib interactive plot of the fits """
+        if nomp:
+            plot_path = Path(plot_path)
+
+            # plotting
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d")
+            # slice out plot area
+            x_plot = self.uc_dics["f2"].ppm(self.X[self.min_y:self.max_y, self.min_x:self.max_x])
+            y_plot = self.uc_dics["f1"].ppm(self.Y[self.min_y:self.max_y, self.min_x:self.max_x])
+            z_plot = self.Z[self.min_y:self.max_y, self.min_x:self.max_x]
+            z_sim = self.Z_sim[self.min_y:self.max_y, self.min_x:self.max_x]
+
+            ax.set_title(
+                "$\chi^2$=" + f"{self.out.chisqr:.3f}, " + "$\chi_{red}^2$=" + f"{self.out.redchi:.4f}"
+            )
+
+            residual = z_plot - z_sim
+            cset = ax.contourf(
+                x_plot,
+                y_plot,
+                residual,
+                zdir="z",
+                offset=np.nanmin(z_plot) * 1.1,
+                alpha=0.5,
+                cmap=cm.coolwarm,
+            )
+            fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+            # plot raw data
+            ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
+
+            ax.set_xlabel("F2 ppm")
+            ax.set_ylabel("F1 ppm")
+            ax.plot_wireframe(
+                x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
+            )
+            ax.invert_xaxis()
+            ax.invert_yaxis()
+            # Annotate plots
+            labs = []
+            Z_lab = []
+            Y_lab = []
+            X_lab = []
+            for k, v in self.out.params.valuesdict().items():
+                if "amplitude" in k:
+                    Z_lab.append(v)
+                    # get prefix
+                    labs.append(" ".join(k.split("_")[:-1]))
+                elif "center_x" in k:
+                    X_lab.append(self.uc_dics["f2"].ppm(v))
+                elif "center_y" in k:
+                    Y_lab.append(self.uc_dics["f1"].ppm(v))
+            #  this is dumb as !£$@
+            Z_lab = [
+                self.Z[
+                    int(round(self.uc_dics["f1"](y, "ppm"))), int(round(self.uc_dics["f2"](x, "ppm")))
+                ]
+                for x, y in zip(X_lab, Y_lab)
             ]
-            for x, y in zip(X_lab, Y_lab)
-        ]
 
-        for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
-            # print(l, x, y, z)
-            ax.text(x, y, z * 1.2, l, None)
+            for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
+                # print(l, x, y, z)
+                ax.text(x, y, z * 1.2, l, None)
 
-        # plt.colorbar(contf)
-        plt.legend(bbox_to_anchor=(1.2,1.1))
+            # plt.colorbar(contf)
+            plt.legend(bbox_to_anchor=(1.2, 1.1))
 
-        name = group.CLUSTID.iloc[0]
-        if show:
-            plt.savefig(plot_path / f"{name}.png", dpi=300)
+            name = self.group.CLUSTID.iloc[0]
+            if show:
+                plt.savefig(plot_path / f"{name}.png", dpi=300)
 
-            def exit_program(event):
-                exit()
-            def next_plot(event):
-                plt.close()
+                def exit_program(event):
+                    exit()
 
-            axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-            bnexit = Button(axexit, "Exit")
-            bnexit.on_clicked(exit_program)
+                def next_plot(event):
+                    plt.close()
 
-            axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
-            bnnext = Button(axnext, "Next")
-            bnnext.on_clicked(next_plot)
+                axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
+                bnexit = Button(axexit, "Exit")
+                bnexit.on_clicked(exit_program)
 
-            plt.show()
+                axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
+                bnnext = Button(axnext, "Next")
+                bnnext.on_clicked(next_plot)
+
+                plt.show()
+            else:
+                plt.savefig(plot_path / f"{name}.png", dpi=300)
+            #    print(p_guess)
+            # close plot
+            plt.close()
         else:
-            plt.savefig(plot_path / f"{name}.png", dpi=300)
-        #    print(p_guess)
-        # close plot
-        plt.close()
-    return out, mask
+            print("Cannot use matplotlib in multiprocess mode. Use --nomp flag.")
+            pass
 
 
 class Pseudo3D:
@@ -749,7 +927,22 @@ class Pseudo3D:
         self._ndim = self._udic["ndim"]
 
         if self._ndim == 1:
-            raise TypeError("NMR Data should be either 2D or 3D")
+            err = f"""
+            ##########################################
+                NMR Data should be either 2D or 3D
+            ##########################################
+            """
+            raise TypeError(err)
+
+        # check that spectrum has correct number of dims
+        elif self._ndim != len(dims):
+            err = f"""
+            #################################################################
+               Your spectrum has {self._ndim} dimensions with shape {data.shape}
+               but you have given a dimension order of {dims}...
+            #################################################################
+            """
+            raise ValueError(err)
 
         elif (self._ndim == 2) and (len(dims) == 2):
             self._f1_dim, self._f2_dim = dims

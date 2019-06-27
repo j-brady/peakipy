@@ -1,0 +1,574 @@
+############################################################
+
+
+    Cluster 30 containing 4 peaks - slope=0.987
+
+        chi^2 = 375.43879
+        redchi = 0.89178
+
+    
+
+
+    ------------------------------------
+               Summed planes 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 565
+    # data points      = 449
+    # variables        = 28
+    chi-square         = 375.438787
+    reduced chi-square = 0.89177859
+    Akaike info crit   = -24.3384240
+    Bayesian info crit = 90.6582169
+[[Variables]]
+    _None_fraction_y:          0.04783656 +/- 0.19017431 (397.55%) (init = 0.5)
+    _None_fraction_x:          0.58954981 +/- 0.19573775 (33.20%) (init = 0.5)
+    _None_sigma_y:             2.97451008 +/- 0.06237177 (2.10%) (init = 2.490453)
+    _None_sigma_x:             6.75260654 +/- 0.21456135 (3.18%) (init = 3.888808)
+    _None_center_y:            460.351852 +/- 0.04336538 (0.01%) (init = 459.999)
+    _None_center_x:            308.213285 +/- 0.12825427 (0.04%) (init = 307.8073)
+    _None_amplitude:           2.6043e+09 +/- 2.9248e+08 (11.23%) (init = 1.766923e+09)
+    _None_dummy_1_fraction_y:  5.1826e-10 +/- 0.01111309 (2144295195.91%) (init = 0.5)
+    _None_dummy_1_fraction_x:  0.77702082 +/- 0.04647767 (5.98%) (init = 0.5)
+    _None_dummy_1_sigma_y:     2.01875607 +/- 0.02683145 (1.33%) (init = 1.984629)
+    _None_dummy_1_sigma_x:     3.24343047 +/- 0.05639280 (1.74%) (init = 2.63454)
+    _None_dummy_1_center_y:    465.496433 +/- 0.02475074 (0.01%) (init = 465.7376)
+    _None_dummy_1_center_x:    316.662103 +/- 0.03455409 (0.01%) (init = 316.9439)
+    _None_dummy_1_amplitude:   2.4772e+09 +/- 1.7084e+08 (6.90%) (init = 2.279206e+09)
+    _None_dummy_2_fraction_y:  2.1070e-10 +/- 0.18507952 (87838422821.60%) (init = 0.5)
+    _None_dummy_2_fraction_x:  0.97198244 +/- 0.09103003 (9.37%) (init = 0.5)
+    _None_dummy_2_sigma_y:     3.28985973 +/- 0.12781119 (3.89%) (init = 6.505742)
+    _None_dummy_2_sigma_x:     5.60936864 +/- 0.17642966 (3.15%) (init = 3.325998)
+    _None_dummy_2_center_y:    470.675143 +/- 0.09255696 (0.02%) (init = 469.7269)
+    _None_dummy_2_center_x:    319.683535 +/- 0.14323623 (0.04%) (init = 320.0803)
+    _None_dummy_2_amplitude:   2.8644e+09 +/- 3.3515e+08 (11.70%) (init = 4.055011e+09)
+    _None_dummy_3_fraction_y:  1.0234e-11 +/- 0.11067409 (1081478435274.46%) (init = 0.5)
+    _None_dummy_3_fraction_x:  0.61583360 +/- 0.22075058 (35.85%) (init = 0.5)
+    _None_dummy_3_sigma_y:     2.04058872 +/- 0.06620358 (3.24%) (init = 2.0375)
+    _None_dummy_3_sigma_x:     3.91528779 +/- 0.16245597 (4.15%) (init = 3.577243)
+    _None_dummy_3_center_y:    475.058242 +/- 0.05761221 (0.01%) (init = 474.6763)
+    _None_dummy_3_center_x:    328.450316 +/- 0.11194071 (0.03%) (init = 328.126)
+    _None_dummy_3_amplitude:   8.7923e+08 +/- 1.2746e+08 (14.50%) (init = 1.224127e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_2_fraction_y, _None_dummy_2_amplitude)  =  0.833
+    C(_None_dummy_1_fraction_y, _None_dummy_1_amplitude)  =  0.827
+    C(_None_fraction_x, _None_amplitude)                  =  0.798
+    C(_None_dummy_3_fraction_x, _None_dummy_3_amplitude)  =  0.732
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude)   = -0.679
+    C(_None_dummy_1_fraction_y, _None_dummy_2_center_x)   =  0.675
+    C(_None_dummy_3_fraction_y, _None_dummy_3_amplitude)  =  0.651
+    C(_None_dummy_1_amplitude, _None_dummy_2_center_x)    =  0.621
+    C(_None_center_x, _None_dummy_1_fraction_y)           = -0.608
+    C(_None_sigma_x, _None_dummy_1_fraction_y)            = -0.567
+    C(_None_dummy_1_sigma_y, _None_dummy_2_center_y)      =  0.558
+    C(_None_dummy_1_center_y, _None_dummy_2_center_y)     =  0.538
+    C(_None_dummy_2_sigma_y, _None_dummy_3_fraction_x)    = -0.536
+    C(_None_center_x, _None_dummy_1_amplitude)            = -0.534
+    C(_None_fraction_y, _None_amplitude)                  =  0.531
+    C(_None_dummy_1_amplitude, _None_dummy_2_center_y)    =  0.489
+    C(_None_sigma_x, _None_dummy_1_amplitude)             = -0.479
+    C(_None_center_x, _None_dummy_2_center_x)             = -0.477
+    C(_None_fraction_y, _None_sigma_y)                    = -0.477
+    C(_None_dummy_1_fraction_x, _None_dummy_1_amplitude)  =  0.476
+    C(_None_sigma_x, _None_center_x)                      =  0.468
+    C(_None_dummy_2_sigma_y, _None_dummy_3_amplitude)     = -0.467
+    C(_None_fraction_x, _None_dummy_2_fraction_y)         = -0.465
+    C(_None_dummy_2_amplitude, _None_dummy_3_fraction_y)  = -0.458
+    C(_None_sigma_x, _None_dummy_2_center_x)              = -0.447
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude)   = -0.441
+    C(_None_dummy_2_fraction_x, _None_dummy_2_amplitude)  =  0.434
+    C(_None_dummy_2_center_y, _None_dummy_2_center_x)     =  0.433
+    C(_None_dummy_1_center_x, _None_dummy_2_sigma_y)      = -0.425
+    C(_None_amplitude, _None_dummy_1_amplitude)           = -0.423
+    C(_None_dummy_2_fraction_x, _None_dummy_3_amplitude)  = -0.420
+    C(_None_dummy_1_sigma_x, _None_dummy_1_amplitude)     =  0.419
+    C(_None_dummy_1_center_y, _None_dummy_2_sigma_y)      = -0.417
+    C(_None_dummy_2_fraction_y, _None_dummy_3_amplitude)  = -0.414
+    C(_None_center_y, _None_dummy_1_fraction_x)           = -0.398
+    C(_None_dummy_1_sigma_x, _None_dummy_2_sigma_y)       = -0.397
+    C(_None_amplitude, _None_dummy_2_fraction_y)          = -0.394
+    C(_None_dummy_1_sigma_x, _None_dummy_2_amplitude)     = -0.387
+    C(_None_dummy_1_amplitude, _None_dummy_2_sigma_y)     = -0.384
+    C(_None_dummy_2_amplitude, _None_dummy_3_fraction_x)  = -0.378
+    C(_None_dummy_1_sigma_y, _None_dummy_1_amplitude)     =  0.377
+    C(_None_dummy_1_fraction_x, _None_dummy_2_sigma_y)    = -0.371
+    C(_None_dummy_2_fraction_x, _None_dummy_3_center_y)   =  0.366
+    C(_None_amplitude, _None_dummy_1_fraction_y)          = -0.364
+    C(_None_dummy_1_center_x, _None_dummy_2_amplitude)    = -0.359
+    C(_None_dummy_3_center_x, _None_dummy_3_amplitude)    = -0.354
+    C(_None_center_x, _None_amplitude)                    =  0.353
+    C(_None_dummy_2_sigma_y, _None_dummy_3_center_x)      =  0.349
+    C(_None_center_y, _None_dummy_1_amplitude)            = -0.349
+    C(_None_dummy_1_sigma_y, _None_dummy_2_sigma_y)       = -0.345
+    C(_None_dummy_3_fraction_y, _None_dummy_3_sigma_y)    = -0.337
+    C(_None_dummy_1_center_y, _None_dummy_2_fraction_y)   =  0.337
+    C(_None_dummy_2_sigma_y, _None_dummy_2_amplitude)     =  0.335
+    C(_None_dummy_1_center_y, _None_dummy_2_center_x)     =  0.335
+    C(_None_dummy_2_fraction_x, _None_dummy_3_fraction_y) = -0.330
+    C(_None_dummy_3_fraction_x, _None_dummy_3_center_x)   = -0.327
+    C(_None_dummy_2_center_y, _None_dummy_3_center_y)     =  0.325
+    C(_None_fraction_x, _None_dummy_2_amplitude)          = -0.325
+    C(_None_dummy_2_sigma_x, _None_dummy_3_fraction_y)    = -0.317
+    C(_None_center_y, _None_dummy_1_sigma_y)              = -0.317
+    C(_None_dummy_1_center_x, _None_dummy_2_center_y)     =  0.317
+    C(_None_dummy_1_sigma_x, _None_dummy_2_center_y)      =  0.315
+    C(_None_sigma_x, _None_amplitude)                     =  0.302
+    C(_None_amplitude, _None_dummy_2_amplitude)           = -0.298
+    C(_None_dummy_2_fraction_y, _None_dummy_3_fraction_y) = -0.296
+    C(_None_dummy_1_sigma_y, _None_dummy_1_center_y)      =  0.291
+    C(_None_dummy_3_fraction_x, _None_dummy_3_sigma_x)    = -0.290
+    C(_None_dummy_2_fraction_y, _None_dummy_3_center_y)   = -0.288
+    C(_None_dummy_2_amplitude, _None_dummy_3_center_x)    =  0.285
+    C(_None_dummy_2_center_y, _None_dummy_3_sigma_y)      = -0.285
+    C(_None_dummy_2_fraction_y, _None_dummy_3_center_x)   =  0.284
+    C(_None_dummy_1_sigma_y, _None_dummy_2_center_x)      =  0.281
+    C(_None_dummy_2_center_x, _None_dummy_3_center_y)     =  0.279
+    C(_None_dummy_1_fraction_x, _None_dummy_1_sigma_y)    =  0.278
+    C(_None_dummy_1_sigma_x, _None_dummy_1_center_x)      =  0.278
+    C(_None_dummy_2_center_y, _None_dummy_3_amplitude)    = -0.278
+    C(_None_dummy_2_center_y, _None_dummy_3_fraction_x)   = -0.277
+    C(_None_dummy_1_center_x, _None_dummy_1_amplitude)    =  0.276
+    C(_None_dummy_1_sigma_y, _None_dummy_1_sigma_x)       =  0.276
+    C(_None_amplitude, _None_dummy_2_center_x)            = -0.275
+    C(_None_amplitude, _None_dummy_1_sigma_y)             = -0.270
+    C(_None_dummy_1_center_y, _None_dummy_1_amplitude)    =  0.270
+    C(_None_dummy_1_amplitude, _None_dummy_2_fraction_y)  = -0.264
+    C(_None_dummy_1_sigma_x, _None_dummy_2_fraction_y)    = -0.261
+    C(_None_dummy_1_center_x, _None_dummy_2_fraction_y)   = -0.256
+    C(_None_amplitude, _None_dummy_2_center_y)            = -0.254
+    C(_None_dummy_2_center_x, _None_dummy_3_amplitude)    = -0.249
+    C(_None_dummy_1_fraction_x, _None_dummy_2_center_y)   =  0.247
+    C(_None_dummy_1_sigma_y, _None_dummy_1_center_x)      =  0.247
+    C(_None_fraction_x, _None_dummy_2_center_x)           = -0.247
+    C(_None_dummy_2_amplitude, _None_dummy_3_sigma_x)     = -0.245
+    C(_None_fraction_x, _None_center_x)                   =  0.243
+    C(_None_fraction_x, _None_dummy_1_sigma_y)            = -0.243
+    C(_None_amplitude, _None_dummy_1_center_y)            = -0.240
+    C(_None_sigma_y, _None_dummy_1_fraction_x)            = -0.240
+    C(_None_center_y, _None_amplitude)                    =  0.239
+    C(_None_amplitude, _None_dummy_1_fraction_x)          = -0.238
+    C(_None_dummy_1_sigma_x, _None_dummy_3_amplitude)     =  0.238
+    C(_None_dummy_1_fraction_y, _None_dummy_2_center_y)   =  0.236
+    C(_None_dummy_2_sigma_x, _None_dummy_3_amplitude)     = -0.235
+    C(_None_dummy_2_sigma_y, _None_dummy_2_center_y)      = -0.235
+    C(_None_dummy_1_fraction_y, _None_dummy_2_amplitude)  = -0.230
+    C(_None_dummy_1_fraction_x, _None_dummy_2_amplitude)  = -0.230
+    C(_None_dummy_2_sigma_x, _None_dummy_2_amplitude)     =  0.228
+    C(_None_amplitude, _None_dummy_3_amplitude)           =  0.227
+    C(_None_dummy_3_center_y, _None_dummy_3_amplitude)    = -0.226
+    C(_None_center_x, _None_dummy_2_center_y)             = -0.226
+    C(_None_dummy_1_fraction_y, _None_dummy_1_sigma_x)    =  0.225
+    C(_None_dummy_2_center_x, _None_dummy_3_fraction_y)   = -0.224
+    C(_None_dummy_2_fraction_y, _None_dummy_3_sigma_x)    = -0.224
+    C(_None_dummy_1_center_x, _None_dummy_3_amplitude)    =  0.221
+    C(_None_dummy_2_sigma_x, _None_dummy_3_center_y)      =  0.218
+    C(_None_center_x, _None_dummy_1_sigma_y)              = -0.217
+    C(_None_fraction_x, _None_dummy_1_fraction_y)         = -0.216
+    C(_None_fraction_x, _None_dummy_1_amplitude)          = -0.213
+    C(_None_fraction_x, _None_dummy_3_amplitude)          =  0.213
+    C(_None_dummy_1_center_x, _None_dummy_3_fraction_x)   =  0.208
+    C(_None_dummy_2_center_y, _None_dummy_3_center_x)     =  0.207
+    C(_None_dummy_2_fraction_x, _None_dummy_2_sigma_x)    = -0.207
+    C(_None_fraction_y, _None_dummy_1_fraction_x)         = -0.205
+    C(_None_sigma_y, _None_center_y)                      =  0.205
+    C(_None_sigma_x, _None_dummy_1_sigma_y)               = -0.203
+    C(_None_dummy_3_fraction_y, _None_dummy_3_center_y)   = -0.203
+    C(_None_fraction_y, _None_dummy_1_center_y)           = -0.202
+    C(_None_dummy_1_amplitude, _None_dummy_3_center_y)    =  0.199
+    C(_None_dummy_2_fraction_x, _None_dummy_2_center_x)   =  0.198
+    C(_None_sigma_x, _None_dummy_2_center_y)              = -0.197
+    C(_None_dummy_2_center_x, _None_dummy_3_sigma_x)      = -0.195
+    C(_None_center_y, _None_dummy_2_center_y)             = -0.194
+    C(_None_fraction_x, _None_dummy_2_center_y)           = -0.192
+    C(_None_dummy_2_fraction_x, _None_dummy_3_fraction_x) = -0.192
+    C(_None_dummy_1_center_y, _None_dummy_1_center_x)     =  0.191
+    C(_None_sigma_y, _None_dummy_1_sigma_y)               = -0.190
+    C(_None_dummy_1_sigma_x, _None_dummy_3_fraction_x)    =  0.188
+    C(_None_dummy_2_fraction_y, _None_dummy_3_fraction_x) = -0.187
+    C(_None_amplitude, _None_dummy_2_fraction_x)          = -0.187
+    C(_None_center_y, _None_dummy_2_sigma_y)              =  0.185
+    C(_None_dummy_1_sigma_x, _None_dummy_1_center_y)      =  0.181
+    C(_None_fraction_y, _None_dummy_1_amplitude)          = -0.179
+    C(_None_fraction_y, _None_dummy_2_sigma_x)            = -0.179
+    C(_None_dummy_1_center_y, _None_dummy_3_sigma_y)      = -0.178
+    C(_None_dummy_2_fraction_x, _None_dummy_3_sigma_y)    = -0.177
+    C(_None_dummy_1_sigma_x, _None_dummy_2_center_x)      =  0.176
+    C(_None_center_y, _None_dummy_1_sigma_x)              = -0.175
+    C(_None_amplitude, _None_dummy_3_fraction_y)          =  0.172
+    C(_None_dummy_2_amplitude, _None_dummy_3_sigma_y)     = -0.172
+    C(_None_dummy_1_fraction_y, _None_dummy_2_fraction_x) =  0.171
+    C(_None_fraction_y, _None_center_y)                   =  0.165
+    C(_None_dummy_1_center_x, _None_dummy_3_center_y)     =  0.164
+    C(_None_dummy_3_fraction_y, _None_dummy_3_sigma_x)    =  0.164
+    C(_None_dummy_2_fraction_x, _None_dummy_3_center_x)   = -0.160
+    C(_None_dummy_2_fraction_x, _None_dummy_2_center_y)   =  0.158
+    C(_None_dummy_1_fraction_x, _None_dummy_1_sigma_x)    = -0.158
+    C(_None_center_y, _None_center_x)                     =  0.158
+    C(_None_dummy_2_sigma_x, _None_dummy_3_center_x)      =  0.158
+    C(_None_dummy_2_center_x, _None_dummy_3_center_x)     =  0.157
+    C(_None_center_x, _None_dummy_2_fraction_y)           = -0.156
+    C(_None_center_x, _None_dummy_1_sigma_x)              = -0.156
+    C(_None_fraction_y, _None_dummy_2_fraction_x)         = -0.155
+    C(_None_fraction_x, _None_dummy_3_center_x)           = -0.155
+    C(_None_dummy_1_amplitude, _None_dummy_2_sigma_x)     = -0.155
+    C(_None_dummy_1_fraction_x, _None_dummy_3_amplitude)  =  0.153
+    C(_None_dummy_3_sigma_x, _None_dummy_3_center_x)      = -0.152
+    C(_None_dummy_1_center_x, _None_dummy_3_center_x)     = -0.150
+    C(_None_sigma_y, _None_dummy_2_sigma_x)               =  0.150
+    C(_None_fraction_y, _None_dummy_1_sigma_x)            = -0.149
+    C(_None_fraction_x, _None_dummy_1_center_y)           = -0.148
+    C(_None_dummy_1_fraction_x, _None_dummy_3_center_x)   = -0.145
+    C(_None_dummy_2_fraction_y, _None_dummy_3_sigma_y)    = -0.145
+    C(_None_dummy_1_sigma_x, _None_dummy_3_center_x)      = -0.144
+    C(_None_sigma_y, _None_dummy_1_amplitude)             = -0.144
+    C(_None_dummy_1_fraction_x, _None_dummy_3_fraction_x) =  0.143
+    C(_None_dummy_1_fraction_y, _None_dummy_2_fraction_y) = -0.142
+    C(_None_dummy_3_fraction_x, _None_dummy_3_sigma_y)    =  0.137
+    C(_None_dummy_1_fraction_y, _None_dummy_2_sigma_x)    = -0.137
+    C(_None_dummy_1_center_y, _None_dummy_2_amplitude)    =  0.136
+    C(_None_center_x, _None_dummy_2_fraction_x)           = -0.136
+    C(_None_dummy_1_fraction_x, _None_dummy_1_center_y)   =  0.135
+    C(_None_center_x, _None_dummy_3_amplitude)            =  0.134
+    C(_None_amplitude, _None_dummy_1_sigma_x)             = -0.134
+    C(_None_sigma_x, _None_center_y)                      =  0.133
+    C(_None_sigma_x, _None_dummy_2_fraction_y)            = -0.133
+    C(_None_dummy_1_sigma_x, _None_dummy_3_center_y)      =  0.132
+    C(_None_dummy_1_sigma_x, _None_dummy_3_fraction_y)    =  0.132
+    C(_None_sigma_y, _None_dummy_1_center_y)              =  0.132
+    C(_None_sigma_x, _None_dummy_3_amplitude)             =  0.131
+    C(_None_dummy_2_center_x, _None_dummy_3_sigma_y)      = -0.130
+    C(_None_dummy_2_sigma_x, _None_dummy_3_sigma_x)       = -0.129
+    C(_None_fraction_y, _None_dummy_3_center_y)           = -0.129
+    C(_None_sigma_y, _None_dummy_2_sigma_y)               =  0.128
+    C(_None_sigma_x, _None_dummy_2_fraction_x)            = -0.128
+    C(_None_fraction_y, _None_dummy_1_center_x)           =  0.128
+    C(_None_dummy_1_amplitude, _None_dummy_3_amplitude)   =  0.128
+    C(_None_fraction_x, _None_dummy_3_fraction_y)         =  0.125
+    C(_None_dummy_1_amplitude, _None_dummy_2_fraction_x)  =  0.125
+    C(_None_fraction_x, _None_dummy_3_sigma_x)            =  0.125
+    C(_None_dummy_1_sigma_y, _None_dummy_2_amplitude)     = -0.124
+    C(_None_dummy_1_fraction_x, _None_dummy_2_sigma_x)    = -0.124
+    C(_None_dummy_3_sigma_x, _None_dummy_3_amplitude)     =  0.123
+    C(_None_dummy_1_fraction_x, _None_dummy_1_center_x)   =  0.123
+    C(_None_dummy_1_fraction_y, _None_dummy_1_center_y)   =  0.123
+    C(_None_dummy_1_fraction_y, _None_dummy_3_center_y)   =  0.122
+    C(_None_dummy_1_sigma_y, _None_dummy_3_center_y)      =  0.122
+    C(_None_dummy_1_amplitude, _None_dummy_3_fraction_x)  =  0.121
+    C(_None_dummy_3_sigma_y, _None_dummy_3_center_y)      = -0.119
+    C(_None_dummy_1_amplitude, _None_dummy_3_center_x)    = -0.118
+    C(_None_sigma_x, _None_dummy_1_sigma_x)               = -0.117
+    C(_None_center_y, _None_dummy_1_fraction_y)           = -0.117
+    C(_None_dummy_1_sigma_y, _None_dummy_3_sigma_y)       = -0.116
+    C(_None_amplitude, _None_dummy_3_sigma_x)             =  0.114
+    C(_None_dummy_1_center_x, _None_dummy_2_center_x)     =  0.114
+    C(_None_dummy_1_center_y, _None_dummy_3_sigma_x)      = -0.114
+    C(_None_amplitude, _None_dummy_3_sigma_y)             =  0.113
+    C(_None_dummy_1_fraction_x, _None_dummy_2_fraction_y) = -0.112
+    C(_None_dummy_1_center_x, _None_dummy_2_sigma_x)      =  0.111
+    C(_None_amplitude, _None_dummy_2_sigma_y)             =  0.111
+    C(_None_fraction_x, _None_sigma_y)                    =  0.110
+    C(_None_dummy_2_fraction_y, _None_dummy_2_sigma_x)    =  0.109
+    C(_None_fraction_y, _None_dummy_3_fraction_y)         =  0.108
+    C(_None_fraction_x, _None_dummy_3_fraction_x)         =  0.106
+    C(_None_fraction_x, _None_dummy_3_sigma_y)            =  0.105
+    C(_None_dummy_2_sigma_y, _None_dummy_2_center_x)      = -0.104
+    C(_None_dummy_1_center_y, _None_dummy_3_amplitude)    = -0.101
+
+                    
+    ------------------------------------
+                 Plane = 1 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 10
+    # data points      = 449
+    # variables        = 4
+    chi-square         = 28.9905121
+    reduced chi-square = 0.06514722
+    Akaike info crit   = -1222.28437
+    Bayesian info crit = -1205.85628
+[[Variables]]
+    _None_fraction_y:          0.04783656 (fixed)
+    _None_fraction_x:          0.5895498 (fixed)
+    _None_sigma_y:             2.97451 (fixed)
+    _None_sigma_x:             6.752607 (fixed)
+    _None_center_y:            460.3519 (fixed)
+    _None_center_x:            308.2133 (fixed)
+    _None_amplitude:           6.7723e+08 +/- 6668354.50 (0.98%) (init = 2.604344e+09)
+    _None_dummy_1_fraction_y:  5.182631e-10 (fixed)
+    _None_dummy_1_fraction_x:  0.7770208 (fixed)
+    _None_dummy_1_sigma_y:     2.018756 (fixed)
+    _None_dummy_1_sigma_x:     3.24343 (fixed)
+    _None_dummy_1_center_y:    465.4964 (fixed)
+    _None_dummy_1_center_x:    316.6621 (fixed)
+    _None_dummy_1_amplitude:   6.8465e+08 +/- 4006624.09 (0.59%) (init = 2.477207e+09)
+    _None_dummy_2_fraction_y:  2.107045e-10 (fixed)
+    _None_dummy_2_fraction_x:  0.9719824 (fixed)
+    _None_dummy_2_sigma_y:     3.28986 (fixed)
+    _None_dummy_2_sigma_x:     5.609369 (fixed)
+    _None_dummy_2_center_y:    470.6751 (fixed)
+    _None_dummy_2_center_x:    319.6835 (fixed)
+    _None_dummy_2_amplitude:   7.8276e+08 +/- 7599198.24 (0.97%) (init = 2.864353e+09)
+    _None_dummy_3_fraction_y:  1.023359e-11 (fixed)
+    _None_dummy_3_fraction_x:  0.6158336 (fixed)
+    _None_dummy_3_sigma_y:     2.040589 (fixed)
+    _None_dummy_3_sigma_x:     3.915288 (fixed)
+    _None_dummy_3_center_y:    475.0582 (fixed)
+    _None_dummy_3_center_x:    328.4503 (fixed)
+    _None_dummy_3_amplitude:   2.3595e+08 +/- 4091577.48 (1.73%) (init = 8.792277e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude) = -0.235
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude) = -0.184
+    C(_None_amplitude, _None_dummy_1_amplitude)         = -0.114
+
+                    
+    ------------------------------------
+                 Plane = 2 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 10
+    # data points      = 449
+    # variables        = 4
+    chi-square         = 14.1829067
+    reduced chi-square = 0.03187170
+    Akaike info crit   = -1543.28845
+    Bayesian info crit = -1526.86035
+[[Variables]]
+    _None_fraction_y:          0.04783656 (fixed)
+    _None_fraction_x:          0.5895498 (fixed)
+    _None_sigma_y:             2.97451 (fixed)
+    _None_sigma_x:             6.752607 (fixed)
+    _None_center_y:            460.3519 (fixed)
+    _None_center_x:            308.2133 (fixed)
+    _None_amplitude:           4.9590e+08 +/- 4664159.14 (0.94%) (init = 6.772319e+08)
+    _None_dummy_1_fraction_y:  5.182631e-10 (fixed)
+    _None_dummy_1_fraction_x:  0.7770208 (fixed)
+    _None_dummy_1_sigma_y:     2.018756 (fixed)
+    _None_dummy_1_sigma_x:     3.24343 (fixed)
+    _None_dummy_1_center_y:    465.4964 (fixed)
+    _None_dummy_1_center_x:    316.6621 (fixed)
+    _None_dummy_1_amplitude:   4.8176e+08 +/- 2802420.33 (0.58%) (init = 6.846452e+08)
+    _None_dummy_2_fraction_y:  2.107045e-10 (fixed)
+    _None_dummy_2_fraction_x:  0.9719824 (fixed)
+    _None_dummy_2_sigma_y:     3.28986 (fixed)
+    _None_dummy_2_sigma_x:     5.609369 (fixed)
+    _None_dummy_2_center_y:    470.6751 (fixed)
+    _None_dummy_2_center_x:    319.6835 (fixed)
+    _None_dummy_2_amplitude:   5.4566e+08 +/- 5315234.78 (0.97%) (init = 7.827585e+08)
+    _None_dummy_3_fraction_y:  1.023359e-11 (fixed)
+    _None_dummy_3_fraction_x:  0.6158336 (fixed)
+    _None_dummy_3_sigma_y:     2.040589 (fixed)
+    _None_dummy_3_sigma_x:     3.915288 (fixed)
+    _None_dummy_3_center_y:    475.0582 (fixed)
+    _None_dummy_3_center_x:    328.4503 (fixed)
+    _None_dummy_3_amplitude:   1.6758e+08 +/- 2861840.72 (1.71%) (init = 2.359542e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude) = -0.235
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude) = -0.184
+    C(_None_amplitude, _None_dummy_1_amplitude)         = -0.114
+
+                    
+    ------------------------------------
+                 Plane = 3 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 10
+    # data points      = 449
+    # variables        = 4
+    chi-square         = 10.0012243
+    reduced chi-square = 0.02247466
+    Akaike info crit   = -1700.13760
+    Bayesian info crit = -1683.70951
+[[Variables]]
+    _None_fraction_y:          0.04783656 (fixed)
+    _None_fraction_x:          0.5895498 (fixed)
+    _None_sigma_y:             2.97451 (fixed)
+    _None_sigma_x:             6.752607 (fixed)
+    _None_center_y:            460.3519 (fixed)
+    _None_center_x:            308.2133 (fixed)
+    _None_amplitude:           4.3103e+08 +/- 3916673.06 (0.91%) (init = 4.958985e+08)
+    _None_dummy_1_fraction_y:  5.182631e-10 (fixed)
+    _None_dummy_1_fraction_x:  0.7770208 (fixed)
+    _None_dummy_1_sigma_y:     2.018756 (fixed)
+    _None_dummy_1_sigma_x:     3.24343 (fixed)
+    _None_dummy_1_center_y:    465.4964 (fixed)
+    _None_dummy_1_center_x:    316.6621 (fixed)
+    _None_dummy_1_amplitude:   4.0921e+08 +/- 2353299.67 (0.58%) (init = 4.817638e+08)
+    _None_dummy_2_fraction_y:  2.107045e-10 (fixed)
+    _None_dummy_2_fraction_x:  0.9719824 (fixed)
+    _None_dummy_2_sigma_y:     3.28986 (fixed)
+    _None_dummy_2_sigma_x:     5.609369 (fixed)
+    _None_dummy_2_center_y:    470.6751 (fixed)
+    _None_dummy_2_center_x:    319.6835 (fixed)
+    _None_dummy_2_amplitude:   4.6914e+08 +/- 4463406.23 (0.95%) (init = 5.456558e+08)
+    _None_dummy_3_fraction_y:  1.023359e-11 (fixed)
+    _None_dummy_3_fraction_x:  0.6158336 (fixed)
+    _None_dummy_3_sigma_y:     2.040589 (fixed)
+    _None_dummy_3_sigma_x:     3.915288 (fixed)
+    _None_dummy_3_center_y:    475.0582 (fixed)
+    _None_dummy_3_center_x:    328.4503 (fixed)
+    _None_dummy_3_amplitude:   1.4418e+08 +/- 2403197.27 (1.67%) (init = 1.675811e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude) = -0.235
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude) = -0.184
+    C(_None_amplitude, _None_dummy_1_amplitude)         = -0.114
+
+                    
+    ------------------------------------
+                 Plane = 4 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 10
+    # data points      = 449
+    # variables        = 4
+    chi-square         = 7.97892006
+    reduced chi-square = 0.01793016
+    Akaike info crit   = -1801.56870
+    Bayesian info crit = -1785.14061
+[[Variables]]
+    _None_fraction_y:          0.04783656 (fixed)
+    _None_fraction_x:          0.5895498 (fixed)
+    _None_sigma_y:             2.97451 (fixed)
+    _None_sigma_x:             6.752607 (fixed)
+    _None_center_y:            460.3519 (fixed)
+    _None_center_x:            308.2133 (fixed)
+    _None_amplitude:           3.7799e+08 +/- 3498346.23 (0.93%) (init = 4.310305e+08)
+    _None_dummy_1_fraction_y:  5.182631e-10 (fixed)
+    _None_dummy_1_fraction_x:  0.7770208 (fixed)
+    _None_dummy_1_sigma_y:     2.018756 (fixed)
+    _None_dummy_1_sigma_x:     3.24343 (fixed)
+    _None_dummy_1_center_y:    465.4964 (fixed)
+    _None_dummy_1_center_x:    316.6621 (fixed)
+    _None_dummy_1_amplitude:   3.4836e+08 +/- 2101951.59 (0.60%) (init = 4.092119e+08)
+    _None_dummy_2_fraction_y:  2.107045e-10 (fixed)
+    _None_dummy_2_fraction_x:  0.9719824 (fixed)
+    _None_dummy_2_sigma_y:     3.28986 (fixed)
+    _None_dummy_2_sigma_x:     5.609369 (fixed)
+    _None_dummy_2_center_y:    470.6751 (fixed)
+    _None_dummy_2_center_x:    319.6835 (fixed)
+    _None_dummy_2_amplitude:   4.0669e+08 +/- 3986684.67 (0.98%) (init = 4.691381e+08)
+    _None_dummy_3_fraction_y:  1.023359e-11 (fixed)
+    _None_dummy_3_fraction_x:  0.6158336 (fixed)
+    _None_dummy_3_sigma_y:     2.040589 (fixed)
+    _None_dummy_3_sigma_x:     3.915288 (fixed)
+    _None_dummy_3_center_y:    475.0582 (fixed)
+    _None_dummy_3_center_x:    328.4503 (fixed)
+    _None_dummy_3_amplitude:   1.2610e+08 +/- 2146519.76 (1.70%) (init = 1.441791e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude) = -0.235
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude) = -0.184
+    C(_None_amplitude, _None_dummy_1_amplitude)         = -0.114
+
+                    
+    ------------------------------------
+                 Plane = 5 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 10
+    # data points      = 449
+    # variables        = 4
+    chi-square         = 5.57996578
+    reduced chi-square = 0.01253925
+    Akaike info crit   = -1962.14027
+    Bayesian info crit = -1945.71218
+[[Variables]]
+    _None_fraction_y:          0.04783656 (fixed)
+    _None_fraction_x:          0.5895498 (fixed)
+    _None_sigma_y:             2.97451 (fixed)
+    _None_sigma_x:             6.752607 (fixed)
+    _None_center_y:            460.3519 (fixed)
+    _None_center_x:            308.2133 (fixed)
+    _None_amplitude:           3.3173e+08 +/- 2925543.11 (0.88%) (init = 3.779865e+08)
+    _None_dummy_1_fraction_y:  5.182631e-10 (fixed)
+    _None_dummy_1_fraction_x:  0.7770208 (fixed)
+    _None_dummy_1_sigma_y:     2.018756 (fixed)
+    _None_dummy_1_sigma_x:     3.24343 (fixed)
+    _None_dummy_1_center_y:    465.4964 (fixed)
+    _None_dummy_1_center_x:    316.6621 (fixed)
+    _None_dummy_1_amplitude:   2.9825e+08 +/- 1757787.69 (0.59%) (init = 3.483559e+08)
+    _None_dummy_2_fraction_y:  2.107045e-10 (fixed)
+    _None_dummy_2_fraction_x:  0.9719824 (fixed)
+    _None_dummy_2_sigma_y:     3.28986 (fixed)
+    _None_dummy_2_sigma_x:     5.609369 (fixed)
+    _None_dummy_2_center_y:    470.6751 (fixed)
+    _None_dummy_2_center_x:    319.6835 (fixed)
+    _None_dummy_2_amplitude:   3.5358e+08 +/- 3333923.22 (0.94%) (init = 4.066877e+08)
+    _None_dummy_3_fraction_y:  1.023359e-11 (fixed)
+    _None_dummy_3_fraction_x:  0.6158336 (fixed)
+    _None_dummy_3_sigma_y:     2.040589 (fixed)
+    _None_dummy_3_sigma_x:     3.915288 (fixed)
+    _None_dummy_3_center_y:    475.0582 (fixed)
+    _None_dummy_3_center_x:    328.4503 (fixed)
+    _None_dummy_3_amplitude:   1.0936e+08 +/- 1795058.48 (1.64%) (init = 1.261022e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude) = -0.235
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude) = -0.184
+    C(_None_amplitude, _None_dummy_1_amplitude)         = -0.114
+
+                    
+    ------------------------------------
+                 Plane = 6 
+    ------------------------------------
+    [[Model]]
+    (((Model(pv_pv, prefix='_None_') + Model(pv_pv, prefix='_None_dummy_1_')) + Model(pv_pv, prefix='_None_dummy_2_')) + Model(pv_pv, prefix='_None_dummy_3_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 10
+    # data points      = 449
+    # variables        = 4
+    chi-square         = 4.47625669
+    reduced chi-square = 0.01005900
+    Akaike info crit   = -2061.09785
+    Bayesian info crit = -2044.66976
+[[Variables]]
+    _None_fraction_y:          0.04783656 (fixed)
+    _None_fraction_x:          0.5895498 (fixed)
+    _None_sigma_y:             2.97451 (fixed)
+    _None_sigma_x:             6.752607 (fixed)
+    _None_center_y:            460.3519 (fixed)
+    _None_center_x:            308.2133 (fixed)
+    _None_amplitude:           2.9046e+08 +/- 2620283.15 (0.90%) (init = 3.317322e+08)
+    _None_dummy_1_fraction_y:  5.182631e-10 (fixed)
+    _None_dummy_1_fraction_x:  0.7770208 (fixed)
+    _None_dummy_1_sigma_y:     2.018756 (fixed)
+    _None_dummy_1_sigma_x:     3.24343 (fixed)
+    _None_dummy_1_center_y:    465.4964 (fixed)
+    _None_dummy_1_center_x:    316.6621 (fixed)
+    _None_dummy_1_amplitude:   2.5498e+08 +/- 1574374.85 (0.62%) (init = 2.982528e+08)
+    _None_dummy_2_fraction_y:  2.107045e-10 (fixed)
+    _None_dummy_2_fraction_x:  0.9719824 (fixed)
+    _None_dummy_2_sigma_y:     3.28986 (fixed)
+    _None_dummy_2_sigma_x:     5.609369 (fixed)
+    _None_dummy_2_center_y:    470.6751 (fixed)
+    _None_dummy_2_center_x:    319.6835 (fixed)
+    _None_dummy_2_amplitude:   3.0653e+08 +/- 2986051.67 (0.97%) (init = 3.535813e+08)
+    _None_dummy_3_fraction_y:  1.023359e-11 (fixed)
+    _None_dummy_3_fraction_x:  0.6158336 (fixed)
+    _None_dummy_3_sigma_y:     2.040589 (fixed)
+    _None_dummy_3_sigma_x:     3.915288 (fixed)
+    _None_dummy_3_center_y:    475.0582 (fixed)
+    _None_dummy_3_center_x:    328.4503 (fixed)
+    _None_dummy_3_amplitude:   96055491.3 +/- 1607756.70 (1.67%) (init = 1.093561e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(_None_dummy_1_amplitude, _None_dummy_2_amplitude) = -0.235
+    C(_None_dummy_2_amplitude, _None_dummy_3_amplitude) = -0.184
+    C(_None_amplitude, _None_dummy_1_amplitude)         = -0.114
+
+                    

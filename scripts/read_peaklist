@@ -86,6 +86,7 @@
 """
 import os
 import json
+import textwrap
 from pathlib import Path
 
 import pandas as pd
@@ -154,7 +155,6 @@ sparky_to_pipe = {
     # "": "CLUSTID",
     # "": "MEMCNT"
 }
-
 
 class Peaklist:
     """ Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
@@ -228,7 +228,7 @@ class Peaklist:
         # convert linewidths to float
         self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
         self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))
-        #  convert Hz lw to points
+        # convert Hz lw to points
         self.df["XW"] = self.df.XW_HZ.apply(lambda x: x * pt_per_hz_f2dim)
         self.df["YW"] = self.df.YW_HZ.apply(lambda x: x * pt_per_hz_f1dim)
         # makes an assignment column
@@ -442,7 +442,7 @@ class Peaklist:
                 overlap_peaks_str = ";".join(group.ASS)
                 overlap_peaks += f"OVERLAP_PEAKS=({overlap_peaks_str})\n"
 
-        fuda_file = f"""
+        fuda_file = textwrap.dedent(f"""\
 # Read peaklist and spectrum info
 PEAKLIST=peaks.fuda
 SPECFILE={self.data_path}
@@ -452,7 +452,6 @@ BASELINE=N
 VERBOSELEVEL=5
 PRINTDATA=Y
 LM=(MAXFEV=250;TOL=1e-5)
-
 #Specify the default values. All values are in ppm:
 DEF_LINEWIDTH_F1={self.f1radius}
 DEF_LINEWIDTH_F2={self.f2radius}
@@ -460,8 +459,7 @@ DEF_RADIUS_F1={self.f1radius}
 DEF_RADIUS_F2={self.f2radius}
 SHAPE=GLORE
 # OVERLAP PEAKS
-{overlap_peaks}
-        """
+{overlap_peaks}""")
         with open(fuda_params, "w") as f:
             f.write(fuda_file)
         print(overlap_peaks)
@@ -535,9 +533,18 @@ if __name__ == "__main__":
     # write config file
     with open("peakipy.config", "w") as config:
         #  add dims
-        config_dic = dict([("--dims", dims), ("<data>", pipe_ft_file)])
+        config_dic = dict(
+            [
+                ('--dims', dims),
+                ('<data>', pipe_ft_file),
+                ('--thres', float(thres)),
+                ('--f1radius', f1radius),
+                ('--f2radius', f2radius),
+            ]
+        )
         # write json
-        config.write(json.dumps(config_dic))
+        config.write(json.dumps(config_dic, sort_keys=True, indent=4))
+        #json.dump(config_dic, fp=config, sort_keys=True, indent=4)
 
     run_log()
 

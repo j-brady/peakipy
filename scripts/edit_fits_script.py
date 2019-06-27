@@ -65,6 +65,7 @@ from bokeh.models.widgets import (
     SelectEditor,
     TextInput,
     RadioButtonGroup,
+    CheckboxGroup,
     Div,
 )
 from bokeh.plotting import figure
@@ -195,13 +196,23 @@ def fit_selected(event):
     selected_df.to_csv("~tmp.csv")
 
     lineshape = lineshapes[radio_button_group.active]
-    print("Using LS = ", lineshape)
-    print(
-        f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}"
-    )
-    os.system(
-        f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims}"
-    )
+    if checkbox_group.active == []:
+        print("Using LS = ", lineshape)
+        print(
+            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --nomp"
+        )
+        os.system(
+            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --nomp"
+        )
+    else:
+        plane_index = select_plane.value
+        print("Using LS = ", lineshape)
+        print(
+            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --plane={plane_index} --nomp"
+        )
+        os.system(
+            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --plane={plane_index} --nomp"
+        )
 
 
 def save_peaks(event):
@@ -348,7 +359,9 @@ def get_contour_data(data, levels, **kwargs):
 def update_contour(attrname, old, new):
     new_cs = eval(contour_start.value)
     cl = new_cs * contour_factor ** np.arange(contour_num)
-    spec_source.data = get_contour_data(data[0], cl, extent=extent).data
+    plane_index = select_planes_dic[select_plane.value]
+    spec_source.data = get_contour_data(data[plane_index], cl, extent=extent).data
+    #print("Value of checkbox",checkbox_group.active)
 
 
 def exit_edit_peaks(event):
@@ -572,6 +585,15 @@ clust_div = Div(
         peaks to be more readily incorporated into clusters."""
 )
 
+select_planes_list = [f"{i+1}" for i in range(data.shape[planes])]
+select_plane = Select(title="Select plane:", value=select_planes_list[0], options=select_planes_list)
+select_planes_dic = {f"{i+1}":i for i in range(data.shape[planes])} 
+select_plane.on_change("value",update_contour)
+
+checkbox_group = CheckboxGroup(
+        labels=["fit current plane only"], active=[],
+        )
+
 #  not sure this is needed
 selected_df = df.copy()
 
@@ -656,6 +678,7 @@ controls = column(
         column(contour_start, fit_button, widgetbox(ls_div), radio_button_group),
         column(savefilename, button, exit_button),
     ),
+    row(select_plane, checkbox_group)
 )
 
 # widgetbox(radio_button_group)

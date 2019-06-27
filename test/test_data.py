@@ -11,7 +11,6 @@ from peakipy.core import (
     pvoigt2d,
     fix_params,
     get_params,
-    r_square,
     make_mask,
     # fit_first_plane,
     make_models,
@@ -78,7 +77,6 @@ def fit_first_plane(
 
         ax.set_xlabel("F2 pts")
         ax.set_ylabel("F1 pts")
-        ax.set_title("$R^2=%.3f$" % r_square(peak_slices.ravel(), out.residual))
         ax.plot_wireframe(
             X_plot,
             Y_plot,
@@ -132,11 +130,11 @@ params = {
 # data = np.ones((params["id"]["planes"], params["f1"]["size"], params["f2"]["size"])) * params["noise"]
 
 peaks = [
-    [-1e5, 205, 103, 3, 3],
+    [1e5, 205, 103, 3, 3],
     [-0.6e5, 217, 105, 3, 3],
     [-0.5e5, 210, 110, 3, 3],
     [-1e5, 100, 90, 2, 2],
-    [-0.6e5, 100, 96, 2, 2],
+    [0.6e5, 100, 96, 2, 2],
     [-0.5e5, 94, 84, 2, 2],
     [-0.5e5, 95, 90, 2, 2],
 ]

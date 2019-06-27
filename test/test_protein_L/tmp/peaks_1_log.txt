@@ -1,0 +1,2110 @@
+
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__53_H_105__53_N_106__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 72
+    # data points      = 56
+    # variables        = 6
+    chi-square         = 4.53974298
+    reduced chi-square = 0.09079486
+    Akaike info crit   = -128.698952
+    Bayesian info crit = -116.546842
+[[Variables]]
+    __53_H_105__53_N_106__fraction:   1.3007e-09 +/- 0.13018264 (10008401852.79%) (init = 0.5)
+    __53_H_105__53_N_106__sigma_y:    1.17519693 +/- 0.03598131 (3.06%) (init = 1.342956)
+    __53_H_105__53_N_106__sigma_x:    1.18541988 +/- 0.03426539 (2.89%) (init = 1.293262)
+    __53_H_105__53_N_106__center_y:   64.4793320 +/- 0.02665989 (0.04%) (init = 64.48078)
+    __53_H_105__53_N_106__center_x:   190.948751 +/- 0.02694436 (0.01%) (init = 190.9414)
+    __53_H_105__53_N_106__amplitude:  7.5192e+08 +/- 53082542.0 (7.06%) (init = 7.186934e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__53_H_105__53_N_106__fraction, __53_H_105__53_N_106__amplitude) = -0.925
+    C(__53_H_105__53_N_106__fraction, __53_H_105__53_N_106__sigma_y)   =  0.474
+    C(__53_H_105__53_N_106__fraction, __53_H_105__53_N_106__sigma_x)   =  0.395
+    C(__53_H_105__53_N_106__sigma_y, __53_H_105__53_N_106__amplitude)  = -0.271
+    C(__53_H_105__53_N_106__sigma_x, __53_H_105__53_N_106__amplitude)  = -0.192
+    C(__53_H_105__53_N_106__sigma_y, __53_H_105__53_N_106__sigma_x)    =  0.187
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__53_H_105__53_N_106__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.76803455
+    reduced chi-square = 0.01396426
+    Akaike info crit   = -238.199246
+    Bayesian info crit = -236.173894
+[[Variables]]
+    __53_H_105__53_N_106__fraction:   1.300734e-09 (fixed)
+    __53_H_105__53_N_106__sigma_y:    1.175197 (fixed)
+    __53_H_105__53_N_106__sigma_x:    1.18542 (fixed)
+    __53_H_105__53_N_106__center_y:   64.47933 (fixed)
+    __53_H_105__53_N_106__center_x:   190.9488 (fixed)
+    __53_H_105__53_N_106__amplitude:  3.0567e+08 +/- 5575127.11 (1.82%) (init = 7.519156e+08)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__53_H_105__53_N_106__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.34639969
+    reduced chi-square = 0.00629818
+    Akaike info crit   = -282.788766
+    Bayesian info crit = -280.763414
+[[Variables]]
+    __53_H_105__53_N_106__fraction:   1.300734e-09 (fixed)
+    __53_H_105__53_N_106__sigma_y:    1.175197 (fixed)
+    __53_H_105__53_N_106__sigma_x:    1.18542 (fixed)
+    __53_H_105__53_N_106__center_y:   64.47933 (fixed)
+    __53_H_105__53_N_106__center_x:   190.9488 (fixed)
+    __53_H_105__53_N_106__amplitude:  2.0822e+08 +/- 3744149.19 (1.80%) (init = 3.056728e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__53_H_105__53_N_106__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.15681559
+    reduced chi-square = 0.00285119
+    Akaike info crit   = -327.170042
+    Bayesian info crit = -325.144690
+[[Variables]]
+    __53_H_105__53_N_106__fraction:   1.300734e-09 (fixed)
+    __53_H_105__53_N_106__sigma_y:    1.175197 (fixed)
+    __53_H_105__53_N_106__sigma_x:    1.18542 (fixed)
+    __53_H_105__53_N_106__center_y:   64.47933 (fixed)
+    __53_H_105__53_N_106__center_x:   190.9488 (fixed)
+    __53_H_105__53_N_106__amplitude:  1.4169e+08 +/- 2519178.90 (1.78%) (init = 2.082185e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__53_H_105__53_N_106__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.07684364
+    reduced chi-square = 0.00139716
+    Akaike info crit   = -367.114716
+    Bayesian info crit = -365.089365
+[[Variables]]
+    __53_H_105__53_N_106__fraction:   1.300734e-09 (fixed)
+    __53_H_105__53_N_106__sigma_y:    1.175197 (fixed)
+    __53_H_105__53_N_106__sigma_x:    1.18542 (fixed)
+    __53_H_105__53_N_106__center_y:   64.47933 (fixed)
+    __53_H_105__53_N_106__center_x:   190.9488 (fixed)
+    __53_H_105__53_N_106__amplitude:  96335061.8 +/- 1763471.18 (1.83%) (init = 1.416898e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__62_H_123__62_N_124__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 90
+    # data points      = 55
+    # variables        = 6
+    chi-square         = 6.28587051
+    reduced chi-square = 0.12828307
+    Akaike info crit   = -107.296587
+    Bayesian info crit = -95.2525874
+[[Variables]]
+    __62_H_123__62_N_124__fraction:   6.1125e-12 +/- 0.11005143 (1800432511558.54%) (init = 0.5)
+    __62_H_123__62_N_124__sigma_y:    1.20643205 +/- 0.03192181 (2.65%) (init = 1.328613)
+    __62_H_123__62_N_124__sigma_x:    1.20005717 +/- 0.03158856 (2.63%) (init = 1.302812)
+    __62_H_123__62_N_124__center_y:   71.1415537 +/- 0.02483854 (0.03%) (init = 71.12142)
+    __62_H_123__62_N_124__center_x:   328.900251 +/- 0.02470347 (0.01%) (init = 328.9172)
+    __62_H_123__62_N_124__amplitude:  1.0058e+09 +/- 65052895.7 (6.47%) (init = 9.782838e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__62_H_123__62_N_124__fraction, __62_H_123__62_N_124__amplitude) =  0.927
+    C(__62_H_123__62_N_124__fraction, __62_H_123__62_N_124__sigma_y)   = -0.409
+    C(__62_H_123__62_N_124__fraction, __62_H_123__62_N_124__sigma_x)   = -0.402
+    C(__62_H_123__62_N_124__sigma_y, __62_H_123__62_N_124__amplitude)  = -0.209
+    C(__62_H_123__62_N_124__sigma_x, __62_H_123__62_N_124__amplitude)  = -0.202
+    C(__62_H_123__62_N_124__sigma_y, __62_H_123__62_N_124__sigma_x)    =  0.165
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__62_H_123__62_N_124__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 1.02996630
+    reduced chi-square = 0.01907345
+    Akaike info crit   = -216.779391
+    Bayesian info crit = -214.772057
+[[Variables]]
+    __62_H_123__62_N_124__fraction:   6.112499e-12 (fixed)
+    __62_H_123__62_N_124__sigma_y:    1.206432 (fixed)
+    __62_H_123__62_N_124__sigma_x:    1.200057 (fixed)
+    __62_H_123__62_N_124__center_y:   71.14155 (fixed)
+    __62_H_123__62_N_124__center_x:   328.9003 (fixed)
+    __62_H_123__62_N_124__amplitude:  4.0276e+08 +/- 6641954.21 (1.65%) (init = 1.005756e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__62_H_123__62_N_124__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.48032303
+    reduced chi-square = 0.00889487
+    Akaike info crit   = -258.734628
+    Bayesian info crit = -256.727295
+[[Variables]]
+    __62_H_123__62_N_124__fraction:   6.112499e-12 (fixed)
+    __62_H_123__62_N_124__sigma_y:    1.206432 (fixed)
+    __62_H_123__62_N_124__sigma_x:    1.200057 (fixed)
+    __62_H_123__62_N_124__center_y:   71.14155 (fixed)
+    __62_H_123__62_N_124__center_x:   328.9003 (fixed)
+    __62_H_123__62_N_124__amplitude:  2.7972e+08 +/- 4535770.46 (1.62%) (init = 4.027573e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__62_H_123__62_N_124__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.22910564
+    reduced chi-square = 0.00424270
+    Akaike info crit   = -299.449789
+    Bayesian info crit = -297.442456
+[[Variables]]
+    __62_H_123__62_N_124__fraction:   6.112499e-12 (fixed)
+    __62_H_123__62_N_124__sigma_y:    1.206432 (fixed)
+    __62_H_123__62_N_124__sigma_x:    1.200057 (fixed)
+    __62_H_123__62_N_124__center_y:   71.14155 (fixed)
+    __62_H_123__62_N_124__center_x:   328.9003 (fixed)
+    __62_H_123__62_N_124__amplitude:  1.9176e+08 +/- 3132580.62 (1.63%) (init = 2.797199e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__62_H_123__62_N_124__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.10735827
+    reduced chi-square = 0.00198812
+    Akaike info crit   = -341.140428
+    Bayesian info crit = -339.133094
+[[Variables]]
+    __62_H_123__62_N_124__fraction:   6.112499e-12 (fixed)
+    __62_H_123__62_N_124__sigma_y:    1.206432 (fixed)
+    __62_H_123__62_N_124__sigma_x:    1.200057 (fixed)
+    __62_H_123__62_N_124__center_y:   71.14155 (fixed)
+    __62_H_123__62_N_124__center_x:   328.9003 (fixed)
+    __62_H_123__62_N_124__amplitude:  1.3152e+08 +/- 2144381.86 (1.63%) (init = 1.91765e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__12_H_23__12_N_24__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 78
+    # data points      = 55
+    # variables        = 6
+    chi-square         = 5.76779737
+    reduced chi-square = 0.11771015
+    Akaike info crit   = -112.027360
+    Bayesian info crit = -99.9833612
+[[Variables]]
+    __12_H_23__12_N_24__fraction:   7.8522e-11 +/- 0.11690037 (148876856899.92%) (init = 0.5)
+    __12_H_23__12_N_24__sigma_y:    1.19466431 +/- 0.03300360 (2.76%) (init = 1.318971)
+    __12_H_23__12_N_24__sigma_x:    1.20735158 +/- 0.03425166 (2.84%) (init = 1.302139)
+    __12_H_23__12_N_24__center_y:   80.1375349 +/- 0.02563427 (0.03%) (init = 80.09616)
+    __12_H_23__12_N_24__center_x:   264.298705 +/- 0.02589093 (0.01%) (init = 264.2657)
+    __12_H_23__12_N_24__amplitude:  9.2276e+08 +/- 62998543.5 (6.83%) (init = 8.946925e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__12_H_23__12_N_24__fraction, __12_H_23__12_N_24__amplitude) =  0.929
+    C(__12_H_23__12_N_24__fraction, __12_H_23__12_N_24__sigma_x)   = -0.454
+    C(__12_H_23__12_N_24__fraction, __12_H_23__12_N_24__sigma_y)   = -0.415
+    C(__12_H_23__12_N_24__sigma_x, __12_H_23__12_N_24__amplitude)  = -0.257
+    C(__12_H_23__12_N_24__sigma_y, __12_H_23__12_N_24__amplitude)  = -0.218
+    C(__12_H_23__12_N_24__sigma_y, __12_H_23__12_N_24__sigma_x)    =  0.188
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__12_H_23__12_N_24__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.98114984
+    reduced chi-square = 0.01816944
+    Akaike info crit   = -219.449980
+    Bayesian info crit = -217.442647
+[[Variables]]
+    __12_H_23__12_N_24__fraction:   7.852152e-11 (fixed)
+    __12_H_23__12_N_24__sigma_y:    1.194664 (fixed)
+    __12_H_23__12_N_24__sigma_x:    1.207352 (fixed)
+    __12_H_23__12_N_24__center_y:   80.13753 (fixed)
+    __12_H_23__12_N_24__center_x:   264.2987 (fixed)
+    __12_H_23__12_N_24__amplitude:  3.7336e+08 +/- 6470735.49 (1.73%) (init = 9.22765e+08)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__12_H_23__12_N_24__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.44781698
+    reduced chi-square = 0.00829291
+    Akaike info crit   = -262.588712
+    Bayesian info crit = -260.581378
+[[Variables]]
+    __12_H_23__12_N_24__fraction:   7.852152e-11 (fixed)
+    __12_H_23__12_N_24__sigma_y:    1.194664 (fixed)
+    __12_H_23__12_N_24__sigma_x:    1.207352 (fixed)
+    __12_H_23__12_N_24__center_y:   80.13753 (fixed)
+    __12_H_23__12_N_24__center_x:   264.2987 (fixed)
+    __12_H_23__12_N_24__amplitude:  2.5740e+08 +/- 4371558.11 (1.70%) (init = 3.733589e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__12_H_23__12_N_24__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.19731470
+    reduced chi-square = 0.00365398
+    Akaike info crit   = -307.665869
+    Bayesian info crit = -305.658536
+[[Variables]]
+    __12_H_23__12_N_24__fraction:   7.852152e-11 (fixed)
+    __12_H_23__12_N_24__sigma_y:    1.194664 (fixed)
+    __12_H_23__12_N_24__sigma_x:    1.207352 (fixed)
+    __12_H_23__12_N_24__center_y:   80.13753 (fixed)
+    __12_H_23__12_N_24__center_x:   264.2987 (fixed)
+    __12_H_23__12_N_24__amplitude:  1.7393e+08 +/- 2901788.19 (1.67%) (init = 2.574007e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__12_H_23__12_N_24__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.09492118
+    reduced chi-square = 0.00175780
+    Akaike info crit   = -347.912286
+    Bayesian info crit = -345.904952
+[[Variables]]
+    __12_H_23__12_N_24__fraction:   7.852152e-11 (fixed)
+    __12_H_23__12_N_24__sigma_y:    1.194664 (fixed)
+    __12_H_23__12_N_24__sigma_x:    1.207352 (fixed)
+    __12_H_23__12_N_24__center_y:   80.13753 (fixed)
+    __12_H_23__12_N_24__center_x:   264.2987 (fixed)
+    __12_H_23__12_N_24__amplitude:  1.1808e+08 +/- 2012646.73 (1.70%) (init = 1.739324e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__22_H_43__22_N_44__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 64
+    # data points      = 56
+    # variables        = 6
+    chi-square         = 4.08883115
+    reduced chi-square = 0.08177662
+    Akaike info crit   = -134.557183
+    Bayesian info crit = -122.405072
+[[Variables]]
+    __22_H_43__22_N_44__fraction:   2.4647e-09 +/- 0.35836483 (14540144847.55%) (init = 0.5)
+    __22_H_43__22_N_44__sigma_y:    1.20009866 +/- 0.03087621 (2.57%) (init = 1.329875)
+    __22_H_43__22_N_44__sigma_x:    1.31909887 +/- 0.03461022 (2.62%) (init = 1.415434)
+    __22_H_43__22_N_44__center_y:   80.2051798 +/- 0.02360570 (0.03%) (init = 80.18044)
+    __22_H_43__22_N_44__center_x:   306.420324 +/- 0.02592423 (0.01%) (init = 306.403)
+    __22_H_43__22_N_44__amplitude:  8.7891e+08 +/- 56447330.0 (6.42%) (init = 8.373023e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__22_H_43__22_N_44__fraction, __22_H_43__22_N_44__amplitude) = -0.933
+    C(__22_H_43__22_N_44__fraction, __22_H_43__22_N_44__sigma_x)   =  0.470
+    C(__22_H_43__22_N_44__fraction, __22_H_43__22_N_44__sigma_y)   =  0.440
+    C(__22_H_43__22_N_44__sigma_x, __22_H_43__22_N_44__amplitude)  = -0.279
+    C(__22_H_43__22_N_44__sigma_y, __22_H_43__22_N_44__amplitude)  = -0.249
+    C(__22_H_43__22_N_44__sigma_y, __22_H_43__22_N_44__sigma_x)    =  0.207
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__22_H_43__22_N_44__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.64818597
+    reduced chi-square = 0.01178520
+    Akaike info crit   = -247.700042
+    Bayesian info crit = -245.674690
+[[Variables]]
+    __22_H_43__22_N_44__fraction:   2.464658e-09 (fixed)
+    __22_H_43__22_N_44__sigma_y:    1.200099 (fixed)
+    __22_H_43__22_N_44__sigma_x:    1.319099 (fixed)
+    __22_H_43__22_N_44__center_y:   80.20518 (fixed)
+    __22_H_43__22_N_44__center_x:   306.4203 (fixed)
+    __22_H_43__22_N_44__amplitude:  3.5364e+08 +/- 5459625.98 (1.54%) (init = 8.789051e+08)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__22_H_43__22_N_44__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.33300828
+    reduced chi-square = 0.00605470
+    Akaike info crit   = -284.996619
+    Bayesian info crit = -282.971267
+[[Variables]]
+    __22_H_43__22_N_44__fraction:   2.464658e-09 (fixed)
+    __22_H_43__22_N_44__sigma_y:    1.200099 (fixed)
+    __22_H_43__22_N_44__sigma_x:    1.319099 (fixed)
+    __22_H_43__22_N_44__center_y:   80.20518 (fixed)
+    __22_H_43__22_N_44__center_x:   306.4203 (fixed)
+    __22_H_43__22_N_44__amplitude:  2.4469e+08 +/- 3913277.04 (1.60%) (init = 3.53642e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__22_H_43__22_N_44__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.14991897
+    reduced chi-square = 0.00272580
+    Akaike info crit   = -329.688672
+    Bayesian info crit = -327.663320
+[[Variables]]
+    __22_H_43__22_N_44__fraction:   2.464658e-09 (fixed)
+    __22_H_43__22_N_44__sigma_y:    1.200099 (fixed)
+    __22_H_43__22_N_44__sigma_x:    1.319099 (fixed)
+    __22_H_43__22_N_44__center_y:   80.20518 (fixed)
+    __22_H_43__22_N_44__center_x:   306.4203 (fixed)
+    __22_H_43__22_N_44__amplitude:  1.6706e+08 +/- 2625677.45 (1.57%) (init = 2.446905e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__22_H_43__22_N_44__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.06804020
+    reduced chi-square = 0.00123709
+    Akaike info crit   = -373.928460
+    Bayesian info crit = -371.903109
+[[Variables]]
+    __22_H_43__22_N_44__fraction:   2.464658e-09 (fixed)
+    __22_H_43__22_N_44__sigma_y:    1.200099 (fixed)
+    __22_H_43__22_N_44__sigma_x:    1.319099 (fixed)
+    __22_H_43__22_N_44__center_y:   80.20518 (fixed)
+    __22_H_43__22_N_44__center_x:   306.4203 (fixed)
+    __22_H_43__22_N_44__amplitude:  1.1352e+08 +/- 1768869.83 (1.56%) (init = 1.670579e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__34_H_67__34_N_68__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 65
+    # data points      = 55
+    # variables        = 6
+    chi-square         = 20.8436453
+    reduced chi-square = 0.42538052
+    Akaike info crit   = -41.3656235
+    Bayesian info crit = -29.3216244
+[[Variables]]
+    __34_H_67__34_N_68__fraction:   3.7802e-11 +/- 0.14342628 (379415798620.99%) (init = 0.5)
+    __34_H_67__34_N_68__sigma_y:    1.16418632 +/- 0.04029528 (3.46%) (init = 1.296525)
+    __34_H_67__34_N_68__sigma_x:    1.10910028 +/- 0.03954968 (3.57%) (init = 1.227345)
+    __34_H_67__34_N_68__center_y:   82.1313695 +/- 0.03159288 (0.04%) (init = 82.11236)
+    __34_H_67__34_N_68__center_x:   280.271310 +/- 0.03010604 (0.01%) (init = 280.2479)
+    __34_H_67__34_N_68__amplitude:  1.3129e+09 +/- 1.1072e+08 (8.43%) (init = 1.263326e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__34_H_67__34_N_68__fraction, __34_H_67__34_N_68__amplitude) =  0.926
+    C(__34_H_67__34_N_68__fraction, __34_H_67__34_N_68__sigma_x)   = -0.442
+    C(__34_H_67__34_N_68__fraction, __34_H_67__34_N_68__sigma_y)   = -0.401
+    C(__34_H_67__34_N_68__sigma_x, __34_H_67__34_N_68__amplitude)  = -0.239
+    C(__34_H_67__34_N_68__sigma_y, __34_H_67__34_N_68__amplitude)  = -0.199
+    C(__34_H_67__34_N_68__sigma_y, __34_H_67__34_N_68__sigma_x)    =  0.177
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__34_H_67__34_N_68__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 3.12763341
+    reduced chi-square = 0.05791914
+    Akaike info crit   = -155.688111
+    Bayesian info crit = -153.680778
+[[Variables]]
+    __34_H_67__34_N_68__fraction:   3.780187e-11 (fixed)
+    __34_H_67__34_N_68__sigma_y:    1.164186 (fixed)
+    __34_H_67__34_N_68__sigma_x:    1.1091 (fixed)
+    __34_H_67__34_N_68__center_y:   82.13137 (fixed)
+    __34_H_67__34_N_68__center_x:   280.2713 (fixed)
+    __34_H_67__34_N_68__amplitude:  5.1076e+08 +/- 10930691.6 (2.14%) (init = 1.312902e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__34_H_67__34_N_68__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 1.60429906
+    reduced chi-square = 0.02970924
+    Akaike info crit   = -192.405543
+    Bayesian info crit = -190.398210
+[[Variables]]
+    __34_H_67__34_N_68__fraction:   3.780187e-11 (fixed)
+    __34_H_67__34_N_68__sigma_y:    1.164186 (fixed)
+    __34_H_67__34_N_68__sigma_x:    1.1091 (fixed)
+    __34_H_67__34_N_68__center_y:   82.13137 (fixed)
+    __34_H_67__34_N_68__center_x:   280.2713 (fixed)
+    __34_H_67__34_N_68__amplitude:  3.6301e+08 +/- 7828569.04 (2.16%) (init = 5.107558e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__34_H_67__34_N_68__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.80551632
+    reduced chi-square = 0.01491697
+    Akaike info crit   = -230.298275
+    Bayesian info crit = -228.290942
+[[Variables]]
+    __34_H_67__34_N_68__fraction:   3.780187e-11 (fixed)
+    __34_H_67__34_N_68__sigma_y:    1.164186 (fixed)
+    __34_H_67__34_N_68__sigma_x:    1.1091 (fixed)
+    __34_H_67__34_N_68__center_y:   82.13137 (fixed)
+    __34_H_67__34_N_68__center_x:   280.2713 (fixed)
+    __34_H_67__34_N_68__amplitude:  2.5683e+08 +/- 5547239.19 (2.16%) (init = 3.630076e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__34_H_67__34_N_68__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.40560030
+    reduced chi-square = 0.00751112
+    Akaike info crit   = -268.034615
+    Bayesian info crit = -266.027282
+[[Variables]]
+    __34_H_67__34_N_68__fraction:   3.780187e-11 (fixed)
+    __34_H_67__34_N_68__sigma_y:    1.164186 (fixed)
+    __34_H_67__34_N_68__sigma_x:    1.1091 (fixed)
+    __34_H_67__34_N_68__center_y:   82.13137 (fixed)
+    __34_H_67__34_N_68__center_x:   280.2713 (fixed)
+    __34_H_67__34_N_68__amplitude:  1.8233e+08 +/- 3936306.04 (2.16%) (init = 2.568325e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__48_H_95__48_N_96__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 77
+    # data points      = 56
+    # variables        = 6
+    chi-square         = 8.10864950
+    reduced chi-square = 0.16217299
+    Akaike info crit   = -96.2155401
+    Bayesian info crit = -84.0634300
+[[Variables]]
+    __48_H_95__48_N_96__fraction:   7.4385e-15 +/- 0.11601378 (1559640639713918.75%) (init = 0.5)
+    __48_H_95__48_N_96__sigma_y:    1.20166202 +/- 0.03338287 (2.78%) (init = 1.340819)
+    __48_H_95__48_N_96__sigma_x:    1.27045116 +/- 0.03420576 (2.69%) (init = 1.342054)
+    __48_H_95__48_N_96__center_y:   84.6147403 +/- 0.02542933 (0.03%) (init = 84.63847)
+    __48_H_95__48_N_96__center_x:   151.122498 +/- 0.02690339 (0.02%) (init = 151.1496)
+    __48_H_95__48_N_96__amplitude:  1.1290e+09 +/- 72836983.7 (6.45%) (init = 1.085732e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__48_H_95__48_N_96__fraction, __48_H_95__48_N_96__amplitude) =  0.922
+    C(__48_H_95__48_N_96__fraction, __48_H_95__48_N_96__sigma_y)   = -0.434
+    C(__48_H_95__48_N_96__fraction, __48_H_95__48_N_96__sigma_x)   = -0.383
+    C(__48_H_95__48_N_96__sigma_y, __48_H_95__48_N_96__amplitude)  = -0.226
+    C(__48_H_95__48_N_96__sigma_x, __48_H_95__48_N_96__amplitude)  = -0.175
+    C(__48_H_95__48_N_96__sigma_y, __48_H_95__48_N_96__sigma_x)    =  0.166
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__48_H_95__48_N_96__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 1.25168643
+    reduced chi-square = 0.02275794
+    Akaike info crit   = -210.848155
+    Bayesian info crit = -208.822803
+[[Variables]]
+    __48_H_95__48_N_96__fraction:   7.438494e-15 (fixed)
+    __48_H_95__48_N_96__sigma_y:    1.201662 (fixed)
+    __48_H_95__48_N_96__sigma_x:    1.270451 (fixed)
+    __48_H_95__48_N_96__center_y:   84.61474 (fixed)
+    __48_H_95__48_N_96__center_x:   151.1225 (fixed)
+    __48_H_95__48_N_96__amplitude:  4.4483e+08 +/- 7450655.68 (1.67%) (init = 1.128952e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__48_H_95__48_N_96__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.62699679
+    reduced chi-square = 0.01139994
+    Akaike info crit   = -249.561270
+    Bayesian info crit = -247.535919
+[[Variables]]
+    __48_H_95__48_N_96__fraction:   7.438494e-15 (fixed)
+    __48_H_95__48_N_96__sigma_y:    1.201662 (fixed)
+    __48_H_95__48_N_96__sigma_x:    1.270451 (fixed)
+    __48_H_95__48_N_96__center_y:   84.61474 (fixed)
+    __48_H_95__48_N_96__center_x:   151.1225 (fixed)
+    __48_H_95__48_N_96__amplitude:  3.1338e+08 +/- 5273262.43 (1.68%) (init = 4.448283e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__48_H_95__48_N_96__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.30563260
+    reduced chi-square = 0.00555696
+    Akaike info crit   = -289.800501
+    Bayesian info crit = -287.775150
+[[Variables]]
+    __48_H_95__48_N_96__fraction:   7.438494e-15 (fixed)
+    __48_H_95__48_N_96__sigma_y:    1.201662 (fixed)
+    __48_H_95__48_N_96__sigma_x:    1.270451 (fixed)
+    __48_H_95__48_N_96__center_y:   84.61474 (fixed)
+    __48_H_95__48_N_96__center_x:   151.1225 (fixed)
+    __48_H_95__48_N_96__amplitude:  2.1904e+08 +/- 3681684.46 (1.68%) (init = 3.13382e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__48_H_95__48_N_96__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.14953323
+    reduced chi-square = 0.00271879
+    Akaike info crit   = -329.832945
+    Bayesian info crit = -327.807593
+[[Variables]]
+    __48_H_95__48_N_96__fraction:   7.438494e-15 (fixed)
+    __48_H_95__48_N_96__sigma_y:    1.201662 (fixed)
+    __48_H_95__48_N_96__sigma_x:    1.270451 (fixed)
+    __48_H_95__48_N_96__center_y:   84.61474 (fixed)
+    __48_H_95__48_N_96__center_x:   151.1225 (fixed)
+    __48_H_95__48_N_96__amplitude:  1.5170e+08 +/- 2575227.42 (1.70%) (init = 2.190381e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__6_H_11__6_N_12__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 78
+    # data points      = 56
+    # variables        = 6
+    chi-square         = 16.7721937
+    reduced chi-square = 0.33544387
+    Akaike info crit   = -55.5152416
+    Bayesian info crit = -43.3631315
+[[Variables]]
+    __6_H_11__6_N_12__fraction:   8.7234e-10 +/- 0.12043750 (13806246206.84%) (init = 0.5)
+    __6_H_11__6_N_12__sigma_y:    1.19529841 +/- 0.03490270 (2.92%) (init = 1.334926)
+    __6_H_11__6_N_12__sigma_x:    1.20025849 +/- 0.03461059 (2.88%) (init = 1.305113)
+    __6_H_11__6_N_12__center_y:   85.3754259 +/- 0.02598670 (0.03%) (init = 85.3436)
+    __6_H_11__6_N_12__center_x:   234.708567 +/- 0.02610982 (0.01%) (init = 234.756)
+    __6_H_11__6_N_12__amplitude:  1.5317e+09 +/- 1.0682e+08 (6.97%) (init = 1.476397e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__6_H_11__6_N_12__fraction, __6_H_11__6_N_12__amplitude) =  0.930
+    C(__6_H_11__6_N_12__fraction, __6_H_11__6_N_12__sigma_y)   = -0.473
+    C(__6_H_11__6_N_12__fraction, __6_H_11__6_N_12__sigma_x)   = -0.457
+    C(__6_H_11__6_N_12__sigma_y, __6_H_11__6_N_12__amplitude)  = -0.278
+    C(__6_H_11__6_N_12__sigma_x, __6_H_11__6_N_12__amplitude)  = -0.262
+    C(__6_H_11__6_N_12__sigma_y, __6_H_11__6_N_12__sigma_x)    =  0.216
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__6_H_11__6_N_12__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 2.55964086
+    reduced chi-square = 0.04653892
+    Akaike info crit   = -170.787145
+    Bayesian info crit = -168.761793
+[[Variables]]
+    __6_H_11__6_N_12__fraction:   8.723407e-10 (fixed)
+    __6_H_11__6_N_12__sigma_y:    1.195298 (fixed)
+    __6_H_11__6_N_12__sigma_x:    1.200258 (fixed)
+    __6_H_11__6_N_12__center_y:   85.37543 (fixed)
+    __6_H_11__6_N_12__center_x:   234.7086 (fixed)
+    __6_H_11__6_N_12__amplitude:  6.0187e+08 +/- 10328786.4 (1.72%) (init = 1.531651e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__6_H_11__6_N_12__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 1.33036408
+    reduced chi-square = 0.02418844
+    Akaike info crit   = -207.434346
+    Bayesian info crit = -205.408995
+[[Variables]]
+    __6_H_11__6_N_12__fraction:   8.723407e-10 (fixed)
+    __6_H_11__6_N_12__sigma_y:    1.195298 (fixed)
+    __6_H_11__6_N_12__sigma_x:    1.200258 (fixed)
+    __6_H_11__6_N_12__center_y:   85.37543 (fixed)
+    __6_H_11__6_N_12__center_x:   234.7086 (fixed)
+    __6_H_11__6_N_12__amplitude:  4.2563e+08 +/- 7446377.14 (1.75%) (init = 6.018716e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__6_H_11__6_N_12__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.63766581
+    reduced chi-square = 0.01159392
+    Akaike info crit   = -248.616388
+    Bayesian info crit = -246.591036
+[[Variables]]
+    __6_H_11__6_N_12__fraction:   8.723407e-10 (fixed)
+    __6_H_11__6_N_12__sigma_y:    1.195298 (fixed)
+    __6_H_11__6_N_12__sigma_x:    1.200258 (fixed)
+    __6_H_11__6_N_12__center_y:   85.37543 (fixed)
+    __6_H_11__6_N_12__center_x:   234.7086 (fixed)
+    __6_H_11__6_N_12__amplitude:  2.9732e+08 +/- 5155328.45 (1.73%) (init = 4.256274e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__6_H_11__6_N_12__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.30269945
+    reduced chi-square = 0.00550363
+    Akaike info crit   = -290.340527
+    Bayesian info crit = -288.315175
+[[Variables]]
+    __6_H_11__6_N_12__fraction:   8.723407e-10 (fixed)
+    __6_H_11__6_N_12__sigma_y:    1.195298 (fixed)
+    __6_H_11__6_N_12__sigma_x:    1.200258 (fixed)
+    __6_H_11__6_N_12__center_y:   85.37543 (fixed)
+    __6_H_11__6_N_12__center_x:   234.7086 (fixed)
+    __6_H_11__6_N_12__amplitude:  2.0684e+08 +/- 3551939.81 (1.72%) (init = 2.973189e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__59_H_117__59_N_118__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 78
+    # data points      = 55
+    # variables        = 6
+    chi-square         = 4.98957812
+    reduced chi-square = 0.10182812
+    Akaike info crit   = -119.999000
+    Bayesian info crit = -107.955001
+[[Variables]]
+    __59_H_117__59_N_118__fraction:   1.1066e-09 +/- 0.11860863 (10718074929.15%) (init = 0.5)
+    __59_H_117__59_N_118__sigma_y:    1.19552582 +/- 0.03341059 (2.79%) (init = 1.324305)
+    __59_H_117__59_N_118__sigma_x:    1.18573123 +/- 0.03421317 (2.89%) (init = 1.295392)
+    __59_H_117__59_N_118__center_y:   86.8515786 +/- 0.02588287 (0.03%) (init = 86.88935)
+    __59_H_117__59_N_118__center_x:   182.668607 +/- 0.02565097 (0.01%) (init = 182.7048)
+    __59_H_117__59_N_118__amplitude:  8.4327e+08 +/- 58316220.9 (6.92%) (init = 8.152927e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__59_H_117__59_N_118__fraction, __59_H_117__59_N_118__amplitude) =  0.930
+    C(__59_H_117__59_N_118__fraction, __59_H_117__59_N_118__sigma_x)   = -0.464
+    C(__59_H_117__59_N_118__fraction, __59_H_117__59_N_118__sigma_y)   = -0.419
+    C(__59_H_117__59_N_118__sigma_x, __59_H_117__59_N_118__amplitude)  = -0.268
+    C(__59_H_117__59_N_118__sigma_y, __59_H_117__59_N_118__amplitude)  = -0.223
+    C(__59_H_117__59_N_118__sigma_y, __59_H_117__59_N_118__sigma_x)    =  0.194
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__59_H_117__59_N_118__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.82497740
+    reduced chi-square = 0.01527736
+    Akaike info crit   = -228.985286
+    Bayesian info crit = -226.977953
+[[Variables]]
+    __59_H_117__59_N_118__fraction:   1.106623e-09 (fixed)
+    __59_H_117__59_N_118__sigma_y:    1.195526 (fixed)
+    __59_H_117__59_N_118__sigma_x:    1.185731 (fixed)
+    __59_H_117__59_N_118__center_y:   86.85158 (fixed)
+    __59_H_117__59_N_118__center_x:   182.6686 (fixed)
+    __59_H_117__59_N_118__amplitude:  3.4234e+08 +/- 5882288.64 (1.72%) (init = 8.432697e+08)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__59_H_117__59_N_118__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.39546761
+    reduced chi-square = 0.00732347
+    Akaike info crit   = -269.426076
+    Bayesian info crit = -267.418743
+[[Variables]]
+    __59_H_117__59_N_118__fraction:   1.106623e-09 (fixed)
+    __59_H_117__59_N_118__sigma_y:    1.195526 (fixed)
+    __59_H_117__59_N_118__sigma_x:    1.185731 (fixed)
+    __59_H_117__59_N_118__center_y:   86.85158 (fixed)
+    __59_H_117__59_N_118__center_x:   182.6686 (fixed)
+    __59_H_117__59_N_118__amplitude:  2.3484e+08 +/- 4072684.49 (1.73%) (init = 3.423432e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__59_H_117__59_N_118__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.17556607
+    reduced chi-square = 0.00325122
+    Akaike info crit   = -314.089016
+    Bayesian info crit = -312.081682
+[[Variables]]
+    __59_H_117__59_N_118__fraction:   1.106623e-09 (fixed)
+    __59_H_117__59_N_118__sigma_y:    1.195526 (fixed)
+    __59_H_117__59_N_118__sigma_x:    1.185731 (fixed)
+    __59_H_117__59_N_118__center_y:   86.85158 (fixed)
+    __59_H_117__59_N_118__center_x:   182.6686 (fixed)
+    __59_H_117__59_N_118__amplitude:  1.5864e+08 +/- 2713598.58 (1.71%) (init = 2.34839e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__59_H_117__59_N_118__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.08102178
+    reduced chi-square = 0.00150040
+    Akaike info crit   = -356.620378
+    Bayesian info crit = -354.613045
+[[Variables]]
+    __59_H_117__59_N_118__fraction:   1.106623e-09 (fixed)
+    __59_H_117__59_N_118__sigma_y:    1.195526 (fixed)
+    __59_H_117__59_N_118__sigma_x:    1.185731 (fixed)
+    __59_H_117__59_N_118__center_y:   86.85158 (fixed)
+    __59_H_117__59_N_118__center_x:   182.6686 (fixed)
+    __59_H_117__59_N_118__amplitude:  1.0745e+08 +/- 1843428.02 (1.72%) (init = 1.586414e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__3_H_5__3_N_6__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 90
+    # data points      = 54
+    # variables        = 6
+    chi-square         = 8.27143103
+    reduced chi-square = 0.17232148
+    Akaike info crit   = -89.3135317
+    Bayesian info crit = -77.3796275
+[[Variables]]
+    __3_H_5__3_N_6__fraction:   3.3270e-11 +/- 0.12434417 (373746384972.72%) (init = 0.5)
+    __3_H_5__3_N_6__sigma_y:    1.18409842 +/- 0.03589175 (3.03%) (init = 1.307199)
+    __3_H_5__3_N_6__sigma_x:    1.18127784 +/- 0.03569154 (3.02%) (init = 1.280695)
+    __3_H_5__3_N_6__center_y:   86.8949785 +/- 0.02823008 (0.03%) (init = 86.91709)
+    __3_H_5__3_N_6__center_x:   194.971598 +/- 0.02816328 (0.01%) (init = 194.9778)
+    __3_H_5__3_N_6__amplitude:  9.8952e+08 +/- 72605943.6 (7.34%) (init = 9.629484e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__3_H_5__3_N_6__fraction, __3_H_5__3_N_6__amplitude) =  0.924
+    C(__3_H_5__3_N_6__fraction, __3_H_5__3_N_6__sigma_y)   = -0.392
+    C(__3_H_5__3_N_6__fraction, __3_H_5__3_N_6__sigma_x)   = -0.389
+    C(__3_H_5__3_N_6__sigma_y, __3_H_5__3_N_6__amplitude)  = -0.187
+    C(__3_H_5__3_N_6__sigma_x, __3_H_5__3_N_6__amplitude)  = -0.184
+    C(__3_H_5__3_N_6__sigma_y, __3_H_5__3_N_6__sigma_x)    =  0.153
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__3_H_5__3_N_6__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 54
+    # variables        = 1
+    chi-square         = 1.39605504
+    reduced chi-square = 0.02634066
+    Akaike info crit   = -195.388015
+    Bayesian info crit = -193.399031
+[[Variables]]
+    __3_H_5__3_N_6__fraction:   3.326966e-11 (fixed)
+    __3_H_5__3_N_6__sigma_y:    1.184098 (fixed)
+    __3_H_5__3_N_6__sigma_x:    1.181278 (fixed)
+    __3_H_5__3_N_6__center_y:   86.89498 (fixed)
+    __3_H_5__3_N_6__center_x:   194.9716 (fixed)
+    __3_H_5__3_N_6__amplitude:  4.0628e+08 +/- 7671786.89 (1.89%) (init = 9.895215e+08)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__3_H_5__3_N_6__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 54
+    # variables        = 1
+    chi-square         = 0.64003960
+    reduced chi-square = 0.01207622
+    Akaike info crit   = -237.501301
+    Bayesian info crit = -235.512317
+[[Variables]]
+    __3_H_5__3_N_6__fraction:   3.326966e-11 (fixed)
+    __3_H_5__3_N_6__sigma_y:    1.184098 (fixed)
+    __3_H_5__3_N_6__sigma_x:    1.181278 (fixed)
+    __3_H_5__3_N_6__center_y:   86.89498 (fixed)
+    __3_H_5__3_N_6__center_x:   194.9716 (fixed)
+    __3_H_5__3_N_6__amplitude:  2.7516e+08 +/- 5194558.96 (1.89%) (init = 4.062831e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__3_H_5__3_N_6__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 54
+    # variables        = 1
+    chi-square         = 0.28563264
+    reduced chi-square = 0.00538930
+    Akaike info crit   = -281.069771
+    Bayesian info crit = -279.080787
+[[Variables]]
+    __3_H_5__3_N_6__fraction:   3.326966e-11 (fixed)
+    __3_H_5__3_N_6__sigma_y:    1.184098 (fixed)
+    __3_H_5__3_N_6__sigma_x:    1.181278 (fixed)
+    __3_H_5__3_N_6__center_y:   86.89498 (fixed)
+    __3_H_5__3_N_6__center_x:   194.9716 (fixed)
+    __3_H_5__3_N_6__amplitude:  1.8452e+08 +/- 3470157.42 (1.88%) (init = 2.751603e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__3_H_5__3_N_6__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 54
+    # variables        = 1
+    chi-square         = 0.13364212
+    reduced chi-square = 0.00252155
+    Akaike info crit   = -322.084988
+    Bayesian info crit = -320.096004
+[[Variables]]
+    __3_H_5__3_N_6__fraction:   3.326966e-11 (fixed)
+    __3_H_5__3_N_6__sigma_y:    1.184098 (fixed)
+    __3_H_5__3_N_6__sigma_x:    1.181278 (fixed)
+    __3_H_5__3_N_6__center_y:   86.89498 (fixed)
+    __3_H_5__3_N_6__center_x:   194.9716 (fixed)
+    __3_H_5__3_N_6__amplitude:  1.2356e+08 +/- 2373651.41 (1.92%) (init = 1.845241e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 2 peaks
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    (Model(pvoigt2d, prefix='__55_H_109__55_N_110__') + Model(pvoigt2d, prefix='__13_H_25__13_N_26__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 166
+    # data points      = 89
+    # variables        = 12
+    chi-square         = 13.7569451
+    reduced chi-square = 0.17866162
+    Akaike info crit   = -142.171239
+    Bayesian info crit = -112.307603
+[[Variables]]
+    __55_H_109__55_N_110__fraction:   1.7557e-10 +/- 0.12879908 (73361291890.81%) (init = 0.5)
+    __55_H_109__55_N_110__sigma_y:    1.21599238 +/- 0.05050281 (4.15%) (init = 1.370269)
+    __55_H_109__55_N_110__sigma_x:    1.23877328 +/- 0.05127855 (4.14%) (init = 1.357952)
+    __55_H_109__55_N_110__center_y:   86.4339489 +/- 0.03751019 (0.04%) (init = 86.46051)
+    __55_H_109__55_N_110__center_x:   203.477443 +/- 0.03819887 (0.02%) (init = 203.5689)
+    __55_H_109__55_N_110__amplitude:  8.3359e+08 +/- 95015784.3 (11.40%) (init = 8.658157e+08)
+    __13_H_25__13_N_26__fraction:     1.4544e-14 +/- 1.0777e-04 (740979707843.90%) (init = 0.5)
+    __13_H_25__13_N_26__sigma_y:      1.19625998 +/- 0.03163253 (2.64%) (init = 1.328645)
+    __13_H_25__13_N_26__sigma_x:      1.13628900 +/- 0.02955351 (2.60%) (init = 1.244444)
+    __13_H_25__13_N_26__center_y:     87.2901220 +/- 0.02415107 (0.03%) (init = 87.26486)
+    __13_H_25__13_N_26__center_x:     207.791116 +/- 0.02293718 (0.01%) (init = 207.8236)
+    __13_H_25__13_N_26__amplitude:    1.2109e+09 +/- 89187403.8 (7.37%) (init = 1.183871e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__55_H_109__55_N_110__fraction, __55_H_109__55_N_110__amplitude) =  0.938
+    C(__13_H_25__13_N_26__fraction, __13_H_25__13_N_26__amplitude)     = -0.936
+    C(__55_H_109__55_N_110__fraction, __55_H_109__55_N_110__sigma_y)   = -0.518
+    C(__13_H_25__13_N_26__fraction, __13_H_25__13_N_26__sigma_y)       =  0.480
+    C(__55_H_109__55_N_110__fraction, __55_H_109__55_N_110__sigma_x)   = -0.411
+    C(__55_H_109__55_N_110__amplitude, __13_H_25__13_N_26__amplitude)  = -0.397
+    C(__13_H_25__13_N_26__fraction, __13_H_25__13_N_26__sigma_x)       =  0.355
+    C(__55_H_109__55_N_110__sigma_y, __55_H_109__55_N_110__amplitude)  = -0.340
+    C(__13_H_25__13_N_26__sigma_y, __13_H_25__13_N_26__amplitude)      = -0.296
+    C(__55_H_109__55_N_110__fraction, __13_H_25__13_N_26__amplitude)   = -0.268
+    C(__55_H_109__55_N_110__amplitude, __13_H_25__13_N_26__fraction)   =  0.265
+    C(__55_H_109__55_N_110__fraction, __13_H_25__13_N_26__center_y)    =  0.248
+    C(__55_H_109__55_N_110__center_y, __13_H_25__13_N_26__fraction)    =  0.247
+    C(__55_H_109__55_N_110__center_y, __13_H_25__13_N_26__amplitude)   = -0.240
+    C(__55_H_109__55_N_110__sigma_y, __55_H_109__55_N_110__sigma_x)    =  0.235
+    C(__55_H_109__55_N_110__amplitude, __13_H_25__13_N_26__center_y)   =  0.235
+    C(__55_H_109__55_N_110__center_x, __13_H_25__13_N_26__amplitude)   = -0.214
+    C(__55_H_109__55_N_110__sigma_x, __55_H_109__55_N_110__amplitude)  = -0.207
+    C(__13_H_25__13_N_26__sigma_y, __13_H_25__13_N_26__sigma_x)        =  0.194
+    C(__55_H_109__55_N_110__amplitude, __13_H_25__13_N_26__center_x)   =  0.192
+    C(__55_H_109__55_N_110__center_x, __13_H_25__13_N_26__fraction)    =  0.188
+    C(__55_H_109__55_N_110__sigma_x, __13_H_25__13_N_26__fraction)     =  0.167
+    C(__55_H_109__55_N_110__fraction, __13_H_25__13_N_26__sigma_x)     = -0.158
+    C(__55_H_109__55_N_110__fraction, __13_H_25__13_N_26__center_x)    =  0.156
+    C(__13_H_25__13_N_26__center_x, __13_H_25__13_N_26__amplitude)     = -0.153
+    C(__13_H_25__13_N_26__sigma_x, __13_H_25__13_N_26__amplitude)      = -0.150
+    C(__55_H_109__55_N_110__amplitude, __13_H_25__13_N_26__sigma_x)    = -0.137
+    C(__55_H_109__55_N_110__sigma_x, __13_H_25__13_N_26__amplitude)    = -0.137
+    C(__55_H_109__55_N_110__sigma_y, __13_H_25__13_N_26__center_y)     = -0.135
+    C(__13_H_25__13_N_26__fraction, __13_H_25__13_N_26__center_x)      =  0.132
+    C(__55_H_109__55_N_110__fraction, __13_H_25__13_N_26__fraction)    =  0.126
+    C(__55_H_109__55_N_110__center_y, __13_H_25__13_N_26__sigma_y)     =  0.121
+    C(__55_H_109__55_N_110__center_x, __55_H_109__55_N_110__amplitude) =  0.112
+    C(__55_H_109__55_N_110__sigma_x, __13_H_25__13_N_26__sigma_y)      =  0.111
+    C(__55_H_109__55_N_110__center_x, __13_H_25__13_N_26__center_x)    =  0.106
+    C(__55_H_109__55_N_110__sigma_y, __13_H_25__13_N_26__sigma_x)      =  0.105
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    (Model(pvoigt2d, prefix='__55_H_109__55_N_110__') + Model(pvoigt2d, prefix='__13_H_25__13_N_26__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 6
+    # data points      = 89
+    # variables        = 2
+    chi-square         = 2.26430229
+    reduced chi-square = 0.02602646
+    Akaike info crit   = -322.751903
+    Bayesian info crit = -317.774630
+[[Variables]]
+    __55_H_109__55_N_110__fraction:   1.755682e-10 (fixed)
+    __55_H_109__55_N_110__sigma_y:    1.215992 (fixed)
+    __55_H_109__55_N_110__sigma_x:    1.238773 (fixed)
+    __55_H_109__55_N_110__center_y:   86.43395 (fixed)
+    __55_H_109__55_N_110__center_x:   203.4774 (fixed)
+    __55_H_109__55_N_110__amplitude:  3.3489e+08 +/- 7915051.13 (2.36%) (init = 8.335948e+08)
+    __13_H_25__13_N_26__fraction:     1.454392e-14 (fixed)
+    __13_H_25__13_N_26__sigma_y:      1.19626 (fixed)
+    __13_H_25__13_N_26__sigma_x:      1.136289 (fixed)
+    __13_H_25__13_N_26__center_y:     87.29012 (fixed)
+    __13_H_25__13_N_26__center_x:     207.7911 (fixed)
+    __13_H_25__13_N_26__amplitude:    4.9237e+08 +/- 7518376.77 (1.53%) (init = 1.21085e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    (Model(pvoigt2d, prefix='__55_H_109__55_N_110__') + Model(pvoigt2d, prefix='__13_H_25__13_N_26__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 6
+    # data points      = 89
+    # variables        = 2
+    chi-square         = 1.07637476
+    reduced chi-square = 0.01237212
+    Akaike info crit   = -388.938354
+    Bayesian info crit = -383.961081
+[[Variables]]
+    __55_H_109__55_N_110__fraction:   1.755682e-10 (fixed)
+    __55_H_109__55_N_110__sigma_y:    1.215992 (fixed)
+    __55_H_109__55_N_110__sigma_x:    1.238773 (fixed)
+    __55_H_109__55_N_110__center_y:   86.43395 (fixed)
+    __55_H_109__55_N_110__center_x:   203.4774 (fixed)
+    __55_H_109__55_N_110__amplitude:  2.3180e+08 +/- 5457179.95 (2.35%) (init = 3.348863e+08)
+    __13_H_25__13_N_26__fraction:     1.454392e-14 (fixed)
+    __13_H_25__13_N_26__sigma_y:      1.19626 (fixed)
+    __13_H_25__13_N_26__sigma_x:      1.136289 (fixed)
+    __13_H_25__13_N_26__center_y:     87.29012 (fixed)
+    __13_H_25__13_N_26__center_x:     207.7911 (fixed)
+    __13_H_25__13_N_26__amplitude:    3.3656e+08 +/- 5183685.42 (1.54%) (init = 4.923707e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    (Model(pvoigt2d, prefix='__55_H_109__55_N_110__') + Model(pvoigt2d, prefix='__13_H_25__13_N_26__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 6
+    # data points      = 89
+    # variables        = 2
+    chi-square         = 0.48816783
+    reduced chi-square = 0.00561112
+    Akaike info crit   = -459.310182
+    Bayesian info crit = -454.332909
+[[Variables]]
+    __55_H_109__55_N_110__fraction:   1.755682e-10 (fixed)
+    __55_H_109__55_N_110__sigma_y:    1.215992 (fixed)
+    __55_H_109__55_N_110__sigma_x:    1.238773 (fixed)
+    __55_H_109__55_N_110__center_y:   86.43395 (fixed)
+    __55_H_109__55_N_110__center_x:   203.4774 (fixed)
+    __55_H_109__55_N_110__amplitude:  1.5866e+08 +/- 3675116.43 (2.32%) (init = 2.317993e+08)
+    __13_H_25__13_N_26__fraction:     1.454392e-14 (fixed)
+    __13_H_25__13_N_26__sigma_y:      1.19626 (fixed)
+    __13_H_25__13_N_26__sigma_x:      1.136289 (fixed)
+    __13_H_25__13_N_26__center_y:     87.29012 (fixed)
+    __13_H_25__13_N_26__center_x:     207.7911 (fixed)
+    __13_H_25__13_N_26__amplitude:    2.2778e+08 +/- 3490932.60 (1.53%) (init = 3.365616e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    (Model(pvoigt2d, prefix='__55_H_109__55_N_110__') + Model(pvoigt2d, prefix='__13_H_25__13_N_26__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 6
+    # data points      = 89
+    # variables        = 2
+    chi-square         = 0.22640343
+    reduced chi-square = 0.00260234
+    Akaike info crit   = -527.692509
+    Bayesian info crit = -522.715236
+[[Variables]]
+    __55_H_109__55_N_110__fraction:   1.755682e-10 (fixed)
+    __55_H_109__55_N_110__sigma_y:    1.215992 (fixed)
+    __55_H_109__55_N_110__sigma_x:    1.238773 (fixed)
+    __55_H_109__55_N_110__center_y:   86.43395 (fixed)
+    __55_H_109__55_N_110__center_x:   203.4774 (fixed)
+    __55_H_109__55_N_110__amplitude:  1.0825e+08 +/- 2502810.83 (2.31%) (init = 1.586612e+08)
+    __13_H_25__13_N_26__fraction:     1.454392e-14 (fixed)
+    __13_H_25__13_N_26__sigma_y:      1.19626 (fixed)
+    __13_H_25__13_N_26__sigma_x:      1.136289 (fixed)
+    __13_H_25__13_N_26__center_y:     87.29012 (fixed)
+    __13_H_25__13_N_26__center_x:     207.7911 (fixed)
+    __13_H_25__13_N_26__amplitude:    1.5413e+08 +/- 2377378.80 (1.54%) (init = 2.27784e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__20_H_39__20_N_40__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 77
+    # data points      = 55
+    # variables        = 6
+    chi-square         = 5.42866358
+    reduced chi-square = 0.11078905
+    Akaike info crit   = -115.360211
+    Bayesian info crit = -103.316212
+[[Variables]]
+    __20_H_39__20_N_40__fraction:   1.7949e-09 +/- 0.03162971 (1762173540.99%) (init = 0.5)
+    __20_H_39__20_N_40__sigma_y:    1.21707848 +/- 0.03152395 (2.59%) (init = 1.340128)
+    __20_H_39__20_N_40__sigma_x:    1.39838041 +/- 0.03629286 (2.60%) (init = 1.432064)
+    __20_H_39__20_N_40__center_y:   93.2280355 +/- 0.02388192 (0.03%) (init = 93.18116)
+    __20_H_39__20_N_40__center_x:   390.168154 +/- 0.02742367 (0.01%) (init = 390.1458)
+    __20_H_39__20_N_40__amplitude:  1.0631e+09 +/- 69852360.2 (6.57%) (init = 1.0095e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__20_H_39__20_N_40__fraction, __20_H_39__20_N_40__amplitude) = -0.936
+    C(__20_H_39__20_N_40__fraction, __20_H_39__20_N_40__sigma_x)   =  0.457
+    C(__20_H_39__20_N_40__fraction, __20_H_39__20_N_40__sigma_y)   =  0.454
+    C(__20_H_39__20_N_40__sigma_x, __20_H_39__20_N_40__amplitude)  = -0.271
+    C(__20_H_39__20_N_40__sigma_y, __20_H_39__20_N_40__amplitude)  = -0.269
+    C(__20_H_39__20_N_40__sigma_y, __20_H_39__20_N_40__sigma_x)    =  0.207
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__20_H_39__20_N_40__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.87817329
+    reduced chi-square = 0.01626247
+    Akaike info crit   = -225.548449
+    Bayesian info crit = -223.541116
+[[Variables]]
+    __20_H_39__20_N_40__fraction:   1.794926e-09 (fixed)
+    __20_H_39__20_N_40__sigma_y:    1.217078 (fixed)
+    __20_H_39__20_N_40__sigma_x:    1.39838 (fixed)
+    __20_H_39__20_N_40__center_y:   93.22804 (fixed)
+    __20_H_39__20_N_40__center_x:   390.1682 (fixed)
+    __20_H_39__20_N_40__amplitude:  4.2416e+08 +/- 6649875.02 (1.57%) (init = 1.063111e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__20_H_39__20_N_40__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.41858442
+    reduced chi-square = 0.00775156
+    Akaike info crit   = -266.301543
+    Bayesian info crit = -264.294210
+[[Variables]]
+    __20_H_39__20_N_40__fraction:   1.794926e-09 (fixed)
+    __20_H_39__20_N_40__sigma_y:    1.217078 (fixed)
+    __20_H_39__20_N_40__sigma_x:    1.39838 (fixed)
+    __20_H_39__20_N_40__center_y:   93.22804 (fixed)
+    __20_H_39__20_N_40__center_x:   390.1682 (fixed)
+    __20_H_39__20_N_40__amplitude:  2.9515e+08 +/- 4591080.35 (1.56%) (init = 4.24158e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__20_H_39__20_N_40__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.19683799
+    reduced chi-square = 0.00364515
+    Akaike info crit   = -307.798910
+    Bayesian info crit = -305.791577
+[[Variables]]
+    __20_H_39__20_N_40__fraction:   1.794926e-09 (fixed)
+    __20_H_39__20_N_40__sigma_y:    1.217078 (fixed)
+    __20_H_39__20_N_40__sigma_x:    1.39838 (fixed)
+    __20_H_39__20_N_40__center_y:   93.22804 (fixed)
+    __20_H_39__20_N_40__center_x:   390.1682 (fixed)
+    __20_H_39__20_N_40__amplitude:  2.0405e+08 +/- 3148312.44 (1.54%) (init = 2.951528e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__20_H_39__20_N_40__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 55
+    # variables        = 1
+    chi-square         = 0.09404945
+    reduced chi-square = 0.00174166
+    Akaike info crit   = -348.419729
+    Bayesian info crit = -346.412395
+[[Variables]]
+    __20_H_39__20_N_40__fraction:   1.794926e-09 (fixed)
+    __20_H_39__20_N_40__sigma_y:    1.217078 (fixed)
+    __20_H_39__20_N_40__sigma_x:    1.39838 (fixed)
+    __20_H_39__20_N_40__center_y:   93.22804 (fixed)
+    __20_H_39__20_N_40__center_x:   390.1682 (fixed)
+    __20_H_39__20_N_40__amplitude:  1.3975e+08 +/- 2176213.46 (1.56%) (init = 2.040534e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__36_H_71__36_N_72__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 71
+    # data points      = 56
+    # variables        = 6
+    chi-square         = 3.98968177
+    reduced chi-square = 0.07979364
+    Akaike info crit   = -135.931852
+    Bayesian info crit = -123.779742
+[[Variables]]
+    __36_H_71__36_N_72__fraction:   1.2955e-11 +/- 0.11615071 (896595630968.50%) (init = 0.5)
+    __36_H_71__36_N_72__sigma_y:    1.18634732 +/- 0.03418464 (2.88%) (init = 1.312079)
+    __36_H_71__36_N_72__sigma_x:    1.20545366 +/- 0.03355193 (2.78%) (init = 1.293671)
+    __36_H_71__36_N_72__center_y:   94.6779307 +/- 0.02582294 (0.03%) (init = 94.71198)
+    __36_H_71__36_N_72__center_x:   217.987353 +/- 0.02625383 (0.01%) (init = 218.0101)
+    __36_H_71__36_N_72__amplitude:  7.4518e+08 +/- 50966440.0 (6.84%) (init = 7.208762e+08)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__36_H_71__36_N_72__fraction, __36_H_71__36_N_72__amplitude) =  0.927
+    C(__36_H_71__36_N_72__fraction, __36_H_71__36_N_72__sigma_y)   = -0.452
+    C(__36_H_71__36_N_72__fraction, __36_H_71__36_N_72__sigma_x)   = -0.402
+    C(__36_H_71__36_N_72__sigma_y, __36_H_71__36_N_72__amplitude)  = -0.251
+    C(__36_H_71__36_N_72__sigma_x, __36_H_71__36_N_72__amplitude)  = -0.202
+    C(__36_H_71__36_N_72__sigma_y, __36_H_71__36_N_72__sigma_x)    =  0.182
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__36_H_71__36_N_72__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.69169500
+    reduced chi-square = 0.01257627
+    Akaike info crit   = -244.061864
+    Bayesian info crit = -242.036512
+[[Variables]]
+    __36_H_71__36_N_72__fraction:   1.295464e-11 (fixed)
+    __36_H_71__36_N_72__sigma_y:    1.186347 (fixed)
+    __36_H_71__36_N_72__sigma_x:    1.205454 (fixed)
+    __36_H_71__36_N_72__center_y:   94.67793 (fixed)
+    __36_H_71__36_N_72__center_x:   217.9874 (fixed)
+    __36_H_71__36_N_72__amplitude:  3.0327e+08 +/- 5360454.14 (1.77%) (init = 7.451794e+08)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__36_H_71__36_N_72__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.30385872
+    reduced chi-square = 0.00552470
+    Akaike info crit   = -290.126470
+    Bayesian info crit = -288.101119
+[[Variables]]
+    __36_H_71__36_N_72__fraction:   1.295464e-11 (fixed)
+    __36_H_71__36_N_72__sigma_y:    1.186347 (fixed)
+    __36_H_71__36_N_72__sigma_x:    1.205454 (fixed)
+    __36_H_71__36_N_72__center_y:   94.67793 (fixed)
+    __36_H_71__36_N_72__center_x:   217.9874 (fixed)
+    __36_H_71__36_N_72__amplitude:  2.0703e+08 +/- 3552876.57 (1.72%) (init = 3.032745e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__36_H_71__36_N_72__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.13702591
+    reduced chi-square = 0.00249138
+    Akaike info crit   = -334.724469
+    Bayesian info crit = -332.699118
+[[Variables]]
+    __36_H_71__36_N_72__fraction:   1.295464e-11 (fixed)
+    __36_H_71__36_N_72__sigma_y:    1.186347 (fixed)
+    __36_H_71__36_N_72__sigma_x:    1.205454 (fixed)
+    __36_H_71__36_N_72__center_y:   94.67793 (fixed)
+    __36_H_71__36_N_72__center_x:   217.9874 (fixed)
+    __36_H_71__36_N_72__amplitude:  1.4039e+08 +/- 2385863.60 (1.70%) (init = 2.070332e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__36_H_71__36_N_72__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.06412133
+    reduced chi-square = 0.00116584
+    Akaike info crit   = -377.250472
+    Bayesian info crit = -375.225121
+[[Variables]]
+    __36_H_71__36_N_72__fraction:   1.295464e-11 (fixed)
+    __36_H_71__36_N_72__sigma_y:    1.186347 (fixed)
+    __36_H_71__36_N_72__sigma_x:    1.205454 (fixed)
+    __36_H_71__36_N_72__center_y:   94.67793 (fixed)
+    __36_H_71__36_N_72__center_x:   217.9874 (fixed)
+    __36_H_71__36_N_72__amplitude:  94476174.0 +/- 1632095.39 (1.73%) (init = 1.40395e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__35_H_69__35_N_70__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 64
+    # data points      = 56
+    # variables        = 6
+    chi-square         = 8.40391308
+    reduced chi-square = 0.16807826
+    Akaike info crit   = -94.2126380
+    Bayesian info crit = -82.0605279
+[[Variables]]
+    __35_H_69__35_N_70__fraction:   5.6061e-10 +/- 0.05128260 (9147666012.10%) (init = 0.5)
+    __35_H_69__35_N_70__sigma_y:    1.19005429 +/- 0.03448508 (2.90%) (init = 1.348737)
+    __35_H_69__35_N_70__sigma_x:    1.19926420 +/- 0.03333856 (2.78%) (init = 1.299166)
+    __35_H_69__35_N_70__center_y:   97.5314468 +/- 0.02555719 (0.03%) (init = 97.54532)
+    __35_H_69__35_N_70__center_x:   377.838150 +/- 0.02579642 (0.01%) (init = 377.8728)
+    __35_H_69__35_N_70__amplitude:  1.0941e+09 +/- 74116375.5 (6.77%) (init = 1.045355e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__35_H_69__35_N_70__fraction, __35_H_69__35_N_70__amplitude) = -0.928
+    C(__35_H_69__35_N_70__fraction, __35_H_69__35_N_70__sigma_y)   =  0.476
+    C(__35_H_69__35_N_70__fraction, __35_H_69__35_N_70__sigma_x)   =  0.420
+    C(__35_H_69__35_N_70__sigma_y, __35_H_69__35_N_70__amplitude)  = -0.277
+    C(__35_H_69__35_N_70__sigma_x, __35_H_69__35_N_70__amplitude)  = -0.221
+    C(__35_H_69__35_N_70__sigma_y, __35_H_69__35_N_70__sigma_x)    =  0.200
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__35_H_69__35_N_70__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 1.37964498
+    reduced chi-square = 0.02508445
+    Akaike info crit   = -205.397427
+    Bayesian info crit = -203.372075
+[[Variables]]
+    __35_H_69__35_N_70__fraction:   5.606086e-10 (fixed)
+    __35_H_69__35_N_70__sigma_y:    1.190054 (fixed)
+    __35_H_69__35_N_70__sigma_x:    1.199264 (fixed)
+    __35_H_69__35_N_70__center_y:   97.53145 (fixed)
+    __35_H_69__35_N_70__center_x:   377.8381 (fixed)
+    __35_H_69__35_N_70__amplitude:  4.4045e+08 +/- 7563148.36 (1.72%) (init = 1.094084e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__35_H_69__35_N_70__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.65392917
+    reduced chi-square = 0.01188962
+    Akaike info crit   = -247.206044
+    Bayesian info crit = -245.180692
+[[Variables]]
+    __35_H_69__35_N_70__fraction:   5.606086e-10 (fixed)
+    __35_H_69__35_N_70__sigma_y:    1.190054 (fixed)
+    __35_H_69__35_N_70__sigma_x:    1.199264 (fixed)
+    __35_H_69__35_N_70__center_y:   97.53145 (fixed)
+    __35_H_69__35_N_70__center_x:   377.8381 (fixed)
+    __35_H_69__35_N_70__amplitude:  3.0431e+08 +/- 5206960.76 (1.71%) (init = 4.404479e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__35_H_69__35_N_70__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.29996973
+    reduced chi-square = 0.00545400
+    Akaike info crit   = -290.847822
+    Bayesian info crit = -288.822470
+[[Variables]]
+    __35_H_69__35_N_70__fraction:   5.606086e-10 (fixed)
+    __35_H_69__35_N_70__sigma_y:    1.190054 (fixed)
+    __35_H_69__35_N_70__sigma_x:    1.199264 (fixed)
+    __35_H_69__35_N_70__center_y:   97.53145 (fixed)
+    __35_H_69__35_N_70__center_x:   377.8381 (fixed)
+    __35_H_69__35_N_70__amplitude:  2.0800e+08 +/- 3526611.87 (1.70%) (init = 3.043095e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__35_H_69__35_N_70__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 56
+    # variables        = 1
+    chi-square         = 0.13854907
+    reduced chi-square = 0.00251907
+    Akaike info crit   = -334.105415
+    Bayesian info crit = -332.080063
+[[Variables]]
+    __35_H_69__35_N_70__fraction:   5.606086e-10 (fixed)
+    __35_H_69__35_N_70__sigma_y:    1.190054 (fixed)
+    __35_H_69__35_N_70__sigma_x:    1.199264 (fixed)
+    __35_H_69__35_N_70__center_y:   97.53145 (fixed)
+    __35_H_69__35_N_70__center_x:   377.8381 (fixed)
+    __35_H_69__35_N_70__amplitude:  1.4133e+08 +/- 2396739.09 (1.70%) (init = 2.080019e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 1 peak
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__44_H_87__44_N_88__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 71
+    # data points      = 59
+    # variables        = 6
+    chi-square         = 7.15185624
+    reduced chi-square = 0.13494068
+    Akaike info crit   = -112.499765
+    Bayesian info crit = -100.034540
+[[Variables]]
+    __44_H_87__44_N_88__fraction:   3.7238e-09 +/- 0.11133410 (2989795028.26%) (init = 0.5)
+    __44_H_87__44_N_88__sigma_y:    1.20335182 +/- 0.03239649 (2.69%) (init = 1.366948)
+    __44_H_87__44_N_88__sigma_x:    1.19332705 +/- 0.03219400 (2.70%) (init = 1.328584)
+    __44_H_87__44_N_88__center_y:   99.5241171 +/- 0.02387687 (0.02%) (init = 99.53058)
+    __44_H_87__44_N_88__center_x:   411.466305 +/- 0.02367585 (0.01%) (init = 411.4735)
+    __44_H_87__44_N_88__amplitude:  1.0645e+09 +/- 68211186.3 (6.41%) (init = 1.010627e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__44_H_87__44_N_88__fraction, __44_H_87__44_N_88__amplitude) =  0.931
+    C(__44_H_87__44_N_88__fraction, __44_H_87__44_N_88__sigma_x)   = -0.489
+    C(__44_H_87__44_N_88__fraction, __44_H_87__44_N_88__sigma_y)   = -0.487
+    C(__44_H_87__44_N_88__sigma_x, __44_H_87__44_N_88__amplitude)  = -0.296
+    C(__44_H_87__44_N_88__sigma_y, __44_H_87__44_N_88__amplitude)  = -0.293
+    C(__44_H_87__44_N_88__sigma_y, __44_H_87__44_N_88__sigma_x)    =  0.238
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__44_H_87__44_N_88__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 59
+    # variables        = 1
+    chi-square         = 1.15294553
+    reduced chi-square = 0.01987837
+    Akaike info crit   = -230.177829
+    Bayesian info crit = -228.100292
+[[Variables]]
+    __44_H_87__44_N_88__fraction:   3.723804e-09 (fixed)
+    __44_H_87__44_N_88__sigma_y:    1.203352 (fixed)
+    __44_H_87__44_N_88__sigma_x:    1.193327 (fixed)
+    __44_H_87__44_N_88__center_y:   99.52412 (fixed)
+    __44_H_87__44_N_88__center_x:   411.4663 (fixed)
+    __44_H_87__44_N_88__amplitude:  4.2986e+08 +/- 6753786.80 (1.57%) (init = 1.064491e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__44_H_87__44_N_88__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 59
+    # variables        = 1
+    chi-square         = 0.55919983
+    reduced chi-square = 0.00964138
+    Akaike info crit   = -272.868364
+    Bayesian info crit = -270.790827
+[[Variables]]
+    __44_H_87__44_N_88__fraction:   3.723804e-09 (fixed)
+    __44_H_87__44_N_88__sigma_y:    1.203352 (fixed)
+    __44_H_87__44_N_88__sigma_x:    1.193327 (fixed)
+    __44_H_87__44_N_88__center_y:   99.52412 (fixed)
+    __44_H_87__44_N_88__center_x:   411.4663 (fixed)
+    __44_H_87__44_N_88__amplitude:  2.9628e+08 +/- 4703557.61 (1.59%) (init = 4.298634e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__44_H_87__44_N_88__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 59
+    # variables        = 1
+    chi-square         = 0.26283356
+    reduced chi-square = 0.00453161
+    Akaike info crit   = -317.412532
+    Bayesian info crit = -315.334995
+[[Variables]]
+    __44_H_87__44_N_88__fraction:   3.723804e-09 (fixed)
+    __44_H_87__44_N_88__sigma_y:    1.203352 (fixed)
+    __44_H_87__44_N_88__sigma_x:    1.193327 (fixed)
+    __44_H_87__44_N_88__center_y:   99.52412 (fixed)
+    __44_H_87__44_N_88__center_x:   411.4663 (fixed)
+    __44_H_87__44_N_88__amplitude:  2.0177e+08 +/- 3224655.74 (1.60%) (init = 2.962787e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    Model(pvoigt2d, prefix='__44_H_87__44_N_88__')
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 4
+    # data points      = 59
+    # variables        = 1
+    chi-square         = 0.11781121
+    reduced chi-square = 0.00203123
+    Akaike info crit   = -364.756349
+    Bayesian info crit = -362.678811
+[[Variables]]
+    __44_H_87__44_N_88__fraction:   3.723804e-09 (fixed)
+    __44_H_87__44_N_88__sigma_y:    1.203352 (fixed)
+    __44_H_87__44_N_88__sigma_x:    1.193327 (fixed)
+    __44_H_87__44_N_88__center_y:   99.52412 (fixed)
+    __44_H_87__44_N_88__center_x:   411.4663 (fixed)
+    __44_H_87__44_N_88__amplitude:  1.3658e+08 +/- 2158918.54 (1.58%) (init = 2.017717e+08)
+
+                        
+
+            ####################################
+            Fitting cluster of 3 peaks
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    ((Model(pvoigt2d, prefix='__30_H_59__30_N_60__') + Model(pvoigt2d, prefix='__5_H_9__5_N_10__')) + Model(pvoigt2d, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 181
+    # data points      = 121
+    # variables        = 18
+    chi-square         = 17.8478825
+    reduced chi-square = 0.17328041
+    Akaike info crit   = -195.582587
+    Bayesian info crit = -145.258357
+[[Variables]]
+    __30_H_59__30_N_60__fraction:   1.1447e-09 +/- 0.12396006 (10829430352.06%) (init = 0.5)
+    __30_H_59__30_N_60__sigma_y:    1.25217145 +/- 0.03948279 (3.15%) (init = 1.357754)
+    __30_H_59__30_N_60__sigma_x:    1.21346820 +/- 0.03732569 (3.08%) (init = 1.316742)
+    __30_H_59__30_N_60__center_y:   101.980796 +/- 0.03190283 (0.03%) (init = 101.981)
+    __30_H_59__30_N_60__center_x:   322.007504 +/- 0.02998525 (0.01%) (init = 322.0306)
+    __30_H_59__30_N_60__amplitude:  1.0259e+09 +/- 91449647.8 (8.91%) (init = 1.094626e+09)
+    __5_H_9__5_N_10__fraction:      4.3358e-10 +/- 0.11039669 (25461374577.10%) (init = 0.5)
+    __5_H_9__5_N_10__sigma_y:       1.22903830 +/- 0.04969316 (4.04%) (init = 1.43739)
+    __5_H_9__5_N_10__sigma_x:       1.26981486 +/- 0.04612435 (3.63%) (init = 1.373653)
+    __5_H_9__5_N_10__center_y:      104.128039 +/- 0.03908995 (0.04%) (init = 104.1145)
+    __5_H_9__5_N_10__center_x:      325.557078 +/- 0.03542599 (0.01%) (init = 325.5762)
+    __5_H_9__5_N_10__amplitude:     9.3873e+08 +/- 1.1425e+08 (12.17%) (init = 1.041606e+09)
+    __17_H_33__17_N_34__fraction:   1.9738e-10 +/- 0.12128276 (61445635256.53%) (init = 0.5)
+    __17_H_33__17_N_34__sigma_y:    1.26923074 +/- 0.04688952 (3.69%) (init = 1.479237)
+    __17_H_33__17_N_34__sigma_x:    1.17945911 +/- 0.03773552 (3.20%) (init = 1.260205)
+    __17_H_33__17_N_34__center_y:   107.844561 +/- 0.03675560 (0.03%) (init = 107.8919)
+    __17_H_33__17_N_34__center_x:   325.181327 +/- 0.02944795 (0.01%) (init = 325.1943)
+    __17_H_33__17_N_34__amplitude:  1.0043e+09 +/- 94571691.4 (9.42%) (init = 1.055592e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__5_H_9__5_N_10__fraction, __5_H_9__5_N_10__amplitude)       = -0.940
+    C(__30_H_59__30_N_60__fraction, __30_H_59__30_N_60__amplitude) = -0.936
+    C(__17_H_33__17_N_34__fraction, __17_H_33__17_N_34__amplitude) = -0.915
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__amplitude)   = -0.497
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__fraction)    =  0.445
+    C(__17_H_33__17_N_34__fraction, __17_H_33__17_N_34__sigma_x)   =  0.441
+    C(__5_H_9__5_N_10__fraction, __5_H_9__5_N_10__sigma_x)         =  0.430
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__amplitude)   = -0.408
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__center_y)      =  0.407
+    C(__30_H_59__30_N_60__fraction, __5_H_9__5_N_10__amplitude)    =  0.401
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__sigma_y)       = -0.385
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__sigma_y)      = -0.372
+    C(__30_H_59__30_N_60__fraction, __5_H_9__5_N_10__fraction)     = -0.354
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__center_y)     =  0.347
+    C(__30_H_59__30_N_60__fraction, __30_H_59__30_N_60__sigma_y)   =  0.309
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__amplitude)    = -0.306
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__center_y)    =  0.305
+    C(__30_H_59__30_N_60__fraction, __30_H_59__30_N_60__sigma_x)   =  0.298
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__fraction)     =  0.295
+    C(__5_H_9__5_N_10__fraction, __17_H_33__17_N_34__amplitude)    =  0.283
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__sigma_y)     = -0.282
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__amplitude)    = -0.273
+    C(__17_H_33__17_N_34__sigma_y, __17_H_33__17_N_34__center_y)   = -0.272
+    C(__5_H_9__5_N_10__sigma_x, __5_H_9__5_N_10__amplitude)        = -0.268
+    C(__17_H_33__17_N_34__center_y, __17_H_33__17_N_34__amplitude) = -0.266
+    C(__17_H_33__17_N_34__sigma_x, __17_H_33__17_N_34__amplitude)  = -0.257
+    C(__17_H_33__17_N_34__fraction, __17_H_33__17_N_34__sigma_y)   =  0.210
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__amplitude)     = -0.206
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__fraction)    =  0.203
+    C(__5_H_9__5_N_10__sigma_y, __5_H_9__5_N_10__center_y)         =  0.203
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__center_x)    = -0.200
+    C(__5_H_9__5_N_10__fraction, __17_H_33__17_N_34__sigma_y)      =  0.194
+    C(__5_H_9__5_N_10__fraction, __17_H_33__17_N_34__center_y)     = -0.189
+    C(__5_H_9__5_N_10__fraction, __17_H_33__17_N_34__center_x)     =  0.189
+    C(__30_H_59__30_N_60__fraction, __5_H_9__5_N_10__sigma_y)      =  0.184
+    C(__5_H_9__5_N_10__center_x, __5_H_9__5_N_10__amplitude)       = -0.180
+    C(__5_H_9__5_N_10__center_x, __17_H_33__17_N_34__amplitude)    =  0.178
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__sigma_y)     = -0.176
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__sigma_y)  =  0.176
+    C(__5_H_9__5_N_10__center_y, __5_H_9__5_N_10__amplitude)       =  0.166
+    C(__30_H_59__30_N_60__sigma_y, __5_H_9__5_N_10__fraction)      =  0.162
+    C(__30_H_59__30_N_60__center_y, __30_H_59__30_N_60__amplitude) =  0.162
+    C(__17_H_33__17_N_34__fraction, __17_H_33__17_N_34__center_y)  =  0.159
+    C(__30_H_59__30_N_60__fraction, __17_H_33__17_N_34__sigma_y)   = -0.157
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__fraction)     =  0.148
+    C(__30_H_59__30_N_60__sigma_y, __30_H_59__30_N_60__sigma_x)    =  0.146
+    C(__5_H_9__5_N_10__center_x, __17_H_33__17_N_34__fraction)     = -0.145
+    C(__30_H_59__30_N_60__sigma_y, __5_H_9__5_N_10__amplitude)     = -0.144
+    C(__5_H_9__5_N_10__fraction, __5_H_9__5_N_10__center_x)        =  0.141
+    C(__30_H_59__30_N_60__fraction, __5_H_9__5_N_10__center_y)     = -0.139
+    C(__30_H_59__30_N_60__fraction, __17_H_33__17_N_34__fraction)  = -0.136
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__center_x)    =  0.135
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__center_x) =  0.129
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__center_y)    =  0.129
+    C(__5_H_9__5_N_10__sigma_y, __5_H_9__5_N_10__amplitude)        =  0.129
+    C(__5_H_9__5_N_10__sigma_x, __17_H_33__17_N_34__amplitude)     =  0.125
+    C(__30_H_59__30_N_60__fraction, __30_H_59__30_N_60__center_y)  = -0.124
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__center_y) = -0.122
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__center_x)     =  0.121
+    C(__30_H_59__30_N_60__sigma_y, __5_H_9__5_N_10__sigma_y)       =  0.121
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__center_x)     =  0.120
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__amplitude)    = -0.119
+    C(__30_H_59__30_N_60__fraction, __17_H_33__17_N_34__center_x)  = -0.119
+    C(__30_H_59__30_N_60__sigma_x, __5_H_9__5_N_10__center_x)      =  0.119
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__fraction) =  0.115
+    C(__30_H_59__30_N_60__center_x, __30_H_59__30_N_60__amplitude) =  0.111
+    C(__5_H_9__5_N_10__fraction, __5_H_9__5_N_10__center_y)        = -0.109
+    C(__17_H_33__17_N_34__sigma_y, __17_H_33__17_N_34__sigma_x)    =  0.109
+    C(__5_H_9__5_N_10__center_x, __17_H_33__17_N_34__center_y)     = -0.106
+    C(__30_H_59__30_N_60__sigma_y, __17_H_33__17_N_34__amplitude)  =  0.104
+    C(__5_H_9__5_N_10__fraction, __5_H_9__5_N_10__sigma_y)         =  0.104
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__sigma_x)      = -0.101
+    C(__30_H_59__30_N_60__fraction, __17_H_33__17_N_34__center_y)  =  0.101
+    C(__30_H_59__30_N_60__sigma_y, __30_H_59__30_N_60__amplitude)  = -0.100
+    C(__30_H_59__30_N_60__sigma_x, __30_H_59__30_N_60__amplitude)  = -0.100
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    ((Model(pvoigt2d, prefix='__30_H_59__30_N_60__') + Model(pvoigt2d, prefix='__5_H_9__5_N_10__')) + Model(pvoigt2d, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 3.04030378
+    reduced chi-square = 0.02576529
+    Akaike info crit   = -439.743806
+    Bayesian info crit = -431.356434
+[[Variables]]
+    __30_H_59__30_N_60__fraction:   1.144659e-09 (fixed)
+    __30_H_59__30_N_60__sigma_y:    1.252171 (fixed)
+    __30_H_59__30_N_60__sigma_x:    1.213468 (fixed)
+    __30_H_59__30_N_60__center_y:   101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:   322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:  4.0892e+08 +/- 7910245.49 (1.93%) (init = 1.025914e+09)
+    __5_H_9__5_N_10__fraction:      4.335849e-10 (fixed)
+    __5_H_9__5_N_10__sigma_y:       1.229038 (fixed)
+    __5_H_9__5_N_10__sigma_x:       1.269815 (fixed)
+    __5_H_9__5_N_10__center_y:      104.128 (fixed)
+    __5_H_9__5_N_10__center_x:      325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:     3.8806e+08 +/- 8025139.20 (2.07%) (init = 9.387273e+08)
+    __17_H_33__17_N_34__fraction:   1.973822e-10 (fixed)
+    __17_H_33__17_N_34__sigma_y:    1.269231 (fixed)
+    __17_H_33__17_N_34__sigma_x:    1.179459 (fixed)
+    __17_H_33__17_N_34__center_y:   107.8446 (fixed)
+    __17_H_33__17_N_34__center_x:   325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:  4.0340e+08 +/- 7857918.23 (1.95%) (init = 1.004349e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    ((Model(pvoigt2d, prefix='__30_H_59__30_N_60__') + Model(pvoigt2d, prefix='__5_H_9__5_N_10__')) + Model(pvoigt2d, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 1.44391539
+    reduced chi-square = 0.01223657
+    Akaike info crit   = -529.840284
+    Bayesian info crit = -521.452913
+[[Variables]]
+    __30_H_59__30_N_60__fraction:   1.144659e-09 (fixed)
+    __30_H_59__30_N_60__sigma_y:    1.252171 (fixed)
+    __30_H_59__30_N_60__sigma_x:    1.213468 (fixed)
+    __30_H_59__30_N_60__center_y:   101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:   322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:  2.8590e+08 +/- 5451328.35 (1.91%) (init = 4.089169e+08)
+    __5_H_9__5_N_10__fraction:      4.335849e-10 (fixed)
+    __5_H_9__5_N_10__sigma_y:       1.229038 (fixed)
+    __5_H_9__5_N_10__sigma_x:       1.269815 (fixed)
+    __5_H_9__5_N_10__center_y:      104.128 (fixed)
+    __5_H_9__5_N_10__center_x:      325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:     2.5340e+08 +/- 5530507.17 (2.18%) (init = 3.880597e+08)
+    __17_H_33__17_N_34__fraction:   1.973822e-10 (fixed)
+    __17_H_33__17_N_34__sigma_y:    1.269231 (fixed)
+    __17_H_33__17_N_34__sigma_x:    1.179459 (fixed)
+    __17_H_33__17_N_34__center_y:   107.8446 (fixed)
+    __17_H_33__17_N_34__center_x:   325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:  2.7825e+08 +/- 5415267.21 (1.95%) (init = 4.033968e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    ((Model(pvoigt2d, prefix='__30_H_59__30_N_60__') + Model(pvoigt2d, prefix='__5_H_9__5_N_10__')) + Model(pvoigt2d, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 0.66161899
+    reduced chi-square = 0.00560694
+    Akaike info crit   = -624.271573
+    Bayesian info crit = -615.884202
+[[Variables]]
+    __30_H_59__30_N_60__fraction:   1.144659e-09 (fixed)
+    __30_H_59__30_N_60__sigma_y:    1.252171 (fixed)
+    __30_H_59__30_N_60__sigma_x:    1.213468 (fixed)
+    __30_H_59__30_N_60__center_y:   101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:   322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:  1.9632e+08 +/- 3690077.22 (1.88%) (init = 2.858957e+08)
+    __5_H_9__5_N_10__fraction:      4.335849e-10 (fixed)
+    __5_H_9__5_N_10__sigma_y:       1.229038 (fixed)
+    __5_H_9__5_N_10__sigma_x:       1.269815 (fixed)
+    __5_H_9__5_N_10__center_y:      104.128 (fixed)
+    __5_H_9__5_N_10__center_x:      325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:     1.7584e+08 +/- 3743674.38 (2.13%) (init = 2.534021e+08)
+    __17_H_33__17_N_34__fraction:   1.973822e-10 (fixed)
+    __17_H_33__17_N_34__sigma_y:    1.269231 (fixed)
+    __17_H_33__17_N_34__sigma_x:    1.179459 (fixed)
+    __17_H_33__17_N_34__center_y:   107.8446 (fixed)
+    __17_H_33__17_N_34__center_x:   325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:  1.9273e+08 +/- 3665666.90 (1.90%) (init = 2.782526e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    ((Model(pvoigt2d, prefix='__30_H_59__30_N_60__') + Model(pvoigt2d, prefix='__5_H_9__5_N_10__')) + Model(pvoigt2d, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 0.28874414
+    reduced chi-square = 0.00244698
+    Akaike info crit   = -724.598589
+    Bayesian info crit = -716.211217
+[[Variables]]
+    __30_H_59__30_N_60__fraction:   1.144659e-09 (fixed)
+    __30_H_59__30_N_60__sigma_y:    1.252171 (fixed)
+    __30_H_59__30_N_60__sigma_x:    1.213468 (fixed)
+    __30_H_59__30_N_60__center_y:   101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:   322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:  1.3478e+08 +/- 2437743.79 (1.81%) (init = 1.963239e+08)
+    __5_H_9__5_N_10__fraction:      4.335849e-10 (fixed)
+    __5_H_9__5_N_10__sigma_y:       1.229038 (fixed)
+    __5_H_9__5_N_10__sigma_x:       1.269815 (fixed)
+    __5_H_9__5_N_10__center_y:      104.128 (fixed)
+    __5_H_9__5_N_10__center_x:      325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:     1.2142e+08 +/- 2473151.23 (2.04%) (init = 1.758396e+08)
+    __17_H_33__17_N_34__fraction:   1.973822e-10 (fixed)
+    __17_H_33__17_N_34__sigma_y:    1.269231 (fixed)
+    __17_H_33__17_N_34__sigma_x:    1.179459 (fixed)
+    __17_H_33__17_N_34__center_y:   107.8446 (fixed)
+    __17_H_33__17_N_34__center_x:   325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:  1.2997e+08 +/- 2421617.81 (1.86%) (init = 1.927261e+08)
+
+                        

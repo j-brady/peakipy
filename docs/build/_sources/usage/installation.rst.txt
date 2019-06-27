@@ -89,7 +89,7 @@ Requirements
 * pandas>=0.24.0
 * numpy>=1.16
 * matplotlib>=3.0
-* PyYAML>=3.13
+* PyYAML>=5.1
 * nmrglue>=0.6.0
 * scipy>=1.2
 * docopt>=0.6.2
