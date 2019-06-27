@@ -69,7 +69,6 @@ import os
 import json
 from pathlib import Path
 from multiprocessing import cpu_count, Pool
-from dataclasses import dataclass
 
 import nmrglue as ng
 import numpy as np
@@ -259,9 +258,9 @@ else:
 plot = args.get("--plot")
 if plot == "None":
     plot = None
-    log = open("log.txt", "w")
+    log_file = open("log.txt", "w")
 else:
-    log = open("~log.txt", "w")
+    log_file = open("~log.txt", "w")
     plot.mkdir(parents=True, exist_ok=True)
 
 # get dims from command line input
@@ -378,10 +377,13 @@ if lineshape == "PV_PV":
 else:
     fractions = []
 
-@dataclass
+
 class FitPeaksResult:
-    df: pd.DataFrame
-    log: str
+
+    def __init__(self, df: pd.DataFrame, log: str):
+
+        self.df = df
+        self.log = log
 
 
 def fit_peaks(peaks):
@@ -422,7 +424,6 @@ def fit_peaks(peaks):
             fit_result.plot(plot_path=plot, show=args.get('--show'), nomp=args.get('--nomp'))
             first = fit_result.out
             mask = fit_result.mask
-            log = fit_result.log
 #            log.write(
             out_str += f"""
         ------------------------------------
@@ -569,15 +570,15 @@ if (peaks.CLUSTID.nunique()>=n_cpu) and not args.get('--nomp'):
         result_df = pd.concat([i.df for i in result],ignore_index=True)
         for num,i in enumerate(result):
             i.df.to_csv(f"tmp/peaks_{num}_fit.csv",index=False)
-            with open(f"tmp/peaks_{num}_log.txt","w") as log:
-                log.write(i.log)
+            log_file.write(i.log+'\n')
 else:
     print("Not using multiprocessing")
     result = fit_peaks(peaks)
     result_df = result.df
-    with open(f"log.txt","w") as log:
-        log.write(result.log)
+    log_file.write(result.log)
 
+# close log file
+log_file.close()
 output = Path(args["<output>"])
 suffix = output.suffix
 if suffix == ".csv":

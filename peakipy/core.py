@@ -23,7 +23,6 @@
 import sys
 from datetime import datetime
 from pathlib import Path
-from dataclasses import dataclass
 
 import numpy as np
 import nmrglue as ng
@@ -809,11 +808,12 @@ class FitResult:
         """
         pass
 
-    def plot(self, plot_path, show=False, nomp=True):
+    def plot(self, plot_path=None, show=False, nomp=True):
         """ Matplotlib interactive plot of the fits """
-        if nomp:
-            plot_path = Path(plot_path)
 
+        if plot_path != None:
+            plot_path = Path(plot_path)
+            plot_path.mkdir(parents=True)
             # plotting
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d")
@@ -878,7 +878,7 @@ class FitResult:
             plt.legend(bbox_to_anchor=(1.2, 1.1))
 
             name = self.group.CLUSTID.iloc[0]
-            if show:
+            if show and nomp:
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
 
                 def exit_program(event):
@@ -897,12 +897,12 @@ class FitResult:
 
                 plt.show()
             else:
+                print("Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag.")
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
             #    print(p_guess)
             # close plot
             plt.close()
         else:
-            print("Cannot use matplotlib in multiprocess mode. Use --nomp flag.")
             pass
 
 

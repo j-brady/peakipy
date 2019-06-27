@@ -3,57 +3,19 @@
   <component name="ChangeListManager">
     <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/environment.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/environment.pickle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/installation.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/installation.doctree" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/instructions.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/instructions.doctree" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/_sources/usage/installation.rst.txt" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/_sources/usage/installation.rst.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/_sources/usage/instructions.rst.txt" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/_sources/usage/instructions.rst.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/searchindex.js" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/searchindex.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/usage/installation.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/usage/installation.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/build/usage/instructions.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/usage/instructions.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/source/usage/installation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/usage/installation.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/source/usage/instructions.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/usage/instructions.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/peakipy/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/core.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/check_fits" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/check_fits" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/edit_fits" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/edit_fits" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/edit_fits_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/edit_fits_script.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/fit_peaks" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fit_peaks" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/read_peaklist" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/read_peaklist" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/clusters.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/clusters.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/clusters.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/clusters.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/clusters3.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/edited_peaks.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/edited_peaks.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/fits.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/fits.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/18.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/18.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/24.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/24.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/30.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/30.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/44.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/44.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/45.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/45.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/46.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/46.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/51.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/51.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/out/9.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/out/9.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/show_clusters.yml" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/show_clusters.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/~log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/~log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/~tmp.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/~tmp.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/~tmp_out.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/~tmp_out.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_out/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_out/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_out/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_out/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/fits.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/fits.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test_protein_L/log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/params.fuda" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/params.fuda" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/plots.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/plots.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~plot.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~plot.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~tmp.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~tmp.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~tmp_out.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_protein_L/~tmp_out.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/out/2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/out/3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~fits.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~fits.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~plot.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~plots.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~tmp.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_protein_L/~tmp_out.csv" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -64,10 +26,22 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/test_core.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1092">
+              <caret line="4" selection-start-line="4" selection-end-line="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scripts/fit_peaks">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="421" column="70" selection-start-line="421" selection-start-column="70" selection-end-line="421" selection-end-column="70" />
+            <state relative-caret-position="246">
+              <caret line="262" column="12" selection-start-line="262" selection-start-column="12" selection-end-line="262" selection-end-column="12" />
+              <folding>
+                <element signature="e#3288#3297#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -81,14 +55,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/peakipy/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="199">
-              <caret line="903" column="12" selection-start-line="903" selection-start-column="12" selection-end-line="903" selection-end-column="12" />
-              <folding>
-                <element signature="e#758#768#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-3556">
+              <caret line="25" selection-start-line="25" selection-end-line="25" />
             </state>
           </provider>
         </entry>
@@ -125,9 +96,9 @@
         <option value="$PROJECT_DIR$/scripts/check_fits" />
         <option value="$USER_HOME$/Documents/LabBook/Toronto/peakipy_paper/scripts/peakipy_dash_app.py" />
         <option value="$PROJECT_DIR$/scripts/fit_peaks_mp" />
-        <option value="$PROJECT_DIR$/scripts/fit_peaks" />
         <option value="$PROJECT_DIR$/scripts/edit_fits_script.py" />
         <option value="$PROJECT_DIR$/peakipy/core.py" />
+        <option value="$PROJECT_DIR$/scripts/fit_peaks" />
       </list>
     </option>
   </component>
@@ -146,11 +117,6 @@
           <expand>
             <path>
               <item name="peakipy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="peakipy" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="peakipy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="peakipy" type="462c0819:PsiDirectoryNode" />
               <item name="peakipy" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -196,6 +162,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="777" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16679905" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -289,6 +256,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3556">
+          <caret line="25" selection-start-line="25" selection-end-line="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test_core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1092">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/edit_fits_script.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="117">
@@ -298,17 +279,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/fit_peaks">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="421" column="70" selection-start-line="421" selection-start-column="70" selection-end-line="421" selection-end-column="70" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="903" column="12" selection-start-line="903" selection-start-column="12" selection-end-line="903" selection-end-column="12" />
+        <state relative-caret-position="246">
+          <caret line="262" column="12" selection-start-line="262" selection-start-column="12" selection-end-line="262" selection-end-column="12" />
           <folding>
-            <element signature="e#758#768#0" expanded="true" />
+            <element signature="e#3288#3297#0" expanded="true" />
           </folding>
         </state>
       </provider>
