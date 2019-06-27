@@ -813,7 +813,7 @@ class FitResult:
 
         if plot_path != None:
             plot_path = Path(plot_path)
-            plot_path.mkdir(parents=True)
+            plot_path.mkdir(parents=True, exist_ok=True)
             # plotting
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d")

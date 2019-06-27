@@ -1,0 +1,285 @@
+
+
+            ####################################
+            Fitting cluster of 3 peaks
+            ####################################
+            
+        ------------------------------------
+                   Summed planes
+        ------------------------------------
+        [[Model]]
+    ((Model(pv_pv, prefix='__30_H_59__30_N_60__') + Model(pv_pv, prefix='__5_H_9__5_N_10__')) + Model(pv_pv, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 294
+    # data points      = 121
+    # variables        = 21
+    chi-square         = 17.8478826
+    reduced chi-square = 0.17847883
+    Akaike info crit   = -189.582586
+    Bayesian info crit = -130.870984
+[[Variables]]
+    __30_H_59__30_N_60__fraction_y:  7.6565e-10 +/- 0.03792008 (4952644588.79%) (init = 0.5)
+    __30_H_59__30_N_60__fraction_x:  1.2212e-15 +/- 0.00882709 (722794322521600.25%) (init = 0.5)
+    __30_H_59__30_N_60__sigma_y:     1.25217171 +/- 0.04366366 (3.49%) (init = 1.357754)
+    __30_H_59__30_N_60__sigma_x:     1.21346890 +/- 0.04028679 (3.32%) (init = 1.316742)
+    __30_H_59__30_N_60__center_y:    101.980797 +/- 0.03368317 (0.03%) (init = 101.981)
+    __30_H_59__30_N_60__center_x:    322.007505 +/- 0.03064042 (0.01%) (init = 322.0306)
+    __30_H_59__30_N_60__amplitude:   1.0259e+09 +/- 93034222.4 (9.07%) (init = 1.094626e+09)
+    __5_H_9__5_N_10__fraction_y:     6.8918e-10 +/- 0.10749499 (15597624007.95%) (init = 0.5)
+    __5_H_9__5_N_10__fraction_x:     6.1812e-08 +/- 0.15449037 (249936784.40%) (init = 0.5)
+    __5_H_9__5_N_10__sigma_y:        1.22902334 +/- 0.05325525 (4.33%) (init = 1.43739)
+    __5_H_9__5_N_10__sigma_x:        1.26981092 +/- 0.05083391 (4.00%) (init = 1.373653)
+    __5_H_9__5_N_10__center_y:       104.128024 +/- 0.04169154 (0.04%) (init = 104.1145)
+    __5_H_9__5_N_10__center_x:       325.557080 +/- 0.03697683 (0.01%) (init = 325.5762)
+    __5_H_9__5_N_10__amplitude:      9.3872e+08 +/- 1.2974e+08 (13.82%) (init = 1.041606e+09)
+    __17_H_33__17_N_34__fraction_y:  1.3990e-09 +/- 0.09253491 (6614260191.90%) (init = 0.5)
+    __17_H_33__17_N_34__fraction_x:  2.0062e-13 +/- 0.04515943 (22510235944333.89%) (init = 0.5)
+    __17_H_33__17_N_34__sigma_y:     1.26924574 +/- 0.05029746 (3.96%) (init = 1.479237)
+    __17_H_33__17_N_34__sigma_x:     1.17946234 +/- 0.04047887 (3.43%) (init = 1.260205)
+    __17_H_33__17_N_34__center_y:    107.844546 +/- 0.03992453 (0.04%) (init = 107.8919)
+    __17_H_33__17_N_34__center_x:    325.181326 +/- 0.03043971 (0.01%) (init = 325.1943)
+    __17_H_33__17_N_34__amplitude:   1.0044e+09 +/- 1.1479e+08 (11.43%) (init = 1.055592e+09)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(__17_H_33__17_N_34__fraction_y, __17_H_33__17_N_34__amplitude)  = -0.808
+    C(__5_H_9__5_N_10__fraction_y, __5_H_9__5_N_10__amplitude)        = -0.787
+    C(__30_H_59__30_N_60__fraction_x, __30_H_59__30_N_60__amplitude)  =  0.696
+    C(__30_H_59__30_N_60__fraction_y, __30_H_59__30_N_60__amplitude)  = -0.637
+    C(__5_H_9__5_N_10__fraction_x, __5_H_9__5_N_10__sigma_x)          = -0.553
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__amplitude)      = -0.544
+    C(__5_H_9__5_N_10__fraction_x, __5_H_9__5_N_10__amplitude)        =  0.539
+    C(__17_H_33__17_N_34__fraction_x, __17_H_33__17_N_34__sigma_x)    = -0.516
+    C(__5_H_9__5_N_10__fraction_y, __17_H_33__17_N_34__amplitude)     =  0.495
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__amplitude)      = -0.488
+    C(__17_H_33__17_N_34__fraction_x, __17_H_33__17_N_34__amplitude)  =  0.450
+    C(__30_H_59__30_N_60__fraction_x, __30_H_59__30_N_60__sigma_x)    = -0.435
+    C(__30_H_59__30_N_60__fraction_x, __5_H_9__5_N_10__amplitude)     = -0.434
+    C(__30_H_59__30_N_60__fraction_y, __30_H_59__30_N_60__sigma_y)    =  0.431
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__fraction_y)     =  0.420
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__center_y)       =  0.412
+    C(__17_H_33__17_N_34__center_y, __17_H_33__17_N_34__amplitude)    = -0.403
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__center_y)         =  0.402
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__fraction_x)      = -0.395
+    C(__30_H_59__30_N_60__fraction_x, __5_H_9__5_N_10__fraction_y)    =  0.388
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__center_y)        =  0.377
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__fraction_x)     = -0.361
+    C(__5_H_9__5_N_10__fraction_y, __17_H_33__17_N_34__center_y)      = -0.337
+    C(__17_H_33__17_N_34__fraction_y, __17_H_33__17_N_34__center_y)   =  0.330
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__amplitude)       = -0.327
+    C(__5_H_9__5_N_10__fraction_y, __17_H_33__17_N_34__fraction_y)    = -0.308
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__sigma_y)          = -0.307
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__fraction_y)     =  0.302
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__sigma_y)         = -0.299
+    C(__17_H_33__17_N_34__fraction_y, __17_H_33__17_N_34__sigma_y)    =  0.292
+    C(__30_H_59__30_N_60__fraction_x, __5_H_9__5_N_10__sigma_y)       = -0.275
+    C(__5_H_9__5_N_10__center_x, __17_H_33__17_N_34__fraction_y)      = -0.273
+    C(__5_H_9__5_N_10__fraction_y, __17_H_33__17_N_34__center_x)      =  0.263
+    C(__30_H_59__30_N_60__fraction_y, __5_H_9__5_N_10__fraction_x)    =  0.255
+    C(__5_H_9__5_N_10__center_y, __17_H_33__17_N_34__fraction_y)      =  0.254
+    C(__5_H_9__5_N_10__center_x, __17_H_33__17_N_34__amplitude)       =  0.244
+    C(__5_H_9__5_N_10__center_x, __5_H_9__5_N_10__amplitude)          = -0.239
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__center_x)       = -0.232
+    C(__30_H_59__30_N_60__fraction_y, __17_H_33__17_N_34__fraction_x) =  0.231
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__amplitude)       = -0.227
+    C(__30_H_59__30_N_60__sigma_y, __5_H_9__5_N_10__fraction_x)       = -0.227
+    C(__17_H_33__17_N_34__sigma_y, __17_H_33__17_N_34__center_y)      = -0.222
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__amplitude)        = -0.221
+    C(__5_H_9__5_N_10__center_y, __5_H_9__5_N_10__amplitude)          =  0.212
+    C(__5_H_9__5_N_10__fraction_y, __5_H_9__5_N_10__center_y)         = -0.212
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__sigma_y)        = -0.207
+    C(__5_H_9__5_N_10__amplitude, __17_H_33__17_N_34__sigma_y)        = -0.206
+    C(__5_H_9__5_N_10__fraction_y, __17_H_33__17_N_34__sigma_y)       =  0.202
+    C(__30_H_59__30_N_60__fraction_x, __17_H_33__17_N_34__center_y)   = -0.196
+    C(__30_H_59__30_N_60__fraction_x, __17_H_33__17_N_34__sigma_y)    =  0.195
+    C(__5_H_9__5_N_10__sigma_y, __5_H_9__5_N_10__amplitude)           =  0.186
+    C(__30_H_59__30_N_60__center_y, __30_H_59__30_N_60__amplitude)    =  0.172
+    C(__5_H_9__5_N_10__sigma_y, __17_H_33__17_N_34__fraction_y)       =  0.171
+    C(__30_H_59__30_N_60__fraction_x, __5_H_9__5_N_10__center_y)      =  0.167
+    C(__17_H_33__17_N_34__center_x, __17_H_33__17_N_34__amplitude)    =  0.161
+    C(__5_H_9__5_N_10__center_x, __17_H_33__17_N_34__center_y)        = -0.161
+    C(__5_H_9__5_N_10__sigma_x, __5_H_9__5_N_10__amplitude)           = -0.160
+    C(__30_H_59__30_N_60__fraction_x, __17_H_33__17_N_34__amplitude)  =  0.157
+    C(__30_H_59__30_N_60__sigma_y, __5_H_9__5_N_10__amplitude)        = -0.154
+    C(__5_H_9__5_N_10__sigma_y, __5_H_9__5_N_10__center_y)            =  0.151
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__center_x)       =  0.148
+    C(__30_H_59__30_N_60__fraction_y, __5_H_9__5_N_10__amplitude)     =  0.148
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__sigma_y)     =  0.148
+    C(__5_H_9__5_N_10__fraction_y, __5_H_9__5_N_10__center_x)         =  0.146
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__center_y)    = -0.144
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__amplitude)       = -0.139
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__fraction_x)  = -0.136
+    C(__30_H_59__30_N_60__fraction_x, __30_H_59__30_N_60__center_x)   =  0.132
+    C(__30_H_59__30_N_60__fraction_y, __17_H_33__17_N_34__amplitude)  =  0.130
+    C(__30_H_59__30_N_60__amplitude, __17_H_33__17_N_34__center_x)    =  0.127
+    C(__30_H_59__30_N_60__sigma_x, __30_H_59__30_N_60__amplitude)     = -0.125
+    C(__17_H_33__17_N_34__center_y, __17_H_33__17_N_34__center_x)     = -0.124
+    C(__30_H_59__30_N_60__amplitude, __5_H_9__5_N_10__center_y)       =  0.122
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__sigma_x)         = -0.122
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__fraction_y)      =  0.121
+    C(__30_H_59__30_N_60__center_x, __30_H_59__30_N_60__amplitude)    =  0.121
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__center_x)        =  0.117
+    C(__30_H_59__30_N_60__center_x, __5_H_9__5_N_10__center_x)        =  0.116
+    C(__30_H_59__30_N_60__fraction_x, __17_H_33__17_N_34__center_x)   =  0.115
+    C(__30_H_59__30_N_60__center_y, __5_H_9__5_N_10__sigma_x)         =  0.114
+    C(__30_H_59__30_N_60__sigma_y, __17_H_33__17_N_34__fraction_x)    =  0.112
+    C(__30_H_59__30_N_60__fraction_y, __30_H_59__30_N_60__center_y)   = -0.109
+    C(__5_H_9__5_N_10__sigma_y, __5_H_9__5_N_10__center_x)            = -0.108
+    C(__5_H_9__5_N_10__fraction_x, __5_H_9__5_N_10__center_x)         = -0.107
+    C(__30_H_59__30_N_60__sigma_y, __30_H_59__30_N_60__center_y)      =  0.105
+    C(__30_H_59__30_N_60__fraction_x, __5_H_9__5_N_10__fraction_x)    = -0.105
+    C(__30_H_59__30_N_60__sigma_x, __5_H_9__5_N_10__center_x)         =  0.103
+
+                        Fixing parameters: ['fraction', 'sigma', 'center']
+
+        ------------------------------------
+                     Plane = 1
+        ------------------------------------
+        [[Model]]
+    ((Model(pv_pv, prefix='__30_H_59__30_N_60__') + Model(pv_pv, prefix='__5_H_9__5_N_10__')) + Model(pv_pv, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 3.04031289
+    reduced chi-square = 0.02576536
+    Akaike info crit   = -439.743444
+    Bayesian info crit = -431.356072
+[[Variables]]
+    __30_H_59__30_N_60__fraction_y:  7.656532e-10 (fixed)
+    __30_H_59__30_N_60__fraction_x:  1.221245e-15 (fixed)
+    __30_H_59__30_N_60__sigma_y:     1.252172 (fixed)
+    __30_H_59__30_N_60__sigma_x:     1.213469 (fixed)
+    __30_H_59__30_N_60__center_y:    101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:    322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:   4.0892e+08 +/- 7910260.37 (1.93%) (init = 1.025914e+09)
+    __5_H_9__5_N_10__fraction_y:     6.891754e-10 (fixed)
+    __5_H_9__5_N_10__fraction_x:     6.181178e-08 (fixed)
+    __5_H_9__5_N_10__sigma_y:        1.229023 (fixed)
+    __5_H_9__5_N_10__sigma_x:        1.269811 (fixed)
+    __5_H_9__5_N_10__center_y:       104.128 (fixed)
+    __5_H_9__5_N_10__center_x:       325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:      3.8806e+08 +/- 8025090.10 (2.07%) (init = 9.387157e+08)
+    __17_H_33__17_N_34__fraction_y:  1.399021e-09 (fixed)
+    __17_H_33__17_N_34__fraction_x:  2.006173e-13 (fixed)
+    __17_H_33__17_N_34__sigma_y:     1.269246 (fixed)
+    __17_H_33__17_N_34__sigma_x:     1.179462 (fixed)
+    __17_H_33__17_N_34__center_y:    107.8445 (fixed)
+    __17_H_33__17_N_34__center_x:    325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:   4.0340e+08 +/- 7857987.22 (1.95%) (init = 1.00436e+09)
+
+                        
+        ------------------------------------
+                     Plane = 2
+        ------------------------------------
+        [[Model]]
+    ((Model(pv_pv, prefix='__30_H_59__30_N_60__') + Model(pv_pv, prefix='__5_H_9__5_N_10__')) + Model(pv_pv, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 1.44391265
+    reduced chi-square = 0.01223655
+    Akaike info crit   = -529.840514
+    Bayesian info crit = -521.453142
+[[Variables]]
+    __30_H_59__30_N_60__fraction_y:  7.656532e-10 (fixed)
+    __30_H_59__30_N_60__fraction_x:  1.221245e-15 (fixed)
+    __30_H_59__30_N_60__sigma_y:     1.252172 (fixed)
+    __30_H_59__30_N_60__sigma_x:     1.213469 (fixed)
+    __30_H_59__30_N_60__center_y:    101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:    322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:   2.8590e+08 +/- 5451325.31 (1.91%) (init = 4.089171e+08)
+    __5_H_9__5_N_10__fraction_y:     6.891754e-10 (fixed)
+    __5_H_9__5_N_10__fraction_x:     6.181178e-08 (fixed)
+    __5_H_9__5_N_10__sigma_y:        1.229023 (fixed)
+    __5_H_9__5_N_10__sigma_x:        1.269811 (fixed)
+    __5_H_9__5_N_10__center_y:       104.128 (fixed)
+    __5_H_9__5_N_10__center_x:       325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:      2.5340e+08 +/- 5530459.75 (2.18%) (init = 3.880556e+08)
+    __17_H_33__17_N_34__fraction_y:  1.399021e-09 (fixed)
+    __17_H_33__17_N_34__fraction_x:  2.006173e-13 (fixed)
+    __17_H_33__17_N_34__sigma_y:     1.269246 (fixed)
+    __17_H_33__17_N_34__sigma_x:     1.179462 (fixed)
+    __17_H_33__17_N_34__center_y:    107.8445 (fixed)
+    __17_H_33__17_N_34__center_x:    325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:   2.7826e+08 +/- 5415301.46 (1.95%) (init = 4.034008e+08)
+
+                        
+        ------------------------------------
+                     Plane = 3
+        ------------------------------------
+        [[Model]]
+    ((Model(pv_pv, prefix='__30_H_59__30_N_60__') + Model(pv_pv, prefix='__5_H_9__5_N_10__')) + Model(pv_pv, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 0.66161500
+    reduced chi-square = 0.00560691
+    Akaike info crit   = -624.272302
+    Bayesian info crit = -615.884931
+[[Variables]]
+    __30_H_59__30_N_60__fraction_y:  7.656532e-10 (fixed)
+    __30_H_59__30_N_60__fraction_x:  1.221245e-15 (fixed)
+    __30_H_59__30_N_60__sigma_y:     1.252172 (fixed)
+    __30_H_59__30_N_60__sigma_x:     1.213469 (fixed)
+    __30_H_59__30_N_60__center_y:    101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:    322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:   1.9632e+08 +/- 3690067.53 (1.88%) (init = 2.858959e+08)
+    __5_H_9__5_N_10__fraction_y:     6.891754e-10 (fixed)
+    __5_H_9__5_N_10__fraction_x:     6.181178e-08 (fixed)
+    __5_H_9__5_N_10__sigma_y:        1.229023 (fixed)
+    __5_H_9__5_N_10__sigma_x:        1.269811 (fixed)
+    __5_H_9__5_N_10__center_y:       104.128 (fixed)
+    __5_H_9__5_N_10__center_x:       325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:      1.7584e+08 +/- 3743634.60 (2.13%) (init = 2.533992e+08)
+    __17_H_33__17_N_34__fraction_y:  1.399021e-09 (fixed)
+    __17_H_33__17_N_34__fraction_x:  2.006173e-13 (fixed)
+    __17_H_33__17_N_34__sigma_y:     1.269246 (fixed)
+    __17_H_33__17_N_34__sigma_x:     1.179462 (fixed)
+    __17_H_33__17_N_34__center_y:    107.8445 (fixed)
+    __17_H_33__17_N_34__center_x:    325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:   1.9273e+08 +/- 3665682.54 (1.90%) (init = 2.782554e+08)
+
+                        
+        ------------------------------------
+                     Plane = 4
+        ------------------------------------
+        [[Model]]
+    ((Model(pv_pv, prefix='__30_H_59__30_N_60__') + Model(pv_pv, prefix='__5_H_9__5_N_10__')) + Model(pv_pv, prefix='__17_H_33__17_N_34__'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 8
+    # data points      = 121
+    # variables        = 3
+    chi-square         = 0.28874495
+    reduced chi-square = 0.00244699
+    Akaike info crit   = -724.598249
+    Bayesian info crit = -716.210877
+[[Variables]]
+    __30_H_59__30_N_60__fraction_y:  7.656532e-10 (fixed)
+    __30_H_59__30_N_60__fraction_x:  1.221245e-15 (fixed)
+    __30_H_59__30_N_60__sigma_y:     1.252172 (fixed)
+    __30_H_59__30_N_60__sigma_x:     1.213469 (fixed)
+    __30_H_59__30_N_60__center_y:    101.9808 (fixed)
+    __30_H_59__30_N_60__center_x:    322.0075 (fixed)
+    __30_H_59__30_N_60__amplitude:   1.3478e+08 +/- 2437748.18 (1.81%) (init = 1.96324e+08)
+    __5_H_9__5_N_10__fraction_y:     6.891754e-10 (fixed)
+    __5_H_9__5_N_10__fraction_x:     6.181178e-08 (fixed)
+    __5_H_9__5_N_10__sigma_y:        1.229023 (fixed)
+    __5_H_9__5_N_10__sigma_x:        1.269811 (fixed)
+    __5_H_9__5_N_10__center_y:       104.128 (fixed)
+    __5_H_9__5_N_10__center_x:       325.5571 (fixed)
+    __5_H_9__5_N_10__amplitude:      1.2142e+08 +/- 2473135.86 (2.04%) (init = 1.758378e+08)
+    __17_H_33__17_N_34__fraction_y:  1.399021e-09 (fixed)
+    __17_H_33__17_N_34__fraction_x:  2.006173e-13 (fixed)
+    __17_H_33__17_N_34__sigma_y:     1.269246 (fixed)
+    __17_H_33__17_N_34__sigma_x:     1.179462 (fixed)
+    __17_H_33__17_N_34__center_y:    107.8445 (fixed)
+    __17_H_33__17_N_34__center_x:    325.1813 (fixed)
+    __17_H_33__17_N_34__amplitude:   1.2998e+08 +/- 2421638.85 (1.86%) (init = 1.92728e+08)
+
+                        
