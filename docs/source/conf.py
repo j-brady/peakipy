@@ -22,7 +22,7 @@ copyright = '2019, Jacob Peter Brady'
 author = 'Jacob Peter Brady'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '0.1.16'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +31,7 @@ release = '0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+        'sphinx.ext.autodoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
