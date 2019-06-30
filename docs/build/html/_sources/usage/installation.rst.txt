@@ -7,12 +7,61 @@ Here are instructions for installing peakipy.
 Installation
 ------------
 
+I recommend using a virtual environment
+
+``python3 -m venv peakipy_venv``
+
+Then activate
+
+``source peakipy_venv/bin/activate`` if using bash
+
+or 
+
+``source peakipy_venv/bin/activate.csh`` if using c-shell
+
+Once activated you can install peakipy... 
+
+With pip
+^^^^^^^^
+
 ``pip install peakipy``
 
-You can also clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
+Below is an example of an installation script and a basic use case ::
+
+        #!/bin/bash
+
+        ##############################
+        # make a virtual environment #
+        ##############################
+        python3.7 -m venv peakipy_env;
+        source peakipy_env/bin/activate;
+
+        ##############################
+        # install peakipy            #
+        ##############################
+        pip install --upgrade pip;
+        pip install peakipy;
+
+        ##############################
+        #  process some data!        #
+        ##############################
+        read_peaklist peaks.a2 test.ft2 --a2 --f1radius=0.213 --show;
+        edit_fits peaks.csv test.ft2; # adjust fitting parameters
+        fit_peaks peaks.csv test.ft2 fits.csv --vclist=vclist; # assuming you saved edited peaklist as peaks.csv
+        # interactive checking
+        check_fits fits.csv test.ft2 --clusters=86,96,104 --colors=purple,green --show --outname=~tmp.pdf;
+        # plots all the fits (first plane only)
+        check_fits fits.csv test.ft2 --first --colors=purple,green;
+
+
+
+Run this above code by sourcing the file e.g. ``source file_containing_commands``
+
 
 With poetry
 ^^^^^^^^^^^
+
+Clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
 
 ``cd peakipy; poetry install``
 
@@ -25,10 +74,12 @@ Otherwise refer to the `poetry documentation <https://poetry.eustace.io/docs/>`_
 With setup.py
 ^^^^^^^^^^^^^
 
+After cloning the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
+
 ``cd peakipy; python setup.py install``
 
 
-At this point the package should be installed and the main scripts (``read_peaklist.py``, ``edit_fits.py``, ``fit_peaks.py`` and ``check_fits.py``) should have been added to your path.
+At this point the package should be installed and the main scripts (``read_peaklist``, ``edit_fits``, ``fit_peaks`` and ``check_fits``) should have been added to your path.
 
 
 Requirements
@@ -38,10 +89,11 @@ Requirements
 * pandas>=0.24.0
 * numpy>=1.16
 * matplotlib>=3.0
-* PyYAML>=3.13
+* PyYAML>=5.1
 * nmrglue>=0.6.0
 * scipy>=1.2
 * docopt>=0.6.2
 * lmfit>=0.9.12
 * scikit-image>=0.14.2
 * bokeh>=1.0.4
+* schema>=0.7.0

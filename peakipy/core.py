@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from numpy import sqrt, log, pi, exp
-from lmfit import Model, report_fit
+from lmfit import Model
 from lmfit.model import ModelResult
 from lmfit.models import LinearModel
 from matplotlib import cm
@@ -40,21 +40,26 @@ from matplotlib.widgets import Button
 
 # constants
 log2 = log(2)
-s2pi = sqrt(2 * pi)
-spi = sqrt(pi)
-
 π = pi
-# √π = sqrt(π)
-# √2π =  sqrt(2*π)
-
-s2 = sqrt(2.0)
-tiny = 1.0e-13
-
 
 def gaussian(x, center=0.0, sigma=1.0):
-    """Return a 1-dimensional Gaussian function.
-    gaussian(x, center, sigma) =
-        (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+    """ 1-dimensional Gaussian function.
+
+        gaussian(x, center, sigma) = 
+            (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
+        
+        :math:`\\frac{1}{ \sqrt{2\pi} } exp \left( \\frac{-(x-center)^2}{2 \sigma^2} \\right)`
+        
+        :param x: x
+        :param center: center
+        :param sigma: sigma
+        :type x: numpy.array
+        :type center: float
+        :type sigma: float
+
+        :return: 1-dimensional Gaussian
+        :rtype: numpy.array
+
     """
     return (1.0 / (sqrt(2 * π) * sigma)) * exp(
         -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
@@ -62,30 +67,45 @@ def gaussian(x, center=0.0, sigma=1.0):
 
 
 def lorentzian(x, center=0.0, sigma=1.0):
-    """Return a 1-dimensional Lorentzian function.
-    lorentzian(x, center, sigma) =
-        (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+    """ 1-dimensional Lorentzian function.
+
+        lorentzian(x, center, sigma) =
+            (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+
+        :math:`\\frac{1}{ 1+ \left( \\frac{x-center}{\sigma}\\right)^2} / (\pi\sigma)`
+
+        :param x: x
+        :param center: center
+        :param sigma: sigma
+        :type x: numpy.array
+        :type center: float
+        :type sigma: float
+
+        :return: 1-dimensional Lorenztian 
+        :rtype: numpy.array
+
     """
     return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
 
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
-    """ Pseudo-voigt function
+    """ 1-dimensional Pseudo-voigt function
+    
+        Superposition of Gaussian and Lorentzian function
 
-    Arguments
-    =========
+        :math:`(1-fraction) G(x,center,\sigma_g) + (fraction) L(x, center, \sigma)`
 
-        -- x: data
-        -- center: center of peak
-        -- sigma: sigma of lineshape
-        -- fraction: fraction of lorentzian lineshape (between 0 and 1)
+        :param x: data
+        :type x: numpy.array
+        :param center: center of peak
+        :type center: float
+        :param sigma: sigma of lineshape
+        :type sigma: float
+        :param fraction: fraction of lorentzian lineshape (between 0 and 1)
+        :type fraction: float
 
-    Description
-    ===========
-
-    Superposition of Gaussian and Lorentzian function
-
-    :math: `(1-fraction) G(x,center,\sigma_g) + (fraction) L(x, center, \sigma)`
+        :return: pseudo-voigt function
+        :rtype: numpy.array
 
     """
     sigma_g = sigma / sqrt(2 * log2)
@@ -285,20 +305,26 @@ def gaussian_lorentzian(
 def make_mask(data, c_x, c_y, r_x, r_y):
     """ Create and elliptical mask
 
-        Description:
-            Generate an elliptical boolean mask with center c_x/c_y in points
-            with radii r_x and r_y. Used to generate fit mask
+        Generate an elliptical boolean mask with center c_x/c_y in points
+        with radii r_x and r_y. Used to generate fit mask
 
-        Arguments:
-            data -- 2D array
-            c_x  -- x center
-            c_y  -- y center
-            r_x  -- radius in x
-            r_y  -- radius in y
+        :param data: 2D array
+        :type data: np.array
 
-        Returns:
-            boolean mask of data.shape
+        :param c_x: x center
+        :type c_x: float
 
+        :param c_y: y center
+        :type c_y: float
+
+        :param r_x: radius in x
+        :type r_x: float
+
+        :param r_y: radius in y
+        :type r_y: float
+
+        :return: boolean mask of data.shape
+        :rtype: numpy.array
 
     """
     a, b = c_y, c_x
@@ -315,12 +341,16 @@ def rmsd(residuals):
 def fix_params(params, to_fix):
     """ Set parameters to fix
 
-        Arguments:
-             -- params: lmfit parameters
-             -- to_fix: parameter name to fix
+         
+        :param params: lmfit parameters
+        :type params: lmfit.Parameters
 
-        Returns:
-            -- params: updated parameter object
+        :param to_fix: list of parameter name to fix
+        :type to_fix: list
+
+        :return: updated parameter object
+        :rtype: lmfit.Parameters
+
     """
     for k in params:
         for p in to_fix:
@@ -382,11 +412,11 @@ def to_prefix(x):
     Peak assignments with characters that are not compatible lmfit model naming
     are converted to lmfit "safe" names.
 
-    Arguments:
-        -- x: Peak assignment to be used as prefix for lmfit model
+    :param x: Peak assignment to be used as prefix for lmfit model
+    :type x: str
 
-    Returns:
-        -- prefix: _Peak_assignment_
+    :returns: lmfit model prefix (_Peak_assignment_)
+    :rtype: str
 
     """
     # must be string
@@ -416,18 +446,27 @@ def to_prefix(x):
 def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
     """ Make composite models for multiple peaks
 
-        Arguments:
-            -- model
-            -- peaks: instance of pandas.df.groupby("CLUSTID")
-            -- data: NMR data
-            -- lineshape: PV/G/L/PV_PV
-            -- xy_bounds: tuple containing bounds for peak centers (+/-x, +/-y)
+        :param model: lineshape function
+        :type model: function
 
-        Returns:
-            -- mod: Composite lmfit model containing all peaks
-            -- p_guess: params for composite model with starting values
+        :param peaks: instance of pandas.df.groupby("CLUSTID")
+        :type peaks: pandas.df.groupby("CLUSTID")
 
-        Maybe add mask making to this function
+        :param data: NMR data
+        :type data: numpy.array
+
+        :param lineshape: lineshape to use for fit (PV/G/L/PV_PV)
+        :type lineshape: str
+
+        :param xy_bounds: bounds for peak centers (+/-x, +/-y)
+        :type xy_bounds: tuple
+
+        :return mod: Composite lmfit model containing all peaks
+        :rtype mod: lmfit.CompositeModel
+
+        :return p_guess: params for composite model with starting values
+        :rtype p_guess: lmfit.Parameters
+
     """
     if len(peaks) == 1:
         # make model for first peak
@@ -455,9 +494,17 @@ def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
 def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
     """ Update lmfit parameters with values from Peak
 
-        Arguments:
-             -- params: lmfit parameter object
-             -- peaks: list of Peak objects that parameters correspond to
+        :param params: lmfit parameters 
+        :type params: lmfit.Parameters object
+        :param param_dict: parameters corresponding to each peak in fit
+        :type param_dict: dict
+        :param lineshape: lineshape (PV, G, L, PV_PV etc.)
+        :type lineshape: str
+        :param xy_bounds: bounds on xy peak positions
+        :type xy_bounds: tuple
+
+        :returns: None
+        :rtype: None
 
         ToDo:
              -- deal with boundaries
@@ -524,21 +571,44 @@ def fit_first_plane(
     uc_dics,
     lineshape="PV",
     xy_bounds=None,
-    plot=None,
-    show=True,
     verbose=False,
     log=None,
     noise=1.0,
 ):
-    """
-        Arguments:
+    """ Deconvolute group of peaks
 
-            group -- pandas data from containing group of peaks using groupby("CLUSTID")
-            data  -- NMR data
-            uc_dics -- unit conversion dics
-            lineshape -- PV/G/L/G_L/PV_L/PV_G
-            xy_bounds -- None or (x_bound, y_bound)
-            plot -- if True show wireframe plots
+        :param group: pandas data from containing group of peaks using groupby("CLUSTID")
+        :type group: pandas.core.groupby.generic.DataFrameGroupBy
+
+        :param data: NMR data
+        :type data: numpy.array
+
+        :param uc_dics: nmrglue unit conversion dics {"f1":uc_f1,"f2":uc_f2}
+        :type uc_dics: dict
+        
+        :param lineshape: lineshape to fit (PV, G, L, G_L, PV_L, PV_G or PV_PV)
+        :type lineshape: str
+
+        :param xy_bounds: set bounds on x y positions. None or (x_bound, y_bound)
+        :type xy_bounds: tuple
+
+        :param plot: dir to save wireframe plots
+        :type plot: str
+
+        :param show: interactive matplotlib plot
+        :type show: bool
+
+        :param verbose: print what is happening to terminal
+        :type verbose: bool
+
+        :param log: file
+        :type log: str
+
+        :param noise: estimate of spectral noise for calculation of :math:`\chi^2` and :math:`\chi^2_{red}`
+        :type noise: float
+
+        :return: FitResult
+        :rtype: FitResult
 
     """
     shape = data.shape
@@ -673,101 +743,10 @@ def fit_first_plane(
         Z=z_plot,
         Z_sim=z_sim
     )
-#   if plot != None:
-#       plot_path = Path(plot)
-
-#       # plotting
-#       fig = plt.figure()
-#       ax = fig.add_subplot(111, projection="3d")
-#       # slice out plot area
-#       x_plot = uc_dics["f2"].ppm(X[min_y:max_y, min_x:max_x])
-#       y_plot = uc_dics["f1"].ppm(Y[min_y:max_y, min_x:max_x])
-#       z_plot = z_plot[min_y:max_y, min_x:max_x]
-#       z_sim = z_sim[min_y:max_y, min_x:max_x]
-
-#       ax.set_title(
-#           "$\chi^2$=" + f"{chi2:.3f}, " + "$\chi_{red}^2$=" + f"{redchi:.4f}"
-#       )
-
-#       residual = z_plot - z_sim
-#       cset = ax.contourf(
-#           x_plot,
-#           y_plot,
-#           residual,
-#           zdir="z",
-#           offset=np.nanmin(z_plot) * 1.1,
-#           alpha=0.5,
-#           cmap=cm.coolwarm,
-#       )
-#       fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
-#       # plot raw data
-#       ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
-
-#       ax.set_xlabel("F2 ppm")
-#       ax.set_ylabel("F1 ppm")
-#       ax.plot_wireframe(
-#           x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
-#       )
-#       ax.invert_xaxis()
-#       ax.invert_yaxis()
-#       # Annotate plots
-#       labs = []
-#       Z_lab = []
-#       Y_lab = []
-#       X_lab = []
-#       for k, v in out.params.valuesdict().items():
-#           if "amplitude" in k:
-#               Z_lab.append(v)
-#               # get prefix
-#               labs.append(" ".join(k.split("_")[:-1]))
-#           elif "center_x" in k:
-#               X_lab.append(uc_dics["f2"].ppm(v))
-#           elif "center_y" in k:
-#               Y_lab.append(uc_dics["f1"].ppm(v))
-#       #  this is dumb as !£$@
-#       Z_lab = [
-#           data[
-#               int(round(uc_dics["f1"](y, "ppm"))), int(round(uc_dics["f2"](x, "ppm")))
-#           ]
-#           for x, y in zip(X_lab, Y_lab)
-#       ]
-
-#       for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
-#           # print(l, x, y, z)
-#           ax.text(x, y, z * 1.2, l, None)
-
-#       # plt.colorbar(contf)
-#       plt.legend(bbox_to_anchor=(1.2, 1.1))
-
-#       name = group.CLUSTID.iloc[0]
-#       if show:
-#           plt.savefig(plot_path / f"{name}.png", dpi=300)
-
-#           def exit_program(event):
-#               exit()
-
-#           def next_plot(event):
-#               plt.close()
-
-#           axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-#           bnexit = Button(axexit, "Exit")
-#            bnexit.on_clicked(exit_program)
-#
-#            axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
-#            bnnext = Button(axnext, "Next")
-#            bnnext.on_clicked(next_plot)
-#
-#            plt.show()
-#        else:
-#            plt.savefig(plot_path / f"{name}.png", dpi=300)
-#        #    print(p_guess)
-#        # close plot
-#        plt.close()
-    #return out, mask
 
 
 class FitResult:
-
+    """ Data structure for storing fit results """
     def __init__(self,
                  out: ModelResult,
                  mask: np.array,
@@ -907,20 +886,17 @@ class FitResult:
 
 
 class Pseudo3D:
-    """ Read dic, data from NMRGlue and dims from input to create a
-        Pseudo3D dataset
+    """Read dic, data from NMRGlue and dims from input to create a Pseudo3D dataset
 
-        Arguments:
-            dic  -- dic from nmrglue.pipe.read
-            data -- data from nmrglue.pipe.read
-            dims -- dimension order i.e [0,1,2]
-                    0 = planes, 1 = f1, 2 = f2
+       :param dic: from nmrglue.pipe.read
+       :type dic: dict
 
-        Methods:
+       :param data: data from nmrglue.pipe.read
+       :type data: numpy.array
 
-
-    """
-
+       :param dims: dimension order i.e [0,1,2] where 0 = planes, 1 = f1, 2 = f2
+       :type dims: list
+       """
     def __init__(self, dic, data, dims):
         # check dimensions
         self._udic = ng.pipe.guess_udic(dic, data)
@@ -1066,210 +1042,3 @@ class Pseudo3D:
 #    uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
 #    ppm_f2 = uc_f2.ppm_scale()
 #    ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
-
-
-class Fit:
-    """ Class for fitting planes: NOT CURRENTLY USED """
-
-    def __init__(
-        self,
-        group,
-        data,
-        udics,
-        model=pvoigt2d,
-        lineshape="PV",
-        plot=None,
-        show=True,
-        verbose=False,
-        log=None,
-    ):
-
-        """
-            Arguments:
-
-                group -- pandas data from containing group of peaks using groupby("CLUSTID")
-                data  -- NMR data cube
-                uc_dics -- unit conversion dics
-                lineshape -- PV/G/L
-                plot -- if True show wireframe plots
-                show -- whether or not to show the plot using plt.show()
-                verbose -- whether or not to print results
-                log -- filehandle for log file
-        """
-        self.group = group
-        self.data = data
-        self.udics = udics
-        self.model = model
-        self.lineshape = lineshape
-        self.log = log
-        self.show = show
-        self.plot = plot
-
-    def first_plane(self):
-
-        """ Fit first plane """
-
-        summed_planes = self.data.sum(axis=0)
-        # create boolean mask
-        self.mask = np.zeros(self.data.shape, dtype=bool)
-        #  make models
-        self.mod, self.p_guess = make_models(
-            self.model, self.group, self.data, lineshape=self.lineshape
-        )
-
-        ## get initial peak centers
-        # self.cen_x = [self.p_guess[k].value for k in self.p_guess if "center_x" in k]
-        # self.cen_y = [self.p_guess[k].value for k in self.p_guess if "center_y" in k]
-
-        for index, peak in self.group.iterrows():
-            # generate boolean mask based on peak locations and radii
-            self.mask += make_mask(
-                self.data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
-            )
-
-        # needs checking since this may not center peaks
-        x_radius = self.group.X_RADIUS.max()
-        y_radius = self.group.Y_RADIUS.max()
-        self.max_x, self.min_x = (
-            int(np.ceil(max(self.group.X_AXISf) + x_radius + 1)),
-            int(np.floor(min(self.group.X_AXISf) - x_radius)),
-        )
-        self.max_y, self.min_y = (
-            int(np.ceil(max(self.group.Y_AXISf) + y_radius + 1)),
-            int(np.floor(min(self.group.Y_AXISf) - y_radius)),
-        )
-        # self.max_x, self.min_x = (
-        #    int(np.ceil(max(self.group.X_AXISf) + x_radius + 2)),
-        #    int(np.floor(min(self.group.X_AXISf) - x_radius - 1)),
-        # )
-        # self.max_y, self.min_y = (
-        #    int(np.ceil(max(self.group.Y_AXISf) + y_radius + 2)),
-        #    int(np.floor(min(self.group.Y_AXISf) - y_radius - 1)),
-        # )
-
-        peak_slices = self.data[mask]
-
-        # must be a better way to make the meshgrid
-        # starts from 1
-        # x = np.arange(1, data.shape[-1] + 1)
-        # y = np.arange(1, data.shape[-2] + 1)
-        x = np.arange(data.shape[-1])
-        y = np.arange(data.shape[-2])
-        self.xy_grid = np.meshgrid(x, y)
-        self.x_grid, self.y_grid = self.xy_grid
-
-        # mask mesh data
-        xy_slices = [x_grid[mask], y_grid[mask]]
-        #  fit data
-        self.out = self.mod.fit(peak_slices, XY=xy_slices, params=self.p_guess)
-        if verbose:
-            print(self.out.fit_report())
-
-    def chi_squared(self):
-
-        # calculate chi2
-        z_sim = self.mod.eval(XY=self.xy_grid, params=self.out.params)
-        z_sim[~mask] = np.nan
-        z_plot = data.copy()
-        z_plot[~mask] = np.nan
-
-        norm_z = (z_plot - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
-        norm_sim = (z_sim - np.nanmin(z_plot)) / (np.nanmax(z_plot) - np.nanmin(z_plot))
-        _norm_z = norm_z[~np.isnan(norm_z)]
-        _norm_sim = norm_sim[~np.isnan(norm_sim)]
-        chi2 = np.sum((_norm_z - _norm_sim) ** 2.0 / _norm_sim)
-
-        #  number of peaks in cluster
-        n_peaks = len(group)
-        chi2 = chi2 / n_peaks
-        if chi2 < 1:
-            chi_str = (
-                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-            )
-            print(
-                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f}"
-            )
-        else:
-            chi_str = f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-            print(
-                f"Cluster {peak.CLUSTID} containing {n_peaks} peaks - chi2={chi2:.3f} - NEEDS CHECKING"
-            )
-
-        if log != None:
-            log.write(chi_str + "\n")
-        else:
-            pass
-
-    def plot_fit(self):
-
-        if plot != None:
-            plot_path = Path(plot)
-
-            # plotting
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-            # slice out plot area
-            x_plot = uc_dics["f2"].ppm(X[min_y:max_y, min_x:max_x])
-            y_plot = uc_dics["f1"].ppm(Y[min_y:max_y, min_x:max_x])
-            z_plot = z_plot[min_y:max_y, min_x:max_x]
-            z_sim = z_sim[min_y:max_y, min_x:max_x]
-
-            ax.set_title("$\chi^2$=" + f"{chi2:.3f}")
-
-            # plot raw data
-            ax.plot_wireframe(x_plot, y_plot, z_plot, color="k")
-
-            ax.set_xlabel("F2 ppm")
-            ax.set_ylabel("F1 ppm")
-            ax.plot_wireframe(
-                x_plot, y_plot, z_sim, colors="r", linestyle="--", label="fit"
-            )
-            ax.invert_xaxis()
-            ax.invert_yaxis()
-            # Annotate plots
-            labs = []
-            Z_lab = []
-            Y_lab = []
-            X_lab = []
-            for k, v in out.params.valuesdict().items():
-                if "amplitude" in k:
-                    Z_lab.append(v)
-                    # get prefix
-                    labs.append(" ".join(k.split("_")[:-1]))
-                elif "center_x" in k:
-                    X_lab.append(uc_dics["f2"].ppm(v))
-                elif "center_y" in k:
-                    Y_lab.append(uc_dics["f1"].ppm(v))
-            #  this is dumb as !£$@
-            Z_lab = [
-                data[
-                    int(round(uc_dics["f1"](y, "ppm"))),
-                    int(round(uc_dics["f2"](x, "ppm"))),
-                ]
-                for x, y in zip(X_lab, Y_lab)
-            ]
-
-            for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
-                # print(l, x, y, z)
-                ax.text(x, y, z * 1.4, l, None)
-
-            # plt.colorbar(contf)
-            plt.legend()
-
-            name = group.CLUSTID.iloc[0]
-            if show:
-                plt.savefig(plot_path / f"{name}.png", dpi=300)
-
-                def exit_program(event):
-                    exit()
-
-                axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-                bnexit = Button(axexit, "Exit")
-                bnexit.on_clicked(exit_program)
-                plt.show()
-            else:
-                plt.savefig(plot_path / f"{name}.png", dpi=300)
-            #    print(p_guess)
-            # close plot
-            plt.close()
-        return out, mask

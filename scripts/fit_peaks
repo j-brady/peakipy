@@ -415,10 +415,7 @@ def fit_peaks(peaks):
                 uc_dics,
                 lineshape=lineshape,
                 xy_bounds=xy_bounds,
-                plot=plot,
-                show=args.get("--show"),
                 verbose=verb,
-                #log=log,
                 noise=noise,
             )
             fit_result.plot(plot_path=plot, show=args.get('--show'), nomp=args.get('--nomp'))
