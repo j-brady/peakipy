@@ -43,7 +43,6 @@ from matplotlib.cm import magma, autumn
 
 from scipy import ndimage
 
-# from scipy.ndimage.morphology import binary_dilation
 from skimage.filters import threshold_otsu
 from skimage.morphology import binary_closing, square, rectangle, disk
 
@@ -67,6 +66,8 @@ from bokeh.models.widgets import (
     RadioButtonGroup,
     CheckboxGroup,
     Div,
+    Tabs,
+    Panel,
 )
 from bokeh.plotting import figure
 from bokeh.io import curdoc
@@ -469,7 +470,6 @@ p = figure(
     y_range=(ppm_f1_0, ppm_f1_1),
     x_axis_label=f"{f2_label} - ppm",
     y_axis_label=f"{f1_label} - ppm",
-    title="Check fits",
     tools=tools,
     active_drag="pan",
     active_scroll="wheel_zoom",
@@ -489,7 +489,7 @@ p.multi_line(xs="xs", ys="ys", line_color="line_color", source=spec_source)
 p.multi_line(xs="xs", ys="ys", line_color="line_color", source=spec_source_neg)
 # contour_num = Slider(title="contour number", value=20, start=1, end=50,step=1)
 # contour_start = Slider(title="contour start", value=100000, start=1000, end=10000000,step=1000)
-contour_start = TextInput(value="%.2e" % thres, title="Contour level:")
+contour_start = TextInput(value="%.2e" % thres, title="Contour level:", width=100)
 # contour_factor = Slider(title="contour factor", value=1.20, start=1., end=2.,step=0.05)
 contour_start.on_change("value", update_contour)
 # for w in [contour_num,contour_start,contour_factor]:
@@ -565,18 +565,28 @@ slider_Y_RADIUS.on_change(
 
 # save file
 savefilename = TextInput(
-    title="Save file as (.csv or .pkl)", placeholder="edited_peaks.csv"
+    title="Save file as (.csv)", placeholder="edited_peaks.csv"
 )
 button = Button(label="Save", button_type="success")
 button.on_event(ButtonClick, save_peaks)
+
 # call fit_peaks
 fit_button = Button(label="Fit selected cluster", button_type="primary")
+# lineshape selection
+lineshapes = {0: "PV",
+              1: "G",
+              2: "L",
+              3: "PV_PV",
+              4: "PV_L",
+              5: "PV_G",
+              6: "G_L"
+              }
 radio_button_group = RadioButtonGroup(
-    labels=["PV", "G", "L", "PV_L", "PV_G", "PV_PV", "G_L"], active=0
+    labels=[lineshapes[i] for i in lineshapes.keys()], active=0
 )
-lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_L", 4: "PV_G", 5: "PV_PV", 6: "G_L"}
 ls_div = Div(
-    text="Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G), Lorentzian (L), PV/G, PV/L, PV_PV, G/L. PV/G fits a PV lineshape to the direct dimension and a G lineshape to the indirect."
+    text="""Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G), Lorentzian (L),
+    PV/G, PV/L, PV_PV, G/L. PV/G fits a PV lineshape to the direct dimension and a G lineshape to the indirect."""
 )
 clust_div = Div(
     text="""If you want to adjust how the peaks are automatically clustered then try changing the
@@ -584,7 +594,15 @@ clust_div = Div(
         (you can also remove it by selecting 'None'). Increasing the size of the structuring element will cause
         peaks to be more readily incorporated into clusters."""
 )
+intro_div = Div(
+    text="""<h2>peakipy - interactive fit adjustment </h2> 
+    """,
+)
 
+doc_link = Div(
+    text="<a href='https://j-brady.github.io/peakipy/build/usage/instructions.html', target='_blank'>click here for documentation</a>"
+)
+# Plane selection
 select_planes_list = [f"{i+1}" for i in range(data.shape[planes])]
 select_plane = Select(title="Select plane:", value=select_planes_list[0], options=select_planes_list)
 select_planes_dic = {f"{i+1}":i for i in range(data.shape[planes])} 
@@ -599,21 +617,6 @@ selected_df = df.copy()
 
 fit_button.on_event(ButtonClick, fit_selected)
 
-# selected_columns = [
-#    "ASS",
-#    "CLUSTID",
-#    "X_PPM",
-#    "Y_PPM",
-#    "X_RADIUS_PPM",
-#    "Y_RADIUS_PPM",
-#    "XW_HZ",
-#    "YW_HZ",
-#    "VOL",
-#    "include",
-#    "MEMCNT",
-# ]
-#
-# columns = [TableColumn(field=field, title=field) for field in selected_columns]
 columns = [
     TableColumn(field="ASS", title="Assignment"),
     TableColumn(field="CLUSTID", title="Cluster", editor=IntEditor()),
@@ -661,48 +664,58 @@ columns = [
 ]
 
 data_table = DataTable(
-    source=source, columns=columns, editable=True, fit_columns=True, width=800
+    source=source, columns=columns, editable=True, fit_columns=True
 )
 
 # callback for adding
 # source.selected.on_change('indices', callback)
 source.selected.on_change("indices", select_callback)
 
-# controls = column(slider, button)
+# Quit button
 exit_button = Button(label="Quit", button_type="warning")
 exit_button.on_event(ButtonClick, exit_edit_peaks)
 
-controls = column(
-    row(slider_X_RADIUS, slider_Y_RADIUS),
+# Document layout
+fitting_controls = column(
+
+    row(column(slider_X_RADIUS, slider_Y_RADIUS),
+        column(contour_start, fit_button)),
     row(
-        column(contour_start, fit_button, widgetbox(ls_div), radio_button_group),
-        column(savefilename, button, exit_button),
+        column(widgetbox(ls_div), radio_button_group),
+        column(select_plane, widgetbox(checkbox_group)),
     ),
-    row(select_plane, checkbox_group)
 )
 
-# widgetbox(radio_button_group)
+# reclustering tab
 struct_el = Select(
     title="Structuring element:",
     value="disk",
     options=["square", "disk", "rectangle", "None"],
+    width=100,
+)
+struct_el_size = TextInput(
+    value="3", title="Size(width/radius or width,height for rectangle):", width=100,
 )
 
-struct_el_size = TextInput(
-    value="3", title="Size(width/radius or width,height for rectangle):"
-)
-# iterations = TextInput(value="1", title="Number of iterations of binary dilation")
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)
 
-# cluster_widget = widgetbox(struct_el, struct_el_size)
-# recluster)
+fitting_layout = fitting_controls
+recluster_layout = widgetbox(row(clust_div,  column(contour_start, struct_el, struct_el_size, recluster)))
+save_layout = column(savefilename, button, exit_button)
+
+fitting_tab = Panel(child=fitting_layout, title="Peak fitting")
+recluster_tab = Panel(child=recluster_layout, title="Re-cluster peaks")
+save_tab = Panel(child=save_layout, title="Save")
+tabs = Tabs(tabs=[fitting_tab, recluster_tab, save_tab])
+
 curdoc().add_root(
-    row(
-        column(p, widgetbox(clust_div), row(struct_el, struct_el_size), recluster),
-        column(data_table, controls),
-    )
+    column(intro_div,
+        row(
+            column(p,doc_link),
+            column(data_table, tabs),
+        ),
+        sizing_mode='stretch_both',
+    ),
 )
 curdoc().title = "peakipy: Edit Fits"
-# curdoc().theme = 'dark_minimal'
-# update()
