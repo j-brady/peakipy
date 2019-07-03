@@ -29,11 +29,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-import os
+import shutil
 import json
 
 from docopt import docopt
 from pathlib import Path
+from subprocess import check_output
 
 import pandas as pd
 import nmrglue as ng
@@ -59,8 +60,6 @@ from bokeh.models.widgets import (
     NumberFormatter,
     NumberEditor,
     IntEditor,
-    StringEditor,
-    StringFormatter,
     SelectEditor,
     TextInput,
     RadioButtonGroup,
@@ -79,12 +78,21 @@ from peakipy.core import Pseudo3D
 def clusters(df, data, thres=None, struc_el="square", struc_size=(3,)):
     """ Find clusters of peaks
 
-    Need to update these docs.
+    :param thres: threshold for signals above which clusters are selected
+    :type thres : float
 
-    thres : float
-        threshold for signals above which clusters are selected
-    ndil: int
-        number of iterations of ndimage.binary_dilation function if set to 0 then function not used
+    :param df: DataFrame containing peak list
+    :type df: pandas.DataFrame
+
+    :param data: NMR data
+    :type data: numpy.array
+
+    :param struc_el:
+    :type struc_el:
+
+    :param struc_size:
+    :type struc_size:
+
     """
 
     peaks = [[y, x] for y, x in zip(df.Y_AXIS, df.X_AXIS)]
@@ -118,10 +126,10 @@ def clusters(df, data, thres=None, struc_el="square", struc_size=(3,)):
         closed_data = thresh_data
         print(f"Not using any closing function")
 
-    labeled_array, num_features = ndimage.label(closed_data)#, l_struc)
+    labeled_array, num_features = ndimage.label(closed_data)
     # print(labeled_array, num_features)
 
-    df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+    df.loc[:, "CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
 
     #  renumber "0" clusters
     max_clustid = df["CLUSTID"].max()
@@ -133,7 +141,7 @@ def clusters(df, data, thres=None, struc_el="square", struc_size=(3,)):
     for ind, group in df.groupby("CLUSTID"):
         df.loc[group.index, "MEMCNT"] = len(group)
 
-    df["color"] = df.apply(
+    df.loc[:, "color"] = df.apply(
         lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
         axis=1,
     )
@@ -199,21 +207,18 @@ def fit_selected(event):
     lineshape = lineshapes[radio_button_group.active]
     if checkbox_group.active == []:
         print("Using LS = ", lineshape)
-        print(
-            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --nomp"
-        )
-        os.system(
-            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --nomp"
-        )
+        fit_command = f"peakipy fit ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --nomp"
     else:
         plane_index = select_plane.value
         print("Using LS = ", lineshape)
-        print(
-            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --plane={plane_index} --nomp"
-        )
-        os.system(
-            f"fit_peaks ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --plane={plane_index} --nomp"
-        )
+        fit_command = f"peakipy fit ~tmp.csv {data_path} ~tmp_out.csv --plot=out --show --lineshape={lineshape} --dims={_dims} --plane={plane_index} --nomp"
+
+    print(fit_command)
+    fit_reports.text += fit_command + "<br>"
+
+    stdout = check_output(fit_command.split(" "))
+    fit_reports.text += stdout.decode() + "<br><hr><br>"
+    fit_reports.text = fit_reports.text.replace("\n", "<br>")
 
 
 def save_peaks(event):
@@ -223,7 +228,7 @@ def save_peaks(event):
         to_save = Path(savefilename.placeholder)
 
     if to_save.exists():
-        os.system(f"cp {to_save} {to_save}.bak")
+        shutil.copy(f"{to_save}", f"{to_save}.bak")
         print(f"Making backup {to_save}.bak")
 
     print(f"Saving peaks to {to_save}")
@@ -274,8 +279,8 @@ def peak_pick_callback(event):
         "VOL": volume,
         "XW_HZ": xw_hz,
         "YW_HZ": yw_hz,
-        "X_AXIS": x_axis,
-        "Y_AXIS": y_axis,
+        "X_AXIS": int(np.floor(x_axis)),  # integers
+        "Y_AXIS": int(np.floor(y_axis)),  # integers
         "X_AXISf": x_axis,
         "Y_AXISf": y_axis,
         "XW": xw,
@@ -362,7 +367,7 @@ def update_contour(attrname, old, new):
     cl = new_cs * contour_factor ** np.arange(contour_num)
     plane_index = select_planes_dic[select_plane.value]
     spec_source.data = get_contour_data(data[plane_index], cl, extent=extent).data
-    #print("Value of checkbox",checkbox_group.active)
+    # print("Value of checkbox",checkbox_group.active)
 
 
 def exit_edit_peaks(event):
@@ -402,6 +407,10 @@ else:
 df["color"] = df.apply(
     lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black", axis=1
 )
+
+# get rid of unnamed columns
+unnamed_cols = [i for i in df.columns if "Unnamed:" in i]
+df = df.drop(columns=unnamed_cols)
 
 # make datasource
 source = ColumnDataSource(data=dict())
@@ -564,23 +573,14 @@ slider_Y_RADIUS.on_change(
 )
 
 # save file
-savefilename = TextInput(
-    title="Save file as (.csv)", placeholder="edited_peaks.csv"
-)
+savefilename = TextInput(title="Save file as (.csv)", placeholder="edited_peaks.csv")
 button = Button(label="Save", button_type="success")
 button.on_event(ButtonClick, save_peaks)
 
 # call fit_peaks
 fit_button = Button(label="Fit selected cluster", button_type="primary")
 # lineshape selection
-lineshapes = {0: "PV",
-              1: "G",
-              2: "L",
-              3: "PV_PV",
-              4: "PV_L",
-              5: "PV_G",
-              6: "G_L"
-              }
+lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_PV", 4: "PV_L", 5: "PV_G", 6: "G_L"}
 radio_button_group = RadioButtonGroup(
     labels=[lineshapes[i] for i in lineshapes.keys()], active=0
 )
@@ -592,25 +592,30 @@ clust_div = Div(
     text="""If you want to adjust how the peaks are automatically clustered then try changing the
         width/diameter/height (integer values) of the structuring element used during the binary dilation step
         (you can also remove it by selecting 'None'). Increasing the size of the structuring element will cause
-        peaks to be more readily incorporated into clusters."""
+        peaks to be more readily incorporated into clusters. Be sure to save your peak list before doing this as
+        any manual edits will be lost."""
 )
 intro_div = Div(
     text="""<h2>peakipy - interactive fit adjustment </h2> 
-    """,
+    """
 )
 
 doc_link = Div(
-    text="<a href='https://j-brady.github.io/peakipy/build/usage/instructions.html', target='_blank'>click here for documentation</a>"
+    text="<h3><a href='https://j-brady.github.io/peakipy/build/usage/instructions.html', target='_blank'> ℹ️ click here for documentation</a></h3>"
+)
+
+fit_reports = Div(
+    text="", height=400, sizing_mode="scale_width", style={"overflow-y": "scroll"}
 )
 # Plane selection
 select_planes_list = [f"{i+1}" for i in range(data.shape[planes])]
-select_plane = Select(title="Select plane:", value=select_planes_list[0], options=select_planes_list)
-select_planes_dic = {f"{i+1}":i for i in range(data.shape[planes])} 
-select_plane.on_change("value",update_contour)
+select_plane = Select(
+    title="Select plane:", value=select_planes_list[0], options=select_planes_list
+)
+select_planes_dic = {f"{i+1}": i for i in range(data.shape[planes])}
+select_plane.on_change("value", update_contour)
 
-checkbox_group = CheckboxGroup(
-        labels=["fit current plane only"], active=[],
-        )
+checkbox_group = CheckboxGroup(labels=["fit current plane only"], active=[])
 
 #  not sure this is needed
 selected_df = df.copy()
@@ -663,9 +668,7 @@ columns = [
     TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
 ]
 
-data_table = DataTable(
-    source=source, columns=columns, editable=True, fit_columns=True
-)
+data_table = DataTable(source=source, columns=columns, editable=True, fit_columns=True)
 
 # callback for adding
 # source.selected.on_change('indices', callback)
@@ -677,9 +680,7 @@ exit_button.on_event(ButtonClick, exit_edit_peaks)
 
 # Document layout
 fitting_controls = column(
-
-    row(column(slider_X_RADIUS, slider_Y_RADIUS),
-        column(contour_start, fit_button)),
+    row(column(slider_X_RADIUS, slider_Y_RADIUS), column(contour_start, fit_button)),
     row(
         column(widgetbox(ls_div), radio_button_group),
         column(select_plane, widgetbox(checkbox_group)),
@@ -694,28 +695,38 @@ struct_el = Select(
     width=100,
 )
 struct_el_size = TextInput(
-    value="3", title="Size(width/radius or width,height for rectangle):", width=100,
+    value="3", title="Size(width/radius or width,height for rectangle):", width=100
 )
 
 recluster = Button(label="Re-cluster", button_type="warning")
 recluster.on_event(ButtonClick, recluster_peaks)
 
+# edit_fits tabs
 fitting_layout = fitting_controls
-recluster_layout = widgetbox(row(clust_div,  column(contour_start, struct_el, struct_el_size, recluster)))
+log_layout = fit_reports
+recluster_layout = widgetbox(
+    row(clust_div, column(contour_start, struct_el, struct_el_size, recluster))
+)
 save_layout = column(savefilename, button, exit_button)
 
 fitting_tab = Panel(child=fitting_layout, title="Peak fitting")
+log_tab = Panel(child=log_layout, title="Log")
 recluster_tab = Panel(child=recluster_layout, title="Re-cluster peaks")
-save_tab = Panel(child=save_layout, title="Save")
-tabs = Tabs(tabs=[fitting_tab, recluster_tab, save_tab])
+save_tab = Panel(child=save_layout, title="Save edited peaklist")
+tabs = Tabs(tabs=[fitting_tab, log_tab, recluster_tab, save_tab])
+
+# for running fit_peaks from edit_fits
+# fit_all_layout =
+# fit_all_tab = Panel(child=fit_all_layout)
+# fit_all_result = Panel(child=fit_all_result_layout)
+# fit_all_tabs = Tabs(tabs=[fit_all_tab, fit_all_result])
+
 
 curdoc().add_root(
-    column(intro_div,
-        row(
-            column(p,doc_link),
-            column(data_table, tabs),
-        ),
-        sizing_mode='stretch_both',
-    ),
+    column(
+        intro_div,
+        row(column(p, doc_link), column(data_table, tabs)),
+        sizing_mode="stretch_both",
+    )
 )
 curdoc().title = "peakipy: Edit Fits"

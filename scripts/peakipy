@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""
+Usage: peakipy <command> [<args>...]
+
+Options:
+   -h, --help
+
+peakipy commands are:
+   read     Read peaklist and generate initial peak clusters 
+   edit     Interactively edit fit parameters
+   fit      Fit peaks
+   check    Check individual fits and generate plots
+
+See 'peakipy help <command>' for more information on a specific command.
+
+"""
+from subprocess import call
+
+from docopt import docopt
+
+
+if __name__ == '__main__':
+
+    args = docopt(__doc__,
+                  version='peakipy version 0.1.17',
+                  options_first=True)
+
+    argv = [args['<command>']] + args['<args>']
+    if args['<command>'] == 'read':
+        import read_peaklist
+        docopt(read_peaklist.__doc__, argv=argv)
+    elif args['<command>'] == 'fit':
+        import fit_peaks
+        docopt(fit_peaks.__doc__, argv=argv)
+    elif args['<command>'] == 'edit':
+        import edit_fits
+        docopt(edit_fits.__doc__, argv=argv)
+    elif args['<command>'] == 'check':
+        import check_fits
+        docopt(check_fits.__doc__, argv=argv)
+    else:
+        exit("%r is not a peakipy command. See 'peakipy help'." % args['<command>'])

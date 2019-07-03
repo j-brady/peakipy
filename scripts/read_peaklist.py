@@ -95,7 +95,7 @@ import nmrglue as ng
 
 from docopt import docopt
 from scipy import ndimage
-from skimage.morphology import square, binary_closing, opening, disk, rectangle
+from skimage.morphology import square, binary_closing, disk, rectangle
 from skimage.filters import threshold_otsu
 
 from peakipy.core import make_mask, Pseudo3D, run_log
@@ -155,6 +155,7 @@ sparky_to_pipe = {
     # "": "CLUSTID",
     # "": "MEMCNT"
 }
+
 
 class Peaklist:
     """ Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
@@ -306,18 +307,17 @@ class Peaklist:
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks
 
-        thres : float
-            threshold for positive signals above which clusters are selected. If None then
-            threshold_otsu is used
+        :param thres: threshold for positive signals above which clusters are selected. If None then threshold_otsu is used
+        :type thres: float
 
-        struc_el: str
-            'square'|'disk'|'rectangle'
+        :param struc_el: 'square'|'disk'|'rectangle'
             structuring element for binary_closing of thresholded data can be square, disc or rectangle
+        :type struc_el: str
 
-        struc_size: tuple
-            size/dimensions of structuring element
+        :param struc_size: size/dimensions of structuring element
             for square and disk first element of tuple is used (for disk value corresponds to radius)
             for rectangle, tuple corresponds to (width,height).
+        :type struc_size: tuple
 
 
         """
@@ -442,7 +442,8 @@ class Peaklist:
                 overlap_peaks_str = ";".join(group.ASS)
                 overlap_peaks += f"OVERLAP_PEAKS=({overlap_peaks_str})\n"
 
-        fuda_file = textwrap.dedent(f"""\
+        fuda_file = textwrap.dedent(
+            f"""\
 # Read peaklist and spectrum info
 PEAKLIST=peaks.fuda
 SPECFILE={self.data_path}
@@ -459,7 +460,8 @@ DEF_RADIUS_F1={self.f1radius}
 DEF_RADIUS_F2={self.f2radius}
 SHAPE=GLORE
 # OVERLAP PEAKS
-{overlap_peaks}""")
+{overlap_peaks}"""
+        )
         with open(fuda_params, "w") as f:
             f.write(fuda_file)
         print(overlap_peaks)
@@ -535,16 +537,16 @@ if __name__ == "__main__":
         #  add dims
         config_dic = dict(
             [
-                ('--dims', dims),
-                ('<data>', pipe_ft_file),
-                ('--thres', float(thres)),
-                ('--f1radius', f1radius),
-                ('--f2radius', f2radius),
+                ("--dims", dims),
+                ("<data>", pipe_ft_file),
+                ("--thres", float(thres)),
+                ("--f1radius", f1radius),
+                ("--f2radius", f2radius),
             ]
         )
         # write json
         config.write(json.dumps(config_dic, sort_keys=True, indent=4))
-        #json.dump(config_dic, fp=config, sort_keys=True, indent=4)
+        # json.dump(config_dic, fp=config, sort_keys=True, indent=4)
 
     run_log()
 

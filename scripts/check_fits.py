@@ -60,7 +60,6 @@ from peakipy.core import (
     pv_g,
     pv_l,
     gaussian_lorentzian,
-    make_models,
     Pseudo3D,
     run_log,
 )

@@ -91,16 +91,17 @@ def check_xybounds(x):
         exit()
 
 
-def split_peaklist(peaklist,n_cpu):
+def split_peaklist(peaklist, n_cpu):
     """ split peaklist into smaller files based on number of cpus"""
-    tmp = Path("./tmp/")
-    tmp.mkdir(exist_ok=True)
+    tmp_path = Path("tmp")
+    tmp_path.mkdir(exist_ok=True)
     clustids = peaklist.CLUSTID.unique()
-    window = int(np.ceil(len(clustids)/n_cpu))
-    clustids = [clustids[i:i+window] for i in range(0,len(clustids),window)]
+    window = int(np.ceil(len(clustids) / n_cpu))
+    clustids = [clustids[i : i + window] for i in range(0, len(clustids), window)]
     for i in range(n_cpu):
         split_peaks = peaklist[peaklist.CLUSTID.isin(clustids[i])]
-        split_peaks.to_csv(tmp / f"peaks_{i}.csv", index=False)
+        split_peaks.to_csv(tmp_path / f"peaks_{i}.csv", index=False)
+    return tmp_path
 
 
 # number of CPUs
@@ -163,18 +164,20 @@ schema = Schema(
                 error="🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
             ),
         ),
-        "--plane": Or(0,
-                Use(
-                lambda n: [int(i) for i in n.split(',')],
+        "--plane": Or(
+            0,
+            Use(
+                lambda n: [int(i) for i in n.split(",")],
                 error="🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
-                ),
             ),
-        "--exclude_plane": Or(0,
-                Use(
-                lambda n: [int(i) for i in n.split(',')],
+        ),
+        "--exclude_plane": Or(
+            0,
+            Use(
+                lambda n: [int(i) for i in n.split(",")],
                 error="🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
-                ),
             ),
+        ),
         object: object,
     },
     # ignore_extra_keys=True,
@@ -280,22 +283,22 @@ if len(dims) != len(data.shape):
     print(f"Dims are {dims} while data shape is {data.shape}?")
     exit()
 
-if args.get("--plane",[0]) != [0]:
+if args.get("--plane", [0]) != [0]:
     _inds = args.get("--plane")
-    inds = [i-1 for i in _inds]
-    data_inds = [(i in inds) for i in range(data.shape[dims[0]])] 
+    inds = [i - 1 for i in _inds]
+    data_inds = [(i in inds) for i in range(data.shape[dims[0]])]
     data = data[data_inds]
-    print(f"Using only planes {_inds} data now has the following shape",data.shape)
+    print(f"Using only planes {_inds} data now has the following shape", data.shape)
     if data.shape[dims[0]] == 0:
         print("You have excluded all the data!", data.shape)
         exit()
 
-if args.get("--exclude_plane",[0]) != [0]:
+if args.get("--exclude_plane", [0]) != [0]:
     _inds = args.get("--exclude_plane")
-    inds = [i-1 for i in _inds]
-    data_inds = [(i not in inds) for i in range(data.shape[dims[0]])] 
+    inds = [i - 1 for i in _inds]
+    data_inds = [(i not in inds) for i in range(data.shape[dims[0]])]
     data = data[data_inds]
-    print(f"Excluding planes {_inds} data now has the following shape",data.shape)
+    print(f"Excluding planes {_inds} data now has the following shape", data.shape)
     if data.shape[dims[0]] == 0:
         print("You have excluded all the data!", data.shape)
         exit()
@@ -379,7 +382,6 @@ else:
 
 
 class FitPeaksResult:
-
     def __init__(self, df: pd.DataFrame, log: str):
 
         self.df = df
@@ -418,17 +420,19 @@ def fit_peaks(peaks):
                 verbose=verb,
                 noise=noise,
             )
-            fit_result.plot(plot_path=plot, show=args.get('--show'), nomp=args.get('--nomp'))
+            fit_result.plot(
+                plot_path=plot, show=args.get("--show"), nomp=args.get("--nomp")
+            )
             first = fit_result.out
             mask = fit_result.mask
-#            log.write(
+            #            log.write(
             out_str += f"""
         ------------------------------------
                    Summed planes
         ------------------------------------
         {first.fit_report()}
                         """
-#            )
+            #            )
             # fix sigma center and fraction parameters
             # could add an option to select params to fix
             if len(to_fix) == 0 or to_fix == "None":
@@ -442,7 +446,7 @@ def fit_peaks(peaks):
                 if verb:
                     print(float_str)
                 fix_params(first.params, to_fix)
-            out_str += float_str + '\n'
+            out_str += float_str + "\n"
 
             for num, d in enumerate(data):
 
@@ -452,14 +456,14 @@ def fit_peaks(peaks):
                     weights=1.0 / np.array([noise] * len(np.ravel(d[mask]))),
                 )
                 fit_report = first.fit_report()
-                #log.write(
+                # log.write(
                 out_str += f"""
         ------------------------------------
                      Plane = {num+1}
         ------------------------------------
         {fit_report}
                         """
- #               )
+                #               )
                 if verb:
                     print(fit_report)
 
@@ -557,17 +561,17 @@ def fit_peaks(peaks):
     return FitPeaksResult(df=df, log=out_str)
 
 
-if (peaks.CLUSTID.nunique()>=n_cpu) and not args.get('--nomp'):
+if (peaks.CLUSTID.nunique() >= n_cpu) and not args.get("--nomp"):
     print("Using multiprocessing")
     # split peak lists
-    split_peaklist(peaks, n_cpu)
-    peaklists = [pd.read_csv(f"./tmp/peaks_{i}.csv") for i in range(n_cpu)]
+    tmp_dir = split_peaklist(peaks, n_cpu)
+    peaklists = [pd.read_csv(tmp_dir / f"peaks_{i}.csv") for i in range(n_cpu)]
     with Pool(processes=n_cpu) as pool:
         result = pool.map(fit_peaks, peaklists)
-        result_df = pd.concat([i.df for i in result],ignore_index=True)
-        for num,i in enumerate(result):
-            i.df.to_csv(f"tmp/peaks_{num}_fit.csv",index=False)
-            log_file.write(i.log+'\n')
+        result_df = pd.concat([i.df for i in result], ignore_index=True)
+        for num, i in enumerate(result):
+            i.df.to_csv(tmp_dir / f"peaks_{num}_fit.csv", index=False)
+            log_file.write(i.log + "\n")
 else:
     print("Not using multiprocessing")
     result = fit_peaks(peaks)

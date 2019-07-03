@@ -57,6 +57,7 @@
 
 """
 import os
+import shutil
 
 import yaml
 import nmrglue as ng
@@ -64,7 +65,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from matplotlib.patches import Ellipse
 from matplotlib import cm
 from docopt import docopt
 
@@ -98,7 +98,7 @@ def make_yaml_file(name, yaml_file=yaml_file):
 
     if os.path.exists(name):
         print(f"Copying {name} to {name}.bak")
-        os.system(f"cp {name} {name}.bak")
+        shutil.copy(name,f"{name}.bak")
 
     print(f"Making yaml file ... {name}")
     with open(name, "w") as new_yaml_file:

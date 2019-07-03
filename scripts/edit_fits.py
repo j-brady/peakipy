@@ -18,7 +18,7 @@ from shutil import which
 
 import nmrglue as ng
 from docopt import docopt
-from schema import Schema, And, Or, Use, SchemaError
+from schema import Schema, And, SchemaError
 
 from peakipy.core import run_log
 
