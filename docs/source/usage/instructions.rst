@@ -17,7 +17,7 @@ Example of tab delimited peak list exported directly from Analysis2::
 
 
 Note that the Position F1 and Position F2 are actually the wrong way round (i.e. F1=x and F2=y). I think this happens by default with Analysis2, however, you can chastise me for being an idiot if I'm wrong.
-``read_peaklist`` will flip them around, so beware.
+``peakipy read`` will flip them around, so beware.
 If you have "correctly" labelled columns then you can use ``--posF1=<column_name>`` and ``--posF2=<column_name>`` to define which column names map to ``Y_PPM`` and ``X_PPM``, respectively.
 
 
@@ -66,50 +66,61 @@ would be ``--dims=1,2,0`` i.e the indices required to reorder to 0,1,2).
 The default dimension order is ID,F1,F2.
 
 
-read_peaklist
--------------
+peakipy read
+------------
 
-Here is an example of how to run read_peaklist::
+Here is an example of how to read a Sparky peaklist::
 
-        read_peaklist peaks.sparky test.ft2 --sparky --show
+        peakipy read peaks.sparky test.ft2 --sparky --show
 
 
 This will convert your peak list into a ``pandas DataFrame`` and use ``threshold_otsu`` from ``scikit-image`` to determine a cutoff for selecting overlapping peaks.
 These are subsequently grouped into clusters ("CLUSTID" column a la NMRPipe!).
 The new peak list with selected clusters is saved as a csv file ``peaks.csv`` to be used as input for either
-``edit_fits`` or ``fit_peaks``.
-It is possible to set the threshold value manually using the ``--thres`` option. However, it may be preferable to adjust this parameter within the ``edit_fits`` script.
+``peakipy edit`` or ``peakipy fit``.
+It is possible to set the threshold value manually using the ``--thres`` option. However, it may be preferable to adjust this parameter using ``peakipy edit``.
 
 
 Clustered peaks are colour coded and singlet peaks are black (shown below).
-If you want to edit this plot after running ``read_peaklist`` then you can edit ``show_clusters.yml`` and re-plot using
+If you want to edit this plot after running ``peakipy read`` then you can edit ``show_clusters.yml`` and re-plot using
 ``spec show_clusters.yml``. Below is an example of a clustered peak list.
 
 .. image:: ../../../images/clusters.png
 
 The threshold level can be adjusted with the ``--thres`` option like so::
 
-        read_peaklist peaks.sparky test.ft2 --sparky --show --thres=1e6
+        peakipy read peaks.sparky test.ft2 --sparky --show --thres=1e6
 
 This will exclude signals below 1e6.
 
 It is also possible to adjust the clustering behaviour by changing the structuring element used for binary closing.::
 
-        read_peaklist peaks.sparky test.ft2 --dims=0,1,2 --struc_el=disk --struc_size=4, --show
+        peakipy read peaks.sparky test.ft2 --dims=0,1,2 --struc_el=disk --struc_size=4, --show
 
 The above would use a disk shaped structuring element with a radius of 4 points (see the `scikit-image.morphology <http://scikit-image.org/docs/dev/api/skimage.morphology.html>`_ module for more information).
 
 The radii used for masking the data to be fitted can be adjusted by setting the ``--f2radius`` and ``--f1radius`` flags like so (values given in ppm)... ::
 
-        read_peaklist peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
+        peakipy read peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
+
+Note: ``peakipy read`` will generate a ``peakipy.config`` which is subsequently read by ``edit``, ``fit`` and ``check`` so that the ``--dims`` option is not required after running ``peakipy read``. ::
 
 
-edit_fits
----------
+        {
+            "--dims": [
+                0,
+                1,
+                2
+            ],
+        }
 
-If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using ``edit_fits``. ::
 
-        edit_fits <peaklist> <nmrdata>
+peakipy edit
+------------
+
+If the automatic clustering is not satisfactory you can manually adjust clusters and fitting start parameters using ``peakipy edit``. ::
+
+        peakipy edit <peaklist> <nmrdata>
 
 This command will start a ``bokeh`` server and cause a tab to open in your internet browser in which you can interactively edit peak fitting parameters.
 
@@ -144,53 +155,53 @@ To test other peak clustering settings you can adjust the contour level (akin to
 .. image:: ../../../images/fit.png
 
 If you like the parameters you have chosen then you can save the peak list using the ``save`` button. If you want to return to your edited peak
-list at a later stage then run ``edit_fits`` with the edited peak list as your ``<peaklist>`` argument.
+list at a later stage then run ``peakipy edit`` with the edited peak list as your ``<peaklist>`` argument.
 
 Clicking ``Quit`` closes the bokeh server.
 
 Peaks can be added via the ``tap`` button on the right side of the spectrum. Once the tap button is activated then peaks are added to the spectrum by double clicking at the desired position.
 
-fit_peaks
----------
+peakipy fit
+-----------
 
-Once you are satisfied with your fitting parameters ``fit_peaks`` can be run using the peak list generated by ``read_peaklist`` or ``edit_peaks`` (e.g. ``edited_peaks.csv``).
+Once you are satisfied with your fitting parameters ``peakipy fit`` can be run using the peak list generated by ``peakipy read`` or ``edit_peaks`` (e.g. ``edited_peaks.csv``).
 
 For example... ::
 
-        fit_peaks edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV
+        peakipy fit edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV
 
 
 Fits that are likely to need checking are flagged in the ``log.txt`` file.
 
 If you have a ``vclist`` style file containing your delay values then you can run
-``fit_peaks`` with the ``--vclist`` flag. ::
+``peakipy fit`` with the ``--vclist`` flag. ::
 
-        fit_peaks edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV --vclist=vclist
+        peakipy fit edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV --vclist=vclist
 
 
 This will result in an extra column being added to your ``fits.csv`` file called ``vclist`` containing the corresponding delay values.
 
-check_fits
-----------
+Checking fits
+-------------
 
-To plot fits for all planes or interactively check them you can run ``check_fits`` ::
+To plot fits for all planes or interactively check them you can run ``peakipy check`` ::
 
-        check_fits fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf
+        peakipy check fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf
 
-Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf. Calling ``check_fits`` with the ``--first`` flag results in only the first plane of each fit being plotted. The colour or output plots can be changed using the ``--colors`` like so ::
+Will plot clusters 1,10 and 20 showing each plane in an interactive matplotlib window and save the plots to a multipage pdf called plot.pdf. Calling ``peakipy check`` with the ``--first`` flag results in only the first plane of each fit being plotted. The colour or output plots can be changed using the ``--colors`` like so ::
 
-        check_fits fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf --colors=green,purple
+        peakipy check fits.csv test.ft2 --dims=0,1,2 --clusters=1,10,20 --show --outname=plot.pdf --colors=green,purple
 
 
 Only valid matplotlib color names can be used.
 
-Run ``check_fits -h`` for more options.
+Run ``peakipy check -h`` for more options.
 
 
 Excluding peaks
 ---------------
 
-Peaks can be excluded from fitting by changing the value in the ``include`` column from ``yes`` to ``no`` (in the ``.csv`` file containing your peak list). The easiest way to do this is via the ``edit_peaks`` script.
+Peaks can be excluded from fitting by changing the value in the ``include`` column from ``yes`` to ``no`` (in the ``.csv`` file containing your peak list). The easiest way to do this is via the ``peakipy edit`` script.
 
 
 Protocol
@@ -212,7 +223,7 @@ Outputs
 
 2. ``log.txt`` contains fit reports for all fits
 
-3. If ``--plot=<path>`` option selected when running ``fit_peaks``, the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (clustid) of the fit. Adding ``--show`` option calls ``plt.show()`` on each fit so you can see what it looks like. However, using ``check_fits`` should be preferable since plotting the fits during fitting slows down the process a lot.
+3. If ``--plot=<path>`` option selected when running ``peakipy fit``, the first plane of each fit will be plotted in <path> with the files named according to the cluster ID (clustid) of the fit. Adding ``--show`` option calls ``plt.show()`` on each fit so you can see what it looks like. However, using ``peakipy check`` should be preferable since plotting the fits during fitting slows down the process a lot.
 
 You can explore the output data conveniently with ``pandas``. ::
 

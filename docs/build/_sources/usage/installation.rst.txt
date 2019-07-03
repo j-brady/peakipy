@@ -45,13 +45,13 @@ Below is an example of an installation script and a basic use case ::
         ##############################
         #  process some data!        #
         ##############################
-        read_peaklist peaks.a2 test.ft2 --a2 --f1radius=0.213 --show;
-        edit_fits peaks.csv test.ft2; # adjust fitting parameters
-        fit_peaks peaks.csv test.ft2 fits.csv --vclist=vclist; # assuming you saved edited peaklist as peaks.csv
+        peakipy read peaks.a2 test.ft2 --a2 --f1radius=0.213 --show;
+        peakipy edit peaks.csv test.ft2; # adjust fitting parameters
+        peakipy fit peaks.csv test.ft2 fits.csv --vclist=vclist; # assuming you saved edited peaklist as peaks.csv
         # interactive checking
-        check_fits fits.csv test.ft2 --clusters=86,96,104 --colors=purple,green --show --outname=~tmp.pdf;
+        peakipy check fits.csv test.ft2 --clusters=86,96,104 --colors=purple,green --show --outname=~tmp.pdf;
         # plots all the fits (first plane only)
-        check_fits fits.csv test.ft2 --first --colors=purple,green;
+        peakipy check fits.csv test.ft2 --first --colors=purple,green;
 
 
 
@@ -79,7 +79,7 @@ After cloning the `peakipy <https://github.com/j-brady/peakipy>`_ repository fro
 ``cd peakipy; python setup.py install``
 
 
-At this point the package should be installed and the main scripts (``read_peaklist``, ``edit_fits``, ``fit_peaks`` and ``check_fits``) should have been added to your path.
+At this point the package should be installed and the main scripts (``peakipy read``, ``peakipy edit``, ``peakipy fit`` and ``peakipy check``) should have been added to your path.
 
 
 Requirements

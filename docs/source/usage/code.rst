@@ -8,6 +8,8 @@ Code
 
 .. autofunction:: peakipy.core.pseudo_voigt
 
+.. autofunction:: peakipy.core.pvoigt2d
+
 .. autofunction:: peakipy.core.make_models
 
 .. autofunction:: peakipy.core.make_mask

@@ -42,6 +42,7 @@ from matplotlib.widgets import Button
 log2 = log(2)
 π = pi
 
+
 def gaussian(x, center=0.0, sigma=1.0):
     """ 1-dimensional Gaussian function.
 
@@ -93,7 +94,10 @@ def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
     
         Superposition of Gaussian and Lorentzian function
 
-        :math:`(1-fraction) G(x,center,\sigma_g) + (fraction) L(x, center, \sigma)`
+        :math:`(1-\phi) G(x,center,\sigma_g) + \phi L(x, center, \sigma)`
+
+        Where :math:`\phi` is the fraction of Lorentzian lineshape and :math:`G` and :math:`L` are Gaussian and
+        Lorentzian functions, respectively.
 
         :param x: data
         :type x: numpy.array
@@ -126,21 +130,28 @@ def pvoigt2d(
 ):
     """ 2D pseudo-voigt model
 
-        Arguments
-        =========
+        :math:`(1-fraction) G(x,center,\sigma_{gx}) + (fraction) L(x, center, \sigma_x) * (1-fraction) G(y,center,\sigma_{gy}) + (fraction) L(y, center, \sigma_y)`
 
-            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-            -- amplitude: peak amplitude (gaussian and lorentzian)
-            -- center_x: position of peak in x
-            -- center_y: position of peak in y
-            -- sigma_x: linewidth in x
-            -- sigma_y: linewidth in y
-            -- fraction: fraction of lorentzian in fit
+        :param XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+        :type XY: numpy.array
 
-        Returns
-        =======
+        :param center_x: center of peak in x
+        :type center_x: float
 
-            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+        :param center_y: center of peak in x
+        :type center_y: float
+
+        :param sigma_x: sigma of lineshape in x
+        :type sigma_x: float
+
+        :param sigma_y: sigma of lineshape in y
+        :type sigma_y: float
+
+        :param fraction: fraction of lorentzian lineshape (between 0 and 1)
+        :type fraction: float
+
+        :return: flattened array of Z values (use Z.reshape(X.shape) for recovery)
+        :rtype: numpy.array
 
     """
 
@@ -714,7 +725,7 @@ def fit_first_plane(
     """
     if (slope > 1.05) or (slope < 0.95):
         fit_str += """
-        🧐🧐🧐🧐🧐🧐--- NEEDS CHECKING ---🧐🧐🧐🧐🧐🧐
+        🧐--- NEEDS CHECKING ---🧐
         """
         print(fit_str)
     else:
@@ -741,28 +752,30 @@ def fit_first_plane(
         X=X,
         Y=Y,
         Z=z_plot,
-        Z_sim=z_sim
+        Z_sim=z_sim,
     )
 
 
 class FitResult:
     """ Data structure for storing fit results """
-    def __init__(self,
-                 out: ModelResult,
-                 mask: np.array,
-                 fit_str: str,
-                 log: str,
-                 group: pd.core.groupby.generic.DataFrameGroupBy,
-                 uc_dics: dict,
-                 min_x: float,
-                 min_y: float,
-                 max_x: float,
-                 max_y: float,
-                 X: np.array,
-                 Y: np.array,
-                 Z: np.array,
-                 Z_sim: np.array,
-                 ):
+
+    def __init__(
+        self,
+        out: ModelResult,
+        mask: np.array,
+        fit_str: str,
+        log: str,
+        group: pd.core.groupby.generic.DataFrameGroupBy,
+        uc_dics: dict,
+        min_x: float,
+        min_y: float,
+        max_x: float,
+        max_y: float,
+        X: np.array,
+        Y: np.array,
+        Z: np.array,
+        Z_sim: np.array,
+    ):
         """ Store output of fit_first_plane function """
         self.out = out
         self.mask = mask
@@ -787,6 +800,13 @@ class FitResult:
         """
         pass
 
+    def jackknife(self):
+        """ perform jackknife sampling to estimate fitting errors
+
+        """
+
+        pass
+
     def plot(self, plot_path=None, show=False, nomp=True):
         """ Matplotlib interactive plot of the fits """
 
@@ -797,13 +817,20 @@ class FitResult:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d")
             # slice out plot area
-            x_plot = self.uc_dics["f2"].ppm(self.X[self.min_y:self.max_y, self.min_x:self.max_x])
-            y_plot = self.uc_dics["f1"].ppm(self.Y[self.min_y:self.max_y, self.min_x:self.max_x])
-            z_plot = self.Z[self.min_y:self.max_y, self.min_x:self.max_x]
-            z_sim = self.Z_sim[self.min_y:self.max_y, self.min_x:self.max_x]
+            x_plot = self.uc_dics["f2"].ppm(
+                self.X[self.min_y : self.max_y, self.min_x : self.max_x]
+            )
+            y_plot = self.uc_dics["f1"].ppm(
+                self.Y[self.min_y : self.max_y, self.min_x : self.max_x]
+            )
+            z_plot = self.Z[self.min_y : self.max_y, self.min_x : self.max_x]
+            z_sim = self.Z_sim[self.min_y : self.max_y, self.min_x : self.max_x]
 
             ax.set_title(
-                "$\chi^2$=" + f"{self.out.chisqr:.3f}, " + "$\chi_{red}^2$=" + f"{self.out.redchi:.4f}"
+                "$\chi^2$="
+                + f"{self.out.chisqr:.3f}, "
+                + "$\chi_{red}^2$="
+                + f"{self.out.redchi:.4f}"
             )
 
             residual = z_plot - z_sim
@@ -844,7 +871,8 @@ class FitResult:
             #  this is dumb as !£$@
             Z_lab = [
                 self.Z[
-                    int(round(self.uc_dics["f1"](y, "ppm"))), int(round(self.uc_dics["f2"](x, "ppm")))
+                    int(round(self.uc_dics["f1"](y, "ppm"))),
+                    int(round(self.uc_dics["f2"](x, "ppm"))),
                 ]
                 for x, y in zip(X_lab, Y_lab)
             ]
@@ -876,7 +904,9 @@ class FitResult:
 
                 plt.show()
             else:
-                print("Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag.")
+                print(
+                    "Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag."
+                )
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
             #    print(p_guess)
             # close plot
@@ -897,6 +927,7 @@ class Pseudo3D:
        :param dims: dimension order i.e [0,1,2] where 0 = planes, 1 = f1, 2 = f2
        :type dims: list
        """
+
     def __init__(self, dic, data, dims):
         # check dimensions
         self._udic = ng.pipe.guess_udic(dic, data)
