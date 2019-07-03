@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/peakipy-0.1.0-py3-none-any.whl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/peakipy-0.1.0.tar.gz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/check_fits.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/check_fits.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/check_fits.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/check_fits.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -36,11 +32,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/peakipy/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="433">
-              <caret line="858" lean-forward="true" selection-start-line="858" selection-end-line="858" />
+            <state relative-caret-position="120">
+              <caret line="858" selection-start-line="858" selection-end-line="858" />
               <folding>
                 <element signature="e#758#768#0" expanded="true" />
               </folding>
@@ -48,11 +44,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/peakipy/commandline/check_fits.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="400">
-              <caret line="276" selection-start-line="276" selection-end-line="276" />
+            <state relative-caret-position="-415">
+              <caret line="235" selection-start-line="235" selection-end-line="235" />
             </state>
           </provider>
         </entry>
@@ -106,8 +102,8 @@
         <option value="$PROJECT_DIR$/peakipy/commandline/fit_peaks.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/scripts/check_fits.py" />
-        <option value="$PROJECT_DIR$/peakipy/commandline/check_fits.py" />
         <option value="$PROJECT_DIR$/peakipy/core.py" />
+        <option value="$PROJECT_DIR$/peakipy/commandline/check_fits.py" />
       </list>
     </option>
   </component>
@@ -345,13 +341,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/check_fits.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="276" selection-start-line="276" selection-end-line="276" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/check_fits.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="532">
@@ -361,11 +350,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/peakipy/core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="433">
-          <caret line="858" lean-forward="true" selection-start-line="858" selection-end-line="858" />
+        <state relative-caret-position="120">
+          <caret line="858" selection-start-line="858" selection-end-line="858" />
           <folding>
             <element signature="e#758#768#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/check_fits.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-415">
+          <caret line="235" selection-start-line="235" selection-end-line="235" />
         </state>
       </provider>
     </entry>
