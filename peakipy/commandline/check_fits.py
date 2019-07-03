@@ -233,7 +233,6 @@ def main(argv):
                 # slice out plot area
                 x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
                 y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
-
                 masked_data = masked_data[min_y:max_y, min_x:max_x]
                 sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
 
@@ -273,11 +272,11 @@ def main(argv):
                 ax.set_ylabel(pseudo3D.f1_label)
                 ax.set_xlabel(pseudo3D.f2_label)
 
-                ax.invert_xaxis()
-                ax.invert_yaxis()
 
-                plt.legend()
-                names = ",".join(plane.assignment)
+                # axes will appear inverted
+                ax.view_init(30,120)
+
+                #names = ",".join(plane.assignment)
                 title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
                 plt.title(title)
                 print(f"Plotting: {title}")
@@ -289,6 +288,7 @@ def main(argv):
                 ax.text2D(
                     -0.15, 1.0, out_str, transform=ax.transAxes, fontsize=10, va="top"
                 )
+                ax.legend()
                 pdf.savefig()
 
                 if show:

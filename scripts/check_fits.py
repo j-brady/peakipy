@@ -274,8 +274,8 @@ if __name__ == "__main__":
                 ax.set_ylabel(pseudo3D.f1_label)
                 ax.set_xlabel(pseudo3D.f2_label)
 
-                ax.invert_xaxis()
-                ax.invert_yaxis()
+                # axes will appear inverted
+                ax.view_init(30,120)
 
                 plt.legend()
                 names = ",".join(plane.assignment)

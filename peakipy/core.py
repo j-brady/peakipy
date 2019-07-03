@@ -824,6 +824,7 @@ class FitResult:
                 self.Y[self.min_y : self.max_y, self.min_x : self.max_x]
             )
             z_plot = self.Z[self.min_y : self.max_y, self.min_x : self.max_x]
+
             z_sim = self.Z_sim[self.min_y : self.max_y, self.min_x : self.max_x]
 
             ax.set_title(
@@ -852,8 +853,10 @@ class FitResult:
             ax.plot_wireframe(
                 x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
             )
-            ax.invert_xaxis()
-            ax.invert_yaxis()
+
+            # axes will appear inverted
+            ax.view_init(30,120)
+
             # Annotate plots
             labs = []
             Z_lab = []
