@@ -88,7 +88,7 @@ def check_xybounds(x):
         xy_bounds = float(x[0]), float(x[1])
         return xy_bounds
     else:
-        print("\N{Thinking Face} xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
+        print("🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
         exit()
 
 
@@ -333,15 +333,15 @@ def main(argv):
             "<peaklist>": And(
                 os.path.exists,
                 open,
-                error=f"\N{Thinking Face} {args['<peaklist>']} should exist and be readable",
+                error=f"🤔 {args['<peaklist>']} should exist and be readable",
             ),
             "<data>": And(
                 os.path.exists,
                 Use(
                     ng.pipe.read,
-                    error=f"\N{Thinking Face} {args['<data>']} should be NMRPipe format 2D or 3D cube",
+                    error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
                 ),
-                error=f"\N{Thinking Face} {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "<output>": Use(str),
             "--max_cluster_size": And(Use(int), lambda n: 0 < n),
@@ -353,7 +353,7 @@ def main(argv):
                 "PV_G",
                 "PV_L",
                 "G_L",
-                error="\N{Thinking Face} --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L",
+                error="🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L",
             ),
             "--fix": Or(
                 Use(
@@ -366,13 +366,13 @@ def main(argv):
             ),
             "--dims": Use(
                 lambda n: [int(i) for i in eval(n)],
-                error="\N{Thinking Face} --dims should be list of integers e.g. --dims=0,1,2",
+                error="🤔 --dims should be list of integers e.g. --dims=0,1,2",
             ),
             "--vclist": Or(
                 "None",
                 And(
                     os.path.exists,
-                    Use(np.genfromtxt, error=f"\N{Thinking Face} cannot open {args.get('--vclist')}"),
+                    Use(np.genfromtxt, error=f"🤔 cannot open {args.get('--vclist')}"),
                 ),
             ),
             "--plot": Or("None", Use(lambda f: Path(f))),
@@ -380,21 +380,21 @@ def main(argv):
                 "None",
                 Use(
                     check_xybounds,
-                    error="\N{Thinking Face} xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
+                    error="🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
                 ),
             ),
             "--plane": Or(
                 0,
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
-                    error="\N{Thinking Face} plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
+                    error="🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
                 ),
             ),
             "--exclude_plane": Or(
                 0,
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
-                    error="\N{Thinking Face} plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
+                    error="🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
                 ),
             ),
             object: object,
@@ -625,7 +625,7 @@ def main(argv):
 
     print(
         """
-             \N{Bottle With Popping Cork} Finished! \N{Bottle With Popping Cork}        
+           🍾 ✨ Finished! ✨ 🍾       
              
         """
     )
