@@ -725,7 +725,7 @@ def fit_first_plane(
     """
     if (slope > 1.05) or (slope < 0.95):
         fit_str += """
-        🧐--- NEEDS CHECKING ---🧐
+        \N{Face With Monocle} NEEDS CHECKING \N{Face With Monocle}
         """
         print(fit_str)
     else:

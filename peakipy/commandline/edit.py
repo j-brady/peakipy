@@ -29,13 +29,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
+import os
 import sys
 import shutil
 import json
 
-from docopt import docopt
 from pathlib import Path
 from subprocess import check_output
+from docopt import docopt
+from schema import Schema, And, SchemaError
 
 import pandas as pd
 import nmrglue as ng
@@ -74,15 +76,15 @@ from bokeh.plotting import figure
 from bokeh.server.server import Server
 from bokeh.palettes import PuBuGn9, Category20
 
-from peakipy.core import Pseudo3D
+from peakipy.core import Pseudo3D, run_log
 
 
-def main(doc):
+def bokeh_script(doc):
     # Temp files
     TEMP_PATH = Path("tmp")
     TEMP_PATH.mkdir(parents=True, exist_ok=True)
 
-    TEMP_OUT_CSV = Path("tmp_out.csv")
+    TEMP_OUT_CSV = TEMP_PATH / Path("tmp_out.csv")
     TEMP_INPUT_CSV = TEMP_PATH / Path("tmp.csv")
 
     TEMP_OUT_PLOT = TEMP_PATH / Path("plots")
@@ -389,7 +391,8 @@ def main(doc):
 
 
     #  Script starts here
-    args = docopt(__doc__, argv)
+    args = docopt(__doc__, argv=argv)
+    args = check_input(args)
     path = Path(args.get("<peaklist>"))
 
     if path.suffix == ".csv":
@@ -753,10 +756,41 @@ def main(doc):
     )
     doc.title = "peakipy: Edit Fits"
 
-def start_edit_fits(args):
-    argv = args
+
+def check_input(args):
+    """ validate commandline input """
+    schema = Schema(
+        {
+            "<peaklist>": And(
+                os.path.exists,
+                open,
+                error=f"{args['<peaklist>']} should exist and be readable",
+            ),
+            "<data>": And(
+                os.path.exists,
+                ng.pipe.read,
+                error=f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+            ),
+            "--dims": And(
+                lambda n: [int(i) for i in eval(n)],
+                error="--dims should be list of integers e.g. --dims=0,1,2",
+            ),
+        }
+    )
+
+    try:
+        args = schema.validate(args)
+        return args
+    except SchemaError as e:
+        exit(e)
+
+
+def main(args):
     global argv
-    server = Server({'/': main})
+    argv = args
+    # docopt(__doc__, argv)
+    run_log()
+    server = Server({'/': bokeh_script})
     server.start()
     print('Opening peakipy: Edit fits on http://localhost:5006/')
     server.io_loop.add_callback(server.show, "/")
@@ -764,11 +798,6 @@ def start_edit_fits(args):
 
 
 if __name__ == "__main__":
+
     args = sys.argv[1:]
-    argv = docopt(__doc__, args)
-    global argv
-    server = Server({'/': main})
-    server.start()
-    print('Opening peakipy: Edit fits on http://localhost:5006/')
-    server.io_loop.add_callback(server.show, "/")
-    server.io_loop.start()
+    main(args)

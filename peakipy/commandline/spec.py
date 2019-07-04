@@ -115,7 +115,7 @@ def onpick(event):
 
 
 def main(args):
-    arguments = docopt(__doc__, args=args)
+    arguments = docopt(__doc__, argv=args)
     if arguments["make"]:
         make_yaml_file(name=arguments["<new_yaml_file>"])
         exit()
@@ -294,5 +294,5 @@ def main(args):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    arguments = docopt(__doc__, version="Spec 0.1", args=args)
+    arguments = docopt(__doc__, argv=args, version="Spec 0.1")
     main(arguments)

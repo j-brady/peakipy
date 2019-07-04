@@ -1126,7 +1126,7 @@
         redchi = 0.15163
 
     
-        🧐--- NEEDS CHECKING ---🧐
+        🧐 NEEDS CHECKING 🧐
         
         ------------------------------------
                    Summed planes

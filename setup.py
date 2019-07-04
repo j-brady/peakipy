@@ -1,19 +1,6 @@
-import os
-from glob import glob
 from setuptools import setup, find_packages
 
-scripts = [
-#    "fit_peaks",
-#    "check_fits",
-#    "read_peaklist",
-    "spec",
-#    "edit_fits",
-    "edit_fits_script.py",
-]
-
-scripts_path = "scripts"
-scripts = [os.path.join(scripts_path, script) for script in scripts]
-#[os.system(f"chmod +x {script}") for script in scripts]
+long_description = open("README.md").read()
 
 requirements = [
         "pandas>=0.24.0",
@@ -31,10 +18,10 @@ requirements = [
 
 setup(
     name="peakipy",
-    version="0.1.18",
+    version="0.1.19",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
-    #long_description = long_description,
-    #long_description_content_type="text/markdown",
+    long_description = long_description,
+    long_description_content_type="text/markdown",
     author="Jacob Peter Brady",
     author_email="jacob.brady0449@gmail.com",
     url="https://j-brady.github.io/peakipy",
@@ -47,10 +34,10 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         ],
     license="GNU GPLv3",
-    scripts=scripts,
     entry_points={'console_scripts': ['peakipy = peakipy.__main__:main',], },
     install_requires=requirements,
     include_package_data=True,

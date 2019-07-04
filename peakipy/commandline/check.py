@@ -18,7 +18,7 @@
 
         --rcount=<int>            row count setting for wireplot [default: 50]
         --ccount=<int>            column count setting for wireplot [default: 50]
-        --colors=<data,fit>       plot colors [default: k,r]
+        --colors=<data,fit>       plot colors [default: '#5e3c99','#e66101']
         
         --help
 

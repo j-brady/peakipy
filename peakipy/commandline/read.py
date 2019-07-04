@@ -583,7 +583,7 @@ def main(argv):
     if args.get("--show"):
         with open("show_clusters.yml", "w") as out:
             out.write(yaml)
-        os.system("spec show_clusters.yml")
+        os.system("peakipy spec show_clusters.yml")
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
