@@ -194,8 +194,12 @@ def fit_peaks(peaks, fit_input):
                 noise=noise,
             )
             fit_result.plot(
-                plot_path=fit_input.args.get("plot"), show=fit_input.args.get("--show"), nomp=fit_input.args.get("--nomp")
+                plot_path=fit_input.args.get("plot"),
+                show=fit_input.args.get("--show"),
+                nomp=fit_input.args.get("--nomp"),
             )
+            # jack_knife_result = fit_result.jackknife()
+            # print("JackKnife", jack_knife_result.mean, jack_knife_result.std)
             first = fit_result.out
             mask = fit_result.mask
             #            log.write(
@@ -402,7 +406,6 @@ def main(argv):
         # ignore_extra_keys=True,
     )
 
-
     try:
         args = schema.validate(args)
     except SchemaError as e:
@@ -449,7 +452,9 @@ def main(argv):
         peaks["include"] = peaks.apply(lambda _: "yes", axis=1)
 
     if len(peaks[peaks.include != "yes"]) > 0:
-        print(f"The following peaks have been exluded:\n{peaks[peaks.include != 'yes']}")
+        print(
+            f"The following peaks have been exluded:\n{peaks[peaks.include != 'yes']}"
+        )
         peaks = peaks[peaks.include == "yes"]
 
     # filter list based on cluster size
@@ -579,14 +584,14 @@ def main(argv):
         print("Using multiprocessing")
         # split peak lists
         tmp_dir = split_peaklist(peaks, n_cpu)
-        peaklists = [pd.read_csv(tmp_dir / f"peaks_{i}.csv") for i in range(n_cpu)]
+        peaklists = [pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)]
         args_list = [FitPeaksInput(args, data) for _ in range(n_cpu)]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)
             result = pool.starmap(fit_peaks, zip(peaklists, args_list))
             df = pd.concat([i.df for i in result], ignore_index=True)
             for num, i in enumerate(result):
-                i.df.to_csv(tmp_dir / f"peaks_{num}_fit.csv", index=False)
+                i.df.to_csv(tmp_dir / Path(f"peaks_{num}_fit.csv"), index=False)
                 log_file.write(i.log + "\n")
     else:
         print("Not using multiprocessing")
@@ -622,7 +627,6 @@ def main(argv):
     else:
         df.to_pickle(output)
 
-
     print(
         """
            🍾 ✨ Finished! ✨ 🍾       
@@ -630,6 +634,7 @@ def main(argv):
         """
     )
     run_log()
+
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
