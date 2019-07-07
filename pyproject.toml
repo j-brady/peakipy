@@ -1,11 +1,10 @@
 [tool.poetry]
 name = "peakipy"
-version = "0.1.19"
+version = "0.1.20"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 
 readme = 'README.md'
-
 repository = "https://github.com/j-brady/peakipy"
 homepage = "https://j-brady.github.io/peakipy"
 
@@ -28,7 +27,7 @@ numba = "^0.44.1"
 
 [tool.poetry.scripts]
 peakipy = 'peakipy.__main__:main'
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-

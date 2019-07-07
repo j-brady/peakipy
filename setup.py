@@ -14,11 +14,12 @@ requirements = [
         "scikit-image>=0.14.2",
         "bokeh>=1.0.4",
         "schema>=0.7.0",
+        "numba>=0.44.1",
         ]
 
 setup(
     name="peakipy",
-    version="0.1.19",
+    version="0.1.20",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     long_description = long_description,
     long_description_content_type="text/markdown",
