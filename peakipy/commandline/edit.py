@@ -72,6 +72,7 @@ from bokeh.models.widgets import (
     Panel,
 )
 from bokeh.plotting import figure
+
 # from bokeh.io import curdoc
 from bokeh.server.server import Server
 from bokeh.palettes import PuBuGn9, Category20
@@ -89,7 +90,6 @@ def bokeh_script(doc):
 
     TEMP_OUT_PLOT = TEMP_PATH / Path("plots")
     TEMP_OUT_PLOT.mkdir(parents=True, exist_ok=True)
-
 
     def clusters(df, data, thres=None, struc_el="square", struc_size=(3,)):
         """ Find clusters of peaks
@@ -135,7 +135,9 @@ def bokeh_script(doc):
         elif struc_el == "rectangle":
             width, height = struc_size
             print(f"using rectangle with {width} and {height}")
-            closed_data = binary_closing(thresh_data, rectangle(int(width), int(height)))
+            closed_data = binary_closing(
+                thresh_data, rectangle(int(width), int(height))
+            )
             # closed_data = binary_dilation(thresh_data, rectangle(width, height), iterations=iterations)
 
         else:
@@ -166,7 +168,6 @@ def bokeh_script(doc):
 
         return df
 
-
     def recluster_peaks(event):
 
         struc_size = tuple([int(i) for i in struct_el_size.value.split(",")])
@@ -186,7 +187,6 @@ def bokeh_script(doc):
         # print(type(eval(struct_el_size.value)) )
         # print(type([].extend(eval(struct_el_size.value)))
 
-
     def update_memcnt(df):
 
         for ind, group in df.groupby("CLUSTID"):
@@ -203,7 +203,6 @@ def bokeh_script(doc):
         # update source data
         source.data = {col: df[col] for col in df.columns}
         return df
-
 
     def fit_selected(event):
 
@@ -236,7 +235,6 @@ def bokeh_script(doc):
         fit_reports.text += stdout.decode() + "<br><hr><br>"
         fit_reports.text = fit_reports.text.replace("\n", "<br>")
 
-
     def save_peaks(event):
         if savefilename.value:
             to_save = Path(savefilename.value)
@@ -253,7 +251,6 @@ def bokeh_script(doc):
         else:
             df.to_pickle(to_save)
 
-
     def select_callback(attrname, old, new):
         # print("Calling Select Callback")
         selectionIndex = source.selected.indices
@@ -261,7 +258,6 @@ def bokeh_script(doc):
 
         # update memcnt
         update_memcnt(df)
-
 
     def peak_pick_callback(event):
         # global so that df is updated globally
@@ -317,7 +313,6 @@ def bokeh_script(doc):
         df = df.append(new_peak, ignore_index=True)
         update_memcnt(df)
 
-
     def slider_callback(attrname, old, new):
 
         selectionIndex = source.selected.indices
@@ -339,7 +334,6 @@ def bokeh_script(doc):
         # selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
         # print(list(selected_df))
         source.data = {col: df[col] for col in df.columns}
-
 
     def get_contour_data(data, levels, **kwargs):
         cs = plt.contour(data, levels, **kwargs)
@@ -373,10 +367,16 @@ def bokeh_script(doc):
                 col.append(thecol)
 
         source = ColumnDataSource(
-            data={"xs": xs, "ys": ys, "line_color": col, "xt": xt, "yt": yt, "text": text}
+            data={
+                "xs": xs,
+                "ys": ys,
+                "line_color": col,
+                "xt": xt,
+                "yt": yt,
+                "text": text,
+            }
         )
         return source
-
 
     def update_contour(attrname, old, new):
         new_cs = eval(contour_start.value)
@@ -385,10 +385,8 @@ def bokeh_script(doc):
         spec_source.data = get_contour_data(data[plane_index], cl, extent=extent).data
         # print("Value of checkbox",checkbox_group.active)
 
-
     def exit_edit_peaks(event):
         exit()
-
 
     #  Script starts here
     args = docopt(__doc__, argv=argv)
@@ -422,7 +420,8 @@ def bokeh_script(doc):
 
     # color clusters
     df["color"] = df.apply(
-        lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black", axis=1
+        lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
+        axis=1,
     )
 
     # get rid of unnamed columns
@@ -432,7 +431,6 @@ def bokeh_script(doc):
     # make datasource
     source = ColumnDataSource(data=dict())
     source.data = {col: df[col] for col in df.columns}
-
 
     #  read dims from config
     config_path = Path("peakipy.config")
@@ -446,7 +444,6 @@ def bokeh_script(doc):
         # get dim numbers from commandline
         _dims = args.get("--dims")
         dims = [int(i) for i in _dims.split(",")]
-
 
     # read pipe data
     data_path = args.get("<data>")
@@ -590,7 +587,9 @@ def bokeh_script(doc):
     )
 
     # save file
-    savefilename = TextInput(title="Save file as (.csv)", placeholder="edited_peaks.csv")
+    savefilename = TextInput(
+        title="Save file as (.csv)", placeholder="edited_peaks.csv"
+    )
     button = Button(label="Save", button_type="success")
     button.on_event(ButtonClick, save_peaks)
 
@@ -678,14 +677,18 @@ def bokeh_script(doc):
             editor=NumberEditor(step=0.01),
             formatter=NumberFormatter(format="0.00"),
         ),
-        TableColumn(field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")),
+        TableColumn(
+            field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")
+        ),
         TableColumn(
             field="include", title="Include", editor=SelectEditor(options=["yes", "no"])
         ),
         TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
     ]
 
-    data_table = DataTable(source=source, columns=columns, editable=True, fit_columns=True)
+    data_table = DataTable(
+        source=source, columns=columns, editable=True, fit_columns=True
+    )
 
     # callback for adding
     # source.selected.on_change('indices', callback)
@@ -697,7 +700,9 @@ def bokeh_script(doc):
 
     # Document layout
     fitting_controls = column(
-        row(column(slider_X_RADIUS, slider_Y_RADIUS), column(contour_start, fit_button)),
+        row(
+            column(slider_X_RADIUS, slider_Y_RADIUS), column(contour_start, fit_button)
+        ),
         row(
             column(widgetbox(ls_div), radio_button_group),
             column(select_plane, widgetbox(checkbox_group)),
@@ -721,9 +726,7 @@ def bokeh_script(doc):
     # edit_fits tabs
     fitting_layout = fitting_controls
     log_layout = fit_reports
-    recluster_layout = widgetbox(
-        row(clust_div, column(contour_start, struct_el, struct_el_size, recluster))
-    )
+    recluster_layout = row(clust_div, column(contour_start, struct_el, struct_el_size, recluster))
     save_layout = column(savefilename, button, exit_button)
 
     fitting_tab = Panel(child=fitting_layout, title="Peak fitting")
@@ -738,15 +741,14 @@ def bokeh_script(doc):
     # fit_all_result = Panel(child=fit_all_result_layout)
     # fit_all_tabs = Tabs(tabs=[fit_all_tab, fit_all_result])
 
-
-    #curdoc().add_root(
+    # curdoc().add_root(
     #    column(
     #        intro_div,
     #        row(column(p, doc_link), column(data_table, tabs)),
     #        sizing_mode="stretch_both",
     #    )
-    #)
-    #curdoc().title = "peakipy: Edit Fits"
+    # )
+    # curdoc().title = "peakipy: Edit Fits"
     doc.add_root(
         column(
             intro_div,
@@ -790,9 +792,9 @@ def main(args):
     argv = args
     # docopt(__doc__, argv)
     run_log()
-    server = Server({'/': bokeh_script})
+    server = Server({"/": bokeh_script})
     server.start()
-    print('Opening peakipy: Edit fits on http://localhost:5006/')
+    print("Opening peakipy: Edit fits on http://localhost:5006/")
     server.io_loop.add_callback(server.show, "/")
     server.io_loop.start()
 

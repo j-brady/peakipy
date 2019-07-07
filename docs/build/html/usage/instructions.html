@@ -117,6 +117,16 @@ If you want to edit this plot after running <code class="docutils literal notran
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peakipy</span> <span class="n">read</span> <span class="n">peaks</span><span class="o">.</span><span class="n">sparky</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="o">--</span><span class="n">dims</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="o">--</span><span class="n">f1radius</span><span class="o">=</span><span class="mf">0.2</span> <span class="o">--</span><span class="n">f2radius</span><span class="o">=</span><span class="mf">0.04</span>
 </pre></div>
 </div>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">peakipy</span> <span class="pre">read</span></code> will generate a <code class="docutils literal notranslate"><span class="pre">peakipy.config</span></code> which is subsequently read by <code class="docutils literal notranslate"><span class="pre">edit</span></code>, <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">check</span></code> so that the <code class="docutils literal notranslate"><span class="pre">--dims</span></code> option is not required after running <code class="docutils literal notranslate"><span class="pre">peakipy</span> <span class="pre">read</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;--dims&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">2</span>
+    <span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="peakipy-edit">
 <h2>peakipy edit<a class="headerlink" href="#peakipy-edit" title="Permalink to this headline">¶</a></h2>
@@ -181,7 +191,7 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
 </div>
 <div class="section" id="excluding-peaks">
 <h2>Excluding peaks<a class="headerlink" href="#excluding-peaks" title="Permalink to this headline">¶</a></h2>
-<p>Peaks can be excluded from fitting by changing the value in the <code class="docutils literal notranslate"><span class="pre">include</span></code> column from <code class="docutils literal notranslate"><span class="pre">yes</span></code> to <code class="docutils literal notranslate"><span class="pre">no</span></code> (in the <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file containing your peak list). The easiest way to do this is via the <code class="docutils literal notranslate"><span class="pre">edit_peaks</span></code> script.</p>
+<p>Peaks can be excluded from fitting by changing the value in the <code class="docutils literal notranslate"><span class="pre">include</span></code> column from <code class="docutils literal notranslate"><span class="pre">yes</span></code> to <code class="docutils literal notranslate"><span class="pre">no</span></code> (in the <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file containing your peak list). The easiest way to do this is via the <code class="docutils literal notranslate"><span class="pre">peakipy</span> <span class="pre">edit</span></code> script.</p>
 </div>
 <div class="section" id="protocol">
 <h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h2>

@@ -98,7 +98,7 @@ def make_yaml_file(name, yaml_file=yaml_file):
 
     if os.path.exists(name):
         print(f"Copying {name} to {name}.bak")
-        shutil.copy(name,f"{name}.bak")
+        shutil.copy(name, f"{name}.bak")
 
     print(f"Making yaml file ... {name}")
     with open(name, "w") as new_yaml_file:
@@ -291,6 +291,7 @@ def main(args):
     # fig.canvas.mpl_connect("pick_event", onpick)
     # line, = ax.plot(np.random.rand(100), 'o', picker=5)  # 5 points tolerance
     plt.show()
+
 
 if __name__ == "__main__":
     args = sys.argv[1:]

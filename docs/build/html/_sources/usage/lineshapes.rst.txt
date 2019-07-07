@@ -2,11 +2,11 @@
 Lineshapes
 ==========
 
-Here are the lineshapes used by peakipy. To select a specific lineshape to fit you can add ``--lineshape=`` flag when running ``fit_peaks``.
+Here are the lineshapes used by peakipy. To select a specific lineshape to fit you can add ``--lineshape=`` flag when running ``peakipy fit``.
 
 For example, ::
 
-    fit_peaks test.csv test1.ft2 fits.csv --lineshape=G
+    peakipy fit test.csv test1.ft2 fits.csv --lineshape=G
 
 
 
@@ -35,4 +35,4 @@ Fit quality
 -----------
 
 Fit quality can be evaluated by inspecting the contour plot of residuals that is generated when viewing fits interactively. :math:`\chi^2` and :math:`\chi_{red}^2` are calculated using the noise estimate from ``--noise`` or the threshold value calculated from ``threshold_otsu`` if ``--noise`` is not set explicitly.
-Peakipy does calculate the linear correlation between the NMR data and the simulated data from the fit. If the slope deviates by more than 0.05 from 1.0 then it is advised that you check the fit. However, this is not totally robust and it is best to check fit quality by plotting the data using the ``check_fits`` script.
+Peakipy does calculate the linear correlation between the NMR data and the simulated data from the fit. If the slope deviates by more than 0.05 from 1.0 then it is advised that you check the fit. However, this is not totally robust and it is best to check fit quality by plotting the data using the ``peakipy check`` script.

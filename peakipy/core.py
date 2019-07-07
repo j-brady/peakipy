@@ -29,6 +29,7 @@ import nmrglue as ng
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from numba import jit
 from numpy import sqrt, log, pi, exp
 from lmfit import Model
 from lmfit.model import ModelResult
@@ -43,6 +44,7 @@ log2 = log(2)
 π = pi
 
 
+@jit(nopython=True)
 def gaussian(x, center=0.0, sigma=1.0):
     """ 1-dimensional Gaussian function.
 
@@ -67,6 +69,7 @@ def gaussian(x, center=0.0, sigma=1.0):
     )
 
 
+@jit(nopython=True)
 def lorentzian(x, center=0.0, sigma=1.0):
     """ 1-dimensional Lorentzian function.
 
@@ -89,6 +92,7 @@ def lorentzian(x, center=0.0, sigma=1.0):
     return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
 
 
+@jit(nopython=True)
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
     """ 1-dimensional Pseudo-voigt function
     
@@ -119,6 +123,7 @@ def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
     return pv
 
 
+# @jit(nopython=True)
 def pvoigt2d(
     XY,
     amplitude=1.0,
@@ -172,6 +177,7 @@ def pvoigt2d(
     return amplitude * pv_x * pv_y
 
 
+# @jit(nopython=True)
 def pv_l(
     XY,
     amplitude=1.0,
@@ -207,6 +213,7 @@ def pv_l(
     return amplitude * pv_x * pv_y
 
 
+# @jit(nopython=True)
 def pv_g(
     XY,
     amplitude=1.0,
@@ -241,6 +248,7 @@ def pv_g(
     return amplitude * pv_x * pv_y
 
 
+# @jit(nopython=True)
 def pv_pv(
     XY,
     amplitude=1.0,
@@ -279,6 +287,7 @@ def pv_pv(
     return amplitude * pv_x * pv_y
 
 
+# @jit(nopython=True)
 def gaussian_lorentzian(
     XY,
     amplitude=1.0,
@@ -691,9 +700,10 @@ def fit_first_plane(
     XY = np.meshgrid(x, y)
     X, Y = XY
 
-    XY_slices = [X.copy()[mask], Y.copy()[mask]]
+    XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
-    out = mod.fit(peak_slices, XY=XY_slices, params=p_guess, weights=weights)
+    out = mod.fit(peak_slices, XY=XY_slices, params=p_guess, weights=weights, method="leastsq")
+
     if verbose:
         print(out.fit_report())
 
@@ -753,6 +763,10 @@ def fit_first_plane(
         Y=Y,
         Z=z_plot,
         Z_sim=z_sim,
+        peak_slices=peak_slices,
+        XY_slices=XY_slices,
+        weights=weights,
+        mod=mod,
     )
 
 
@@ -775,6 +789,11 @@ class FitResult:
         Y: np.array,
         Z: np.array,
         Z_sim: np.array,
+        peak_slices: np.array,
+        XY_slices: np.array,
+        weights: np.array,
+        mod: Model,
+
     ):
         """ Store output of fit_first_plane function """
         self.out = out
@@ -791,6 +810,10 @@ class FitResult:
         self.Y = Y
         self.Z = Z
         self.Z_sim = Z_sim
+        self.peak_slices = peak_slices
+        self.XY_slices = XY_slices
+        self.weights = weights
+        self.mod = mod
 
     def check_shifts(self):
         """ Calculate difference between initial peak positions 
@@ -804,8 +827,43 @@ class FitResult:
         """ perform jackknife sampling to estimate fitting errors
 
         """
+        jk_results = []
+        for i in range(len(self.peak_slices)):
+            peak_slices = np.delete(self.peak_slices, i, None)
+            X = np.delete(self.XY_slices[0], i, None)
+            Y = np.delete(self.XY_slices[1], i, None)
+            weights = np.delete(self.weights, i, None)
+            jk_results.append(self.mod.fit(peak_slices, XY=[X,Y], params=self.out.params, weights=weights))
 
-        pass
+        #print(jk_results)
+        amps = []
+        sigmas = []
+        names = []
+        with open("test_jackknife","w") as f:
+            for i in jk_results:
+                f.write(i.fit_report())
+                amp, amp_err, name = get_params(i.params, "amp")
+                sigma, sigma_err, name = get_params(i.params, "sigma_x")
+                f.write(f"{amp},{amp_err},{name}\n")
+                amps.extend(amp)
+                names.extend(name)
+                sigmas.extend(sigma)
+
+            df = pd.DataFrame({"amp":amps, "name":names, "sigma":sigmas})
+            grouped = df.groupby("name")
+            mean_amps = grouped.amp.mean()
+            std_amps = grouped.amp.std()
+            mean_sigmas = grouped.sigma.mean()
+            std_sigmas = grouped.sigma.std()
+            f.write("#####################################\n")
+            f.write(f"{mean_amps}, {std_amps}, {mean_sigmas}, {std_sigmas}")
+            f.write(self.out.fit_report())
+            f.write("#####################################\n")
+        #print(amps)
+        #mean = np.mean(amps)
+        #std =  np.std(amps)
+        return JackKnifeResult(mean=mean_amps, std=std_amps)
+
 
     def plot(self, plot_path=None, show=False, nomp=True):
         """ Matplotlib interactive plot of the fits """
@@ -855,7 +913,7 @@ class FitResult:
             )
 
             # axes will appear inverted
-            ax.view_init(30,120)
+            ax.view_init(30, 120)
 
             # Annotate plots
             labs = []
@@ -917,6 +975,11 @@ class FitResult:
         else:
             pass
 
+class JackKnifeResult:
+
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
 
 class Pseudo3D:
     """Read dic, data from NMRGlue and dims from input to create a Pseudo3D dataset

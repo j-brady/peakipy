@@ -21,7 +21,7 @@ Provided an NMRPipe format spectrum (2D or Pseudo 3D) and a peak list (NMRPipe, 
    usage/instructions
    usage/examples
    usage/lineshapes 
-   usage/code
+   usage/code 
 
 Search
 ==================

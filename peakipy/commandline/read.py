@@ -535,17 +535,24 @@ def main(argv):
         data.to_pickle(outname)
 
     # write config file
+    config_path = Path("peakipy.config")
+    config_kvs = [
+        ("--dims", dims),
+        ("<data>", pipe_ft_file),
+        ("--thres", float(thres)),
+        ("--f1radius", f1radius),
+        ("--f2radius", f2radius),
+    ]
+    if config_path.exists():
+        config_dic = json.load(open(config_path))
+        # update values in dict
+        config_dic.update(dict(config_kvs))
+
+    else:
+        # make a new config
+        config_dic = dict(config_kvs)
+
     with open("peakipy.config", "w") as config:
-        #  add dims
-        config_dic = dict(
-            [
-                ("--dims", dims),
-                ("<data>", pipe_ft_file),
-                ("--thres", float(thres)),
-                ("--f1radius", f1radius),
-                ("--f2radius", f2radius),
-            ]
-        )
         # write json
         config.write(json.dumps(config_dic, sort_keys=True, indent=4))
         # json.dump(config_dic, fp=config, sort_keys=True, indent=4)
@@ -584,6 +591,7 @@ def main(argv):
         with open("show_clusters.yml", "w") as out:
             out.write(yaml)
         os.system("peakipy spec show_clusters.yml")
+
 
 if __name__ == "__main__":
     argv = sys.argv[1:]

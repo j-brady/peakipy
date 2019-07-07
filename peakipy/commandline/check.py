@@ -64,6 +64,7 @@ from peakipy.core import (
     run_log,
 )
 
+
 def main(argv):
 
     args = docopt(__doc__, argv=argv)
@@ -77,10 +78,12 @@ def main(argv):
         config = json.load(open(config_path))
         print(f"Using config file with --dims={config.get('--dims')}")
         dims = config.get("--dims", [0, 1, 2])
+        colors = config.get("--colors", ["#5e3c99", "#e66101"])
 
     else:
         dims = args.get("--dims")
         dims = [int(i) for i in eval(dims)]
+        colors = args.get("--colors").strip().split(",")
 
     data_path = args.get("<nmrdata>")
     dic, data = ng.pipe.read(data_path)
@@ -92,7 +95,6 @@ def main(argv):
     clusters = args.get("--clusters")
     ccount = eval(args.get("--ccount"))
     rcount = eval(args.get("--rcount"))
-    colors = args.get("--colors").strip().split(",")
 
     if type(ccount) == int:
         ccount = ccount
@@ -272,11 +274,10 @@ def main(argv):
                 ax.set_ylabel(pseudo3D.f1_label)
                 ax.set_xlabel(pseudo3D.f2_label)
 
-
                 # axes will appear inverted
-                ax.view_init(30,120)
+                ax.view_init(30, 120)
 
-                #names = ",".join(plane.assignment)
+                # names = ",".join(plane.assignment)
                 title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
                 plt.title(title)
                 print(f"Plotting: {title}")
@@ -313,7 +314,7 @@ def main(argv):
                     break
     run_log()
 
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     main(argv)
-

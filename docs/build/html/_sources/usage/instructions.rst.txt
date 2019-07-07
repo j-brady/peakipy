@@ -103,6 +103,17 @@ The radii used for masking the data to be fitted can be adjusted by setting the 
 
         peakipy read peaks.sparky test.ft2 --dims=0,1,2 --f1radius=0.2 --f2radius=0.04
 
+Note: ``peakipy read`` will generate a ``peakipy.config`` which is subsequently read by ``edit``, ``fit`` and ``check`` so that the ``--dims`` option is not required after running ``peakipy read``. ::
+
+
+        {
+            "--dims": [
+                0,
+                1,
+                2
+            ],
+        }
+
 
 peakipy edit
 ------------
@@ -190,7 +201,7 @@ Run ``peakipy check -h`` for more options.
 Excluding peaks
 ---------------
 
-Peaks can be excluded from fitting by changing the value in the ``include`` column from ``yes`` to ``no`` (in the ``.csv`` file containing your peak list). The easiest way to do this is via the ``edit_peaks`` script.
+Peaks can be excluded from fitting by changing the value in the ``include`` column from ``yes`` to ``no`` (in the ``.csv`` file containing your peak list). The easiest way to do this is via the ``peakipy edit`` script.
 
 
 Protocol
