@@ -81,7 +81,9 @@ from schema import Schema, And, Or, Use, SchemaError
 
 from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_log
 
-
+tmp_path = Path("tmp")
+tmp_path.mkdir(exist_ok=True)
+log_path = Path("log.txt")
 
 def check_xybounds(x):
     x = x.split(",")
@@ -95,8 +97,6 @@ def check_xybounds(x):
 
 def split_peaklist(peaklist, n_cpu):
     """ split peaklist into smaller files based on number of cpus"""
-    tmp_path = Path("tmp")
-    tmp_path.mkdir(exist_ok=True)
     clustids = peaklist.CLUSTID.unique()
     window = int(np.ceil(len(clustids) / n_cpu))
     clustids = [clustids[i : i + window] for i in range(0, len(clustids), window)]
@@ -493,9 +493,9 @@ def main(argv):
     plot = args.get("--plot")
     if plot == "None":
         plot = None
-        log_file = open("log.txt", "w")
+        log_file = open(tmp_path / log_path, "w")
     else:
-        log_file = open("~log.txt", "w")
+        log_file = open(tmp_path / log_path, "w")
         plot.mkdir(parents=True, exist_ok=True)
 
     args["plot"] = plot
