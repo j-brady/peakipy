@@ -43,7 +43,7 @@ import pandas as pd
 import nmrglue as ng
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.cm import magma, autumn
+from matplotlib.cm import magma, autumn, viridis
 
 from scipy import ndimage
 
@@ -382,7 +382,33 @@ def bokeh_script(doc):
         new_cs = eval(contour_start.value)
         cl = new_cs * contour_factor ** np.arange(contour_num)
         plane_index = select_planes_dic[select_plane.value]
-        spec_source.data = get_contour_data(data[plane_index], cl, extent=extent).data
+
+        pos_neg = pos_neg_contour_dic[pos_neg_contour_radiobutton.active]
+        if pos_neg == "pos/neg":
+            spec_source.data = get_contour_data(
+                data[plane_index], cl, extent=extent, cmap=viridis
+            ).data
+            spec_source_neg.data = get_contour_data(
+                data[plane_index] * -1.0, cl, extent=extent, cmap=autumn
+            ).data
+
+        elif pos_neg == "pos":
+            spec_source.data = get_contour_data(
+                data[plane_index], cl, extent=extent, cmap=viridis
+            ).data
+            spec_source_neg.data = get_contour_data(
+                data[plane_index] * 0.0, cl, extent=extent, cmap=autumn
+            ).data
+
+        elif pos_neg == "neg":
+            spec_source.data = get_contour_data(
+                data[plane_index] * 0.0, cl, extent=extent, cmap=viridis
+            ).data
+            spec_source_neg.data = get_contour_data(
+                data[plane_index] * -1.0, cl, extent=extent, cmap=autumn
+            ).data
+
+
         # print("Value of checkbox",checkbox_group.active)
 
     def exit_edit_peaks(event):
@@ -505,7 +531,7 @@ def bokeh_script(doc):
     contour_factor = 1.20  # scaling factor between contour levels
     cl = contour_start * contour_factor ** np.arange(contour_num)
     extent = (ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1)
-    spec_source = get_contour_data(data[0], cl, extent=extent)
+    spec_source = get_contour_data(data[0], cl, extent=extent, cmap=viridis)
     #  negative contours
     spec_source_neg = get_contour_data(data[0] * -1.0, cl, extent=extent, cmap=autumn)
     p.multi_line(xs="xs", ys="ys", line_color="line_color", source=spec_source)
@@ -592,7 +618,11 @@ def bokeh_script(doc):
     )
     button = Button(label="Save", button_type="success")
     button.on_event(ButtonClick, save_peaks)
-
+    pos_neg_contour_dic = {0: "pos/neg", 1: "pos", 2: "neg"}
+    pos_neg_contour_radiobutton = RadioButtonGroup(
+        labels=[pos_neg_contour_dic[i] for i in pos_neg_contour_dic.keys()], active=0
+    )
+    pos_neg_contour_radiobutton.on_change("active", update_contour)
     # call fit_peaks
     fit_button = Button(label="Fit selected cluster", button_type="primary")
     # lineshape selection
@@ -701,11 +731,12 @@ def bokeh_script(doc):
     # Document layout
     fitting_controls = column(
         row(
-            column(slider_X_RADIUS, slider_Y_RADIUS), column(contour_start, fit_button)
+            column(slider_X_RADIUS, slider_Y_RADIUS),
+            column(row(widgetbox(contour_start, pos_neg_contour_radiobutton)), widgetbox(fit_button)),
         ),
         row(
-            column(widgetbox(ls_div), radio_button_group),
-            column(select_plane, widgetbox(checkbox_group)),
+            column(widgetbox(ls_div), widgetbox(radio_button_group)),
+            column(widgetbox(select_plane), widgetbox(checkbox_group)),
         ),
     )
 
@@ -726,7 +757,9 @@ def bokeh_script(doc):
     # edit_fits tabs
     fitting_layout = fitting_controls
     log_layout = fit_reports
-    recluster_layout = row(clust_div, column(contour_start, struct_el, struct_el_size, recluster))
+    recluster_layout = row(
+        clust_div, column(contour_start, struct_el, struct_el_size, recluster)
+    )
     save_layout = column(savefilename, button, exit_button)
 
     fitting_tab = Panel(child=fitting_layout, title="Peak fitting")
