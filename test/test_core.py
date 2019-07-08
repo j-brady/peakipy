@@ -19,6 +19,8 @@ from peakipy.core import (
 
 
 class TestCoreFunctions(unittest.TestCase):
+
+
     def test_make_mask(self):
         data = np.ones((10, 10))
         c_x = 5

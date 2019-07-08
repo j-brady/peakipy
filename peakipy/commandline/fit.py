@@ -85,6 +85,7 @@ tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
 
+
 def check_xybounds(x):
     x = x.split(",")
     if len(x) == 2:
@@ -114,6 +115,8 @@ class FitPeaksInput:
 
 
 class FitPeaksResult:
+    """ Result of fitting a set of peaks """
+
     def __init__(self, df: pd.DataFrame, log: str):
 
         self.df = df
@@ -407,11 +410,13 @@ def main(argv):
         # ignore_extra_keys=True,
     )
 
+    # validate arguments
     try:
         args = schema.validate(args)
     except SchemaError as e:
         exit(e)
 
+    # update args with values from peakipy.config file
     config_path = Path("peakipy.config")
     if config_path.exists():
         config = json.load(open(config_path))
@@ -422,10 +427,12 @@ def main(argv):
             noise = float(noise)
     else:
         noise = False
+
     args["noise"] = noise
 
     lineshape = args.get("--lineshape")
     args["lineshape"] = lineshape
+
     # params to fix
     to_fix = args.get("--fix")
     args["to_fix"] = to_fix
@@ -514,10 +521,12 @@ def main(argv):
 
     dims = pseudo3D.dims
     data = pseudo3D.data
+    # check data shape is consistent with dims
     if len(dims) != len(data.shape):
         print(f"Dims are {dims} while data shape is {data.shape}?")
         exit()
 
+    # only fit specified planes
     if args.get("--plane", [0]) != [0]:
         _inds = args.get("--plane")
         inds = [i - 1 for i in _inds]
@@ -528,6 +537,7 @@ def main(argv):
             print("You have excluded all the data!", data.shape)
             exit()
 
+    # do not fit these planes
     if args.get("--exclude_plane", [0]) != [0]:
         _inds = args.get("--exclude_plane")
         inds = [i - 1 for i in _inds]
@@ -571,21 +581,24 @@ def main(argv):
 
     args["xy_bounds"] = xy_bounds
 
-    # convert linewidths from Hz to points in case they were adjusted when running run_check_fits.py
+    # convert linewidths from Hz to points in case they were adjusted when running edit.py
     peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
     peaks["YW"] = peaks.YW_HZ * pt_per_hz_f1
 
-    # convert peak positions from ppm to points in case they were adjusted running run_check_fits.py
+    # convert peak positions from ppm to points in case they were adjusted running edit.py
     peaks["X_AXIS"] = peaks.X_PPM.apply(lambda x: uc_f2(x, "PPM"))
     peaks["Y_AXIS"] = peaks.Y_PPM.apply(lambda x: uc_f1(x, "PPM"))
     peaks["X_AXISf"] = peaks.X_PPM.apply(lambda x: uc_f2.f(x, "PPM"))
     peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
 
+    # prepare data for multiprocessing
     if (peaks.CLUSTID.nunique() >= n_cpu) and not args.get("--nomp"):
         print("Using multiprocessing")
         # split peak lists
         tmp_dir = split_peaklist(peaks, n_cpu)
-        peaklists = [pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)]
+        peaklists = [
+            pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
+        ]
         args_list = [FitPeaksInput(args, data) for _ in range(n_cpu)]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)

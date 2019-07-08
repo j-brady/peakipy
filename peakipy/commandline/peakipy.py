@@ -32,6 +32,7 @@ def main(argv):
 
     elif args["<command>"] == "fit":
         import peakipy.commandline.fit as fit
+
         fit.main(argv)
 
     elif args["<command>"] == "edit":
