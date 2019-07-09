@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -16,6 +17,12 @@ from peakipy.core import (
     make_models,
     Pseudo3D,
 )
+
+import peakipy.commandline.edit
+import peakipy.commandline.check
+import peakipy.commandline.fit
+import peakipy.commandline.read
+import peakipy.commandline.spec
 
 
 class TestCoreFunctions(unittest.TestCase):
@@ -219,6 +226,47 @@ class TestCoreFunctions(unittest.TestCase):
                 self.assertEqual(pseudo3D.f1_size, 256)
                 self.assertEqual(pseudo3D.f2_size, 546)
             test_nu += 1
+
+# test for read, edit, fit, check and spec scripts
+# need to actually write proper tests
+class TestBokehScript(unittest.TestCase):
+    @patch('peakipy.commandline.edit.BokehScript')
+    def test_BokehScript(self, MockBokehScript):
+        args = {"<peaklist>":"hello", "<data>":"data"}
+        bokeh_plots = MockBokehScript(args)
+        self.assertIsNotNone(bokeh_plots)
+
+
+class TestCheckScript(unittest.TestCase):
+    @patch('peakipy.commandline.check')
+    def test_main(self, MockCheck):
+        args = {"<peaklist>":"hello", "<data>":"data"}
+        check = MockCheck(args)
+        self.assertIsNotNone(check)
+
+
+class TestFitScript(unittest.TestCase):
+    @patch('peakipy.commandline.fit')
+    def test_main(self, MockFit):
+        args = {"<peaklist>":"hello", "<data>":"data"}
+        fit = MockFit(args)
+        self.assertIsNotNone(fit)
+
+
+class TestReadScript(unittest.TestCase):
+    @patch('peakipy.commandline.read')
+    def test_main(self, MockRead):
+        args = {"<peaklist>":"hello", "<data>":"data"}
+        read = MockRead(args)
+        self.assertIsNotNone(read)
+
+
+class TestSpecScript(unittest.TestCase):
+    @patch('peakipy.commandline.spec')
+    def test_main(self, MockSpec):
+        args = {"<peaklist>":"hello", "<data>":"data"}
+        spec = MockSpec(args)
+        self.assertIsNotNone(spec)
 
 
 if __name__ == "__main__":

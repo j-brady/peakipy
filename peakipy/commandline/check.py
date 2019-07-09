@@ -119,6 +119,8 @@ def main(argv):
         clusters = [int(i) for i in clusters.split(",")]
         # only use these clusters
         fits = fits[fits.clustid.isin(clusters)]
+        if len(fits) < 1:
+            exit(f"Are you sure clusters {clusters} exist?")
 
     groups = fits.groupby("clustid")
 

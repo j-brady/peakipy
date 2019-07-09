@@ -80,10 +80,7 @@ from bokeh.palettes import PuBuGn9, Category20
 from peakipy.core import Pseudo3D, run_log
 
 
-# def bokeh_script(doc):
 class BokehScript:
-
-
     def __init__(self, argv):
 
         args = docopt(__doc__, argv=argv)
@@ -102,6 +99,17 @@ class BokehScript:
         self.setup_quit_button()
         self.setup_plot()
 
+    def init(self, doc):
+        """ initialise the bokeh app """
+
+        doc.add_root(
+            column(
+                self.intro_div,
+                row(column(self.p, self.doc_link), column(self.data_table, self.tabs)),
+                sizing_mode="stretch_both",
+            )
+        )
+        doc.title = "peakipy: Edit Fits"
 
     @property
     def args(self):
@@ -150,6 +158,7 @@ class BokehScript:
         else:
             self.df["Edited"] = np.zeros(len(self.df), dtype=bool)
 
+        # create include column if it doesn't exist
         if "include" in self.df.columns:
             pass
         else:
@@ -217,11 +226,12 @@ class BokehScript:
         self.ppm_f2 = self.uc_f2.ppm_scale()
         self.ppm_f2_0, self.ppm_f2_1 = self.uc_f2.ppm_limits()
 
+        # dimension labels (i.e. 1H, 13C etc.)
         self.f2_label = self.pseudo3D.f2_label
         self.f1_label = self.pseudo3D.f1_label
 
     def setup_radii_sliders(self):
-        # configure sliders
+        # configure sliders for setting radii
         self.slider_X_RADIUS = Slider(
             title="X_RADIUS - ppm",
             start=0.001,
@@ -288,14 +298,24 @@ class BokehScript:
         self.contour_factor = 1.20  # scaling factor between contour levels
         cl = self.contour_start * self.contour_factor ** np.arange(self.contour_num)
         self.extent = (self.ppm_f2_0, self.ppm_f2_1, self.ppm_f1_0, self.ppm_f1_1)
-        self.spec_source = get_contour_data(self.data[0], cl, extent=self.extent, cmap=viridis)
+        self.spec_source = get_contour_data(
+            self.data[0], cl, extent=self.extent, cmap=viridis
+        )
         #  negative contours
-        self.spec_source_neg = get_contour_data(self.data[0] * -1.0, cl, extent=self.extent, cmap=autumn)
-        self.p.multi_line(xs="xs", ys="ys", line_color="line_color", source=self.spec_source)
-        self.p.multi_line(xs="xs", ys="ys", line_color="line_color", source=self.spec_source_neg)
+        self.spec_source_neg = get_contour_data(
+            self.data[0] * -1.0, cl, extent=self.extent, cmap=autumn
+        )
+        self.p.multi_line(
+            xs="xs", ys="ys", line_color="line_color", source=self.spec_source
+        )
+        self.p.multi_line(
+            xs="xs", ys="ys", line_color="line_color", source=self.spec_source_neg
+        )
         # contour_num = Slider(title="contour number", value=20, start=1, end=50,step=1)
         # contour_start = Slider(title="contour start", value=100000, start=1000, end=10000000,step=1000)
-        self.contour_start = TextInput(value="%.2e" % self.thres, title="Contour level:", width=100)
+        self.contour_start = TextInput(
+            value="%.2e" % self.thres, title="Contour level:", width=100
+        )
         # contour_factor = Slider(title="contour factor", value=1.20, start=1., end=2.,step=0.05)
         self.contour_start.on_change("value", self.update_contour)
         # for w in [contour_num,contour_start,contour_factor]:
@@ -321,7 +341,10 @@ class BokehScript:
                     ("Assignment", "@ASS"),
                     ("CLUSTID", "@CLUSTID"),
                     ("RADII", "@X_RADIUS_PPM{0.000}, @Y_RADIUS_PPM{0.000}"),
-                    (f"{self.f2_label},{self.f1_label}", "$x{0.000} ppm, $y{0.000} ppm"),
+                    (
+                        f"{self.f2_label},{self.f1_label}",
+                        "$x{0.000} ppm, $y{0.000} ppm",
+                    ),
                 ],
                 mode="mouse",
                 # add renderers
@@ -344,17 +367,26 @@ class BokehScript:
 
         self.p.on_event(DoubleTap, self.peak_pick_callback)
 
-
-
         self.pos_neg_contour_dic = {0: "pos/neg", 1: "pos", 2: "neg"}
         self.pos_neg_contour_radiobutton = RadioButtonGroup(
-            labels=[self.pos_neg_contour_dic[i] for i in self.pos_neg_contour_dic.keys()], active=0
+            labels=[
+                self.pos_neg_contour_dic[i] for i in self.pos_neg_contour_dic.keys()
+            ],
+            active=0,
         )
         self.pos_neg_contour_radiobutton.on_change("active", self.update_contour)
         # call fit_peaks
         self.fit_button = Button(label="Fit selected cluster", button_type="primary")
         # lineshape selection
-        self.lineshapes = {0: "PV", 1: "G", 2: "L", 3: "PV_PV", 4: "PV_L", 5: "PV_G", 6: "G_L"}
+        self.lineshapes = {
+            0: "PV",
+            1: "G",
+            2: "L",
+            3: "PV_PV",
+            4: "PV_L",
+            5: "PV_G",
+            6: "G_L",
+        }
         self.radio_button_group = RadioButtonGroup(
             labels=[self.lineshapes[i] for i in self.lineshapes.keys()], active=0
         )
@@ -379,17 +411,28 @@ class BokehScript:
         )
 
         self.fit_reports = Div(
-            text="", height=400, sizing_mode="scale_width", style={"overflow-y": "scroll"}
+            text="",
+            height=400,
+            sizing_mode="scale_width",
+            style={"overflow-y": "scroll"},
         )
         # Plane selection
-        self.select_planes_list = [f"{i+1}" for i in range(self.data.shape[self.planes])]
+        self.select_planes_list = [
+            f"{i+1}" for i in range(self.data.shape[self.planes])
+        ]
         self.select_plane = Select(
-            title="Select plane:", value=self.select_planes_list[0], options=self.select_planes_list
+            title="Select plane:",
+            value=self.select_planes_list[0],
+            options=self.select_planes_list,
         )
-        self.select_planes_dic = {f"{i+1}": i for i in range(self.data.shape[self.planes])}
+        self.select_planes_dic = {
+            f"{i+1}": i for i in range(self.data.shape[self.planes])
+        }
         self.select_plane.on_change("value", self.update_contour)
 
-        self.checkbox_group = CheckboxGroup(labels=["fit current plane only"], active=[])
+        self.checkbox_group = CheckboxGroup(
+            labels=["fit current plane only"], active=[]
+        )
 
         #  not sure this is needed
         selected_df = self.df.copy()
@@ -439,7 +482,9 @@ class BokehScript:
                 field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")
             ),
             TableColumn(
-                field="include", title="Include", editor=SelectEditor(options=["yes", "no"])
+                field="include",
+                title="Include",
+                editor=SelectEditor(options=["yes", "no"]),
             ),
             TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
         ]
@@ -452,13 +497,14 @@ class BokehScript:
         # source.selected.on_change('indices', callback)
         self.source.selected.on_change("indices", self.select_callback)
 
-
         # Document layout
         fitting_controls = column(
             row(
                 column(self.slider_X_RADIUS, self.slider_Y_RADIUS),
                 column(
-                    row(widgetbox(self.contour_start, self.pos_neg_contour_radiobutton)),
+                    row(
+                        widgetbox(self.contour_start, self.pos_neg_contour_radiobutton)
+                    ),
                     widgetbox(self.fit_button),
                 ),
             ),
@@ -476,7 +522,9 @@ class BokehScript:
             width=100,
         )
         self.struct_el_size = TextInput(
-            value="3", title="Size(width/radius or width,height for rectangle):", width=100
+            value="3",
+            title="Size(width/radius or width,height for rectangle):",
+            width=100,
         )
 
         self.recluster = Button(label="Re-cluster", button_type="warning")
@@ -486,7 +534,10 @@ class BokehScript:
         fitting_layout = fitting_controls
         log_layout = self.fit_reports
         recluster_layout = row(
-            self.clust_div, column(self.contour_start, self.struct_el, self.struct_el_size, self.recluster)
+            self.clust_div,
+            column(
+                self.contour_start, self.struct_el, self.struct_el_size, self.recluster
+            ),
         )
         save_layout = column(self.savefilename, self.button, self.exit_button)
 
@@ -495,44 +546,6 @@ class BokehScript:
         recluster_tab = Panel(child=recluster_layout, title="Re-cluster peaks")
         save_tab = Panel(child=save_layout, title="Save edited peaklist")
         self.tabs = Tabs(tabs=[fitting_tab, log_tab, recluster_tab, save_tab])
-
-
-
-    def init(self, doc):
-        """ code to initialise the bokeh app """
-
-
-        doc.add_root(
-            column(
-                self.intro_div,
-                row(column(self.p, self.doc_link), column(self.data_table, self.tabs)),
-                sizing_mode="stretch_both",
-            )
-        )
-        doc.title = "peakipy: Edit Fits"
-
-
-
-
-        # for running fit_peaks from edit_fits
-        # fit_all_layout =
-        # fit_all_tab = Panel(child=fit_all_layout)
-        # fit_all_result = Panel(child=fit_all_result_layout)
-        # fit_all_tabs = Tabs(tabs=[fit_all_tab, fit_all_result])
-
-        # curdoc().add_root(
-        #    column(
-        #        intro_div,
-        #        row(column(p, doc_link), column(data_table, tabs)),
-        #        sizing_mode="stretch_both",
-        #    )
-        # )
-        # curdoc().title = "peakipy: Edit Fits"
-        # @property
-        # def doc(self):
-        #     return self._doc
-
-
 
     def clusters(self, thres=None, struc_el="square", struc_size=(3,)):
         """ Find clusters of peaks
@@ -561,7 +574,9 @@ class BokehScript:
         else:
             self.thresh = self.thres
 
-        thresh_data = np.bitwise_or(self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh)
+        thresh_data = np.bitwise_or(
+            self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
+        )
 
         if struc_el == "disk":
             radius = struc_size[0]
@@ -616,14 +631,18 @@ class BokehScript:
         self.struc_size = tuple([int(i) for i in self.struct_el_size.value.split(",")])
 
         print(self.struc_size)
-        self.clusters(thres=eval(self.contour_start.value), struc_el=self.struct_el.value, struc_size=self.struc_size)
+        self.clusters(
+            thres=eval(self.contour_start.value),
+            struc_el=self.struct_el.value,
+            struc_size=self.struc_size,
+        )
         # print("struct", struct_el.value)
         # print("struct size", struct_el_size.value )
         # print(type(struct_el_size.value) )
         # print(type(eval(struct_el_size.value)) )
         # print(type([].extend(eval(struct_el_size.value)))
 
-    def update_memcnt(self, df):
+    def update_memcnt(self):
 
         for ind, group in self.df.groupby("CLUSTID"):
             self.df.loc[group.index, "MEMCNT"] = len(group)
@@ -671,7 +690,8 @@ class BokehScript:
         self.fit_reports.text += stdout.decode() + "<br><hr><br>"
         self.fit_reports.text = self.fit_reports.text.replace("\n", "<br>")
 
-    def save_peaks(self,event):
+    def save_peaks(self, event):
+
         if self.savefilename.value:
             to_save = Path(self.savefilename.value)
         else:
@@ -693,11 +713,10 @@ class BokehScript:
         current = self.df.iloc[selectionIndex]
 
         # update memcnt
-        self.update_memcnt(self.df)
+        self.update_memcnt()
 
     def peak_pick_callback(self, event):
         # global so that df is updated globally
-        #global df
         x_radius_ppm = 0.035
         y_radius_ppm = 0.35
         x_radius = x_radius_ppm * self.pt_per_ppm_f2
@@ -747,15 +766,19 @@ class BokehScript:
             "color": "black",
         }
         self.df = self.df.append(new_peak, ignore_index=True)
-        self.update_memcnt(self.df)
+        self.update_memcnt()
 
     def slider_callback(self, attrname, old, new):
 
         selectionIndex = self.source.selected.indices
         current = self.df.iloc[selectionIndex]
 
-        self.df.loc[selectionIndex, "X_RADIUS"] = self.slider_X_RADIUS.value * self.pt_per_ppm_f2
-        self.df.loc[selectionIndex, "Y_RADIUS"] = self.slider_Y_RADIUS.value * self.pt_per_ppm_f1
+        self.df.loc[selectionIndex, "X_RADIUS"] = (
+            self.slider_X_RADIUS.value * self.pt_per_ppm_f2
+        )
+        self.df.loc[selectionIndex, "Y_RADIUS"] = (
+            self.slider_Y_RADIUS.value * self.pt_per_ppm_f1
+        )
         self.df.loc[selectionIndex, "X_RADIUS_PPM"] = self.slider_X_RADIUS.value
         self.df.loc[selectionIndex, "Y_RADIUS_PPM"] = self.slider_Y_RADIUS.value
 
@@ -771,8 +794,8 @@ class BokehScript:
         # print(list(selected_df))
         self.source.data = {col: self.df[col] for col in self.df.columns}
 
-
     def update_contour(self, attrname, old, new):
+
         new_cs = eval(self.contour_start.value)
         cl = new_cs * self.contour_factor ** np.arange(self.contour_num)
         plane_index = self.select_planes_dic[self.select_plane.value]
@@ -805,7 +828,7 @@ class BokehScript:
         # print("Value of checkbox",checkbox_group.active)
 
     def exit_edit_peaks(self, event):
-        exit()
+        sys.exit()
 
 
 def get_contour_data(data, levels, **kwargs):
@@ -840,16 +863,10 @@ def get_contour_data(data, levels, **kwargs):
             col.append(thecol)
 
     source = ColumnDataSource(
-    data={
-        "xs": xs,
-        "ys": ys,
-        "line_color": col,
-        "xt": xt,
-        "yt": yt,
-        "text": text,
-        }
+        data={"xs": xs, "ys": ys, "line_color": col, "xt": xt, "yt": yt, "text": text}
     )
     return source
+
 
 def check_input(args):
     """ validate commandline input """
@@ -876,16 +893,12 @@ def check_input(args):
         args = schema.validate(args)
         return args
     except SchemaError as e:
-        exit(e)
+        sys.exit(e)
 
 
 def main(args):
-    argv = args
-    # docopt(__doc__, argv)
     run_log()
-    bs = BokehScript(argv)
-    # server = Server({"/": bokeh_script})
-    # server = Server({"/": BokehScript})
+    bs = BokehScript(args)
     server = Server({"/": bs.init})
     print("using class")
     server.start()
