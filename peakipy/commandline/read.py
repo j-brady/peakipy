@@ -263,10 +263,10 @@ class Peaklist:
         return df
 
     def _read_sparky(self):
-
+        
         df = pd.read_csv(
             self.path,
-            skiprows=2,
+            skiprows=1,
             delim_whitespace=True,
             names=["ASS", "Y_PPM", "X_PPM", "VOLUME", "HEIGHT", "YW_HZ", "XW_HZ"],
         )
