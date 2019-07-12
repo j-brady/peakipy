@@ -356,7 +356,7 @@ class Peaklist:
             closed_data = self.data
 
         labeled_array, num_features = ndimage.label(closed_data, l_struc)
-        # print(labeled_array, num_features)
+        print(labeled_array, num_features)
 
         self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
 

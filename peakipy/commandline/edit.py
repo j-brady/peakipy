@@ -188,10 +188,12 @@ class BokehScript:
             print(f"Using config file with --dims={config.get('--dims')}")
             dims = config.get("--dims", [0, 1, 2])
             self._dims = ",".join(str(i) for i in dims)
+            self.thres = config.get("--thres")
 
         else:
             # get dim numbers from commandline
             self._dims = self.args.get("--dims")
+            self.thres = False 
 
         self.dims = [int(i) for i in self._dims.split(",")]
 
@@ -291,8 +293,8 @@ class BokehScript:
             active_scroll="wheel_zoom",
             active_tap=None,
         )
-
-        self.thres = threshold_otsu(self.data[0])
+        if not thres:
+            thres = threshold_otsu(self.data[0])
         self.contour_start = self.thres  # contour level start value
         self.contour_num = 20  # number of contour levels
         self.contour_factor = 1.20  # scaling factor between contour levels
