@@ -575,12 +575,12 @@ class BokehScript:
         peaks = [[y-1, x-1] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
         if thres == None:
-            self.thresh = threshold_otsu(self.data[0])
+            thresh = threshold_otsu(self.data[0])
         else:
-            self.thresh = self.thres
+            thresh = thres
 
         thresh_data = np.bitwise_or(
-            self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
+            self.data[0] < (thresh * -1.0), self.data[0] > thresh
         )
 
         if struc_el == "disk":
