@@ -260,6 +260,18 @@ class TestReadScript(unittest.TestCase):
         read = MockRead(args)
         self.assertIsNotNone(read)
 
+    def test_read_pipe_peaklist(self):
+        from peakipy.commandline.read import Peaklist
+        args = {"path":"test/test_pipe.tab", "data_path":"test/test_pipe.ft2", "dims":[0,1,2],"fmt":"pipe"}
+        peaklist = Peaklist(**args)
+        self.assertIsNotNone(peaklist)
+        self.assertIs(len(peaklist.df), 3)
+        # self.assertIs(peaklist.df.X_AXISf.iloc[0], 323.019)
+        self.assertIs(peaklist.fmt, "pipe")
+        self.assertEqual(peaklist.df.ASS.iloc[0], "None")
+        self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
+
+
 
 class TestSpecScript(unittest.TestCase):
     @patch('peakipy.commandline.spec')

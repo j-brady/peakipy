@@ -2,23 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/edit.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/edit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/peakipy/commandline/read.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/read.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/edited_peaks.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/edited_peaks.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/fits.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/fits.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/plots.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/plots.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_0.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_0.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_0_fit.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_0_fit.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_1.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_1.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_1_fit.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_1_fit.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_2.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_2_fit.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_2_fit.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_3.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_3.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_3_fit.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/peaks_3_fit.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/tmp.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/tmp.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_ddx4/tmp/tmp_out.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_ddx4/tmp/tmp_out.csv" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,7 +17,7 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor>
+              <first_editor relative-caret-position="360">
                 <caret line="138" column="27" selection-start-line="138" selection-start-column="27" selection-end-line="138" selection-end-column="27" />
               </first_editor>
               <second_editor />
@@ -41,10 +26,13 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/setup.py">
+        <entry file="file://$PROJECT_DIR$/test/test_core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="21" column="18" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
+            <state relative-caret-position="250">
+              <caret line="271" column="64" selection-start-line="271" selection-start-column="64" selection-end-line="271" selection-end-column="64" />
+              <folding>
+                <element signature="e#0#15#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -52,8 +40,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/peakipy/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="190">
-              <caret line="867" column="8" selection-start-line="867" selection-start-column="8" selection-end-line="867" selection-end-column="8" />
+            <state relative-caret-position="165">
+              <caret line="983" column="6" selection-start-line="983" selection-start-column="6" selection-end-line="983" selection-end-column="6" />
               <folding>
                 <element signature="e#758#768#0" expanded="true" />
               </folding>
@@ -61,64 +49,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-507">
-              <caret line="593" column="37" selection-start-line="593" selection-start-column="37" selection-end-line="593" selection-end-column="37" />
-              <folding>
-                <element signature="e#3279#3289#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/peakipy/commandline/spec.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="393">
-              <caret line="297" column="37" selection-start-line="297" selection-start-column="37" selection-end-line="297" selection-end-column="37" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/peakipy/commandline/peakipy.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="943">
-              <caret line="63" selection-start-line="63" selection-end-line="63" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="11670">
-              <caret line="889" column="5" selection-start-line="889" selection-start-column="5" selection-end-line="889" selection-end-column="5" />
-              <folding>
-                <element signature="e#1097#1106#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/peakipy/commandline/read.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1842">
-              <caret line="447" column="31" selection-start-line="447" selection-start-column="31" selection-end-line="447" selection-end-column="31" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/peakipy/commandline/check.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="328">
-              <caret line="248" column="55" selection-start-line="248" selection-start-column="55" selection-end-line="248" selection-end-column="55" />
+            <state relative-caret-position="117">
+              <caret line="494" selection-start-line="494" selection-end-line="494" />
               <folding>
-                <element signature="e#1552#1563#0" expanded="true" />
+                <element signature="e#3776#3786#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -165,15 +102,15 @@
         <option value="$PROJECT_DIR$/scripts/spec" />
         <option value="$PROJECT_DIR$/scripts/read_peaklist.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/spec.py" />
-        <option value="$PROJECT_DIR$/peakipy/commandline/read.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/peakipy.py" />
         <option value="$PROJECT_DIR$/peakipy/core.py" />
         <option value="$PROJECT_DIR$/pyproject.toml" />
         <option value="$PROJECT_DIR$/peakipy/commandline/fit.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/edit.py" />
-        <option value="$PROJECT_DIR$/test/test_core.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/check.py" />
+        <option value="$PROJECT_DIR$/test/test_core.py" />
+        <option value="$PROJECT_DIR$/peakipy/commandline/read.py" />
       </list>
     </option>
   </component>
@@ -250,7 +187,7 @@
     <frame x="0" y="23" width="1280" height="777" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16679905" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16679905" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -261,7 +198,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49960285" visible="true" weight="0.18248175" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49960285" visible="true" weight="0.43649635" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50039715" side_tool="true" weight="0.51970804" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32868218" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -321,81 +258,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor>
-            <caret line="138" column="27" selection-start-line="138" selection-start-column="27" selection-end-line="138" selection-end-column="27" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/test_core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="545">
-          <caret line="270" selection-start-line="270" selection-end-line="270" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/setup.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
           <caret line="21" column="18" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/spec.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="393">
-          <caret line="297" column="37" selection-start-line="297" selection-start-column="37" selection-end-line="297" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/peakipy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="943">
-          <caret line="63" selection-start-line="63" selection-end-line="63" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11670">
-          <caret line="889" column="5" selection-start-line="889" selection-start-column="5" selection-end-line="889" selection-end-column="5" />
-          <folding>
-            <element signature="e#1097#1106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/read.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1842">
-          <caret line="447" column="31" selection-start-line="447" selection-start-column="31" selection-end-line="447" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-507">
-          <caret line="593" column="37" selection-start-line="593" selection-start-column="37" selection-end-line="593" selection-end-column="37" />
-          <folding>
-            <element signature="e#3279#3289#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="867" column="8" selection-start-line="867" selection-start-column="8" selection-end-line="867" selection-end-column="8" />
-          <folding>
-            <element signature="e#758#768#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -405,6 +271,80 @@
           <caret line="248" column="55" selection-start-line="248" selection-start-column="55" selection-end-line="248" selection-end-column="55" />
           <folding>
             <element signature="e#1552#1563#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="483">
+          <caret line="889" column="5" selection-start-line="889" selection-start-column="5" selection-end-line="889" selection-end-column="5" />
+          <folding>
+            <element signature="e#1097#1106#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/peakipy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="483">
+          <caret line="63" selection-start-line="63" selection-end-line="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/spec.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="393">
+          <caret line="297" selection-start-line="297" selection-end-line="297" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="593" column="37" selection-start-line="593" selection-start-column="37" selection-end-line="593" selection-end-column="37" />
+          <folding>
+            <element signature="e#3279#3289#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="360">
+            <caret line="138" column="27" selection-start-line="138" selection-start-column="27" selection-end-line="138" selection-end-column="27" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="983" column="6" selection-start-line="983" selection-start-column="6" selection-end-line="983" selection-end-column="6" />
+          <folding>
+            <element signature="e#758#768#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test_core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="250">
+          <caret line="271" column="64" selection-start-line="271" selection-start-column="64" selection-end-line="271" selection-end-column="64" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/read.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="117">
+          <caret line="494" selection-start-line="494" selection-end-line="494" />
+          <folding>
+            <element signature="e#3776#3786#0" expanded="true" />
           </folding>
         </state>
       </provider>

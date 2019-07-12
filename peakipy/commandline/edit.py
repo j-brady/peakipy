@@ -571,8 +571,7 @@ class BokehScript:
         :type struc_size:
 
         """
-        # nmrPipe points start at 1 - therefore -1 to get python indices
-        peaks = [[y-1, x-1] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+        peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
         if thres == None:
             thresh = threshold_otsu(self.data[0])

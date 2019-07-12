@@ -14,6 +14,7 @@
 
     Options:
         -h --help                 Show this screen
+        -v --verb                 Verbose mode
         --version                 Show version
 
         --thres=<thres>           Threshold for making binary mask that is used for peak clustering [default: None]
@@ -42,6 +43,7 @@
         --show                    Show the clusters on the spectrum color coded using matplotlib
 
         --fuda                    Create a parameter file for running fuda (params.fuda)
+
 
     Examples:
         read_peaklist.py test.tab test.ft2 --pipe --dims0,1
@@ -186,10 +188,11 @@ class Peaklist:
 
     """
 
-    def __init__(self, path, data_path, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4]):
+    def __init__(self, path, data_path, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4], verbose=False):
         self.fmt = fmt
         self.path = path
         self.data_path = data_path
+        self.verbose = verbose
         if self.fmt == "a2":
             self.df = self._read_analysis()
 
@@ -214,7 +217,8 @@ class Peaklist:
         self.pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
         pt_per_hz_f2dim = pseudo3D.pt_per_hz_f2
         pt_per_hz_f1dim = pseudo3D.pt_per_hz_f1
-        print("Points per hz f1 = %.3f, f2 = %.3f" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
+        if self.verbose:
+            print("Points per hz f1 = %.3f, f2 = %.3f" % (pt_per_hz_f1dim, pt_per_hz_f2dim))
 
         # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: uc_f2(x, "ppm"))
@@ -290,20 +294,24 @@ class Peaklist:
         return df
 
     def check_assignments(self):
+        self.df["ASS"] = self.df.ASS.astype(str)
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates) > 0:
             print(
-                """ You have duplicated assignments in your list...
-            Currently each peak needs a unique assignment. Sorry about that buddy...
-            Here are the duplicates"""
+            """ You have duplicated assignments in your list...
+                Currently each peak needs a unique assignment. Sorry about that buddy...
+            """
             )
-            print(duplicates)
-            print("Creating dummy assignments for duplicates")
             self.df.loc[duplicates_bool, "ASS"] = [
                 f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
             ]
-            print(self.df.ASS)
+            if self.verbose:
+                print("Here are the duplicates")
+                print(duplicates)
+                print(self.df.ASS)
+
+            print("Creating dummy assignments for duplicates")
 
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks
@@ -322,7 +330,7 @@ class Peaklist:
 
 
         """
-        peaks = [[y-1, x-1] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+        peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
         if thres == None:
             self.thresh = threshold_otsu(self.data[0])
@@ -336,27 +344,30 @@ class Peaklist:
 
         if struc_el == "disk":
             radius = struc_size[0]
-            print(f"using disk with {radius}")
+            if self.verbose:
+                print(f"using disk with {radius}")
             closed_data = binary_closing(thresh_data, disk(int(radius)))
 
         elif struc_el == "square":
             width = struc_size[0]
-            print(f"using square with {width}")
+            if self.verbose:
+                print(f"using square with {width}")
             closed_data = binary_closing(thresh_data, square(int(width)))
 
         elif struc_el == "rectangle":
             width, height = struc_size
-            print(f"using rectangle with {width} and {height}")
+            if self.verbose:
+                print(f"using rectangle with {width} and {height}")
             closed_data = binary_closing(
                 thresh_data, rectangle(int(width), int(height))
             )
 
         else:
-            print(f"Not using any closing function")
+            if self.verbose:
+                print(f"Not using any closing function")
             closed_data = self.data
 
         labeled_array, num_features = ndimage.label(closed_data, l_struc)
-        print(labeled_array, num_features)
 
         self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
 
@@ -372,6 +383,7 @@ class Peaklist:
         for ind, group in self.df.groupby("CLUSTID"):
             self.df.loc[group.index, "MEMCNT"] = len(group)
 
+        return ClustersResult(labeled_array, num_features, closed_data, peaks)
     # def adaptive_clusters(self, block_size, offset, l_struc=None):
 
     #     self.thresh = threshold_otsu(self.data[0])
@@ -464,8 +476,34 @@ SHAPE=GLORE
 {overlap_peaks}"""
         )
         with open(fuda_params, "w") as f:
+            print(f"Writing FuDA file {fuda_file}")
             f.write(fuda_file)
-        print(overlap_peaks)
+        if self.verbose:
+            print(overlap_peaks)
+
+class ClustersResult:
+
+    def __init__(self, labeled_array, num_features, closed_data, peaks):
+        self._labeled_array = labeled_array
+        self._num_features = num_features
+        self._closed_data = closed_data
+        self._peaks = peaks
+
+    @property
+    def labeled_array(self):
+        return self._labeled_array
+
+    @property
+    def num_features(self):
+        return self._num_features
+
+    @property
+    def closed_data(self):
+        return self._closed_data
+
+    @property
+    def peaks(self):
+        return self._peaks
 
 
 def main(argv):
@@ -480,7 +518,9 @@ def main(argv):
         args["--thres"] = eval(args["--thres"])
 
     thres = args.get("--thres")
-    print("Using arguments:", args)
+    verbose_mode = args.get("--verb")
+    if verbose_mode:
+        print("Using arguments:", args)
 
     f1radius = float(args.get("--f1radius"))
     f2radius = float(args.get("--f2radius"))
@@ -521,10 +561,11 @@ def main(argv):
     thres = peaks.get_thres()
 
     if args.get("--fuda"):
-        print("Creating fuda parameter file")
         peaks.to_fuda()
 
-    print(data.head())
+    if verbose_mode:
+        print(data.head())
+
     outfmt = args.get("--outfmt", "csv")
     outname = filename.stem
     if outfmt == "csv":
