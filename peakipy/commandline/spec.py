@@ -208,6 +208,10 @@ def main(args):
 
         # calculate contour levels
         cl = contour_start * contour_factor ** np.arange(contour_num)
+        if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
+            print(f"Setting contour levels to np.abs({cl})")
+            cl = np.abs(cl)
+
         ax.contour(
             data,
             cl,

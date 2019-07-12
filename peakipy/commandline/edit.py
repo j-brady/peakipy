@@ -299,6 +299,9 @@ class BokehScript:
         self.contour_num = 20  # number of contour levels
         self.contour_factor = 1.20  # scaling factor between contour levels
         cl = self.contour_start * self.contour_factor ** np.arange(self.contour_num)
+        if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
+            print(f"Setting contour levels to np.abs({cl})")
+            cl = np.abs(cl)
         self.extent = (self.ppm_f2_0, self.ppm_f2_1, self.ppm_f1_0, self.ppm_f1_1)
         self.spec_source = get_contour_data(
             self.data[0], cl, extent=self.extent, cmap=viridis
@@ -800,6 +803,9 @@ class BokehScript:
 
         new_cs = eval(self.contour_start.value)
         cl = new_cs * self.contour_factor ** np.arange(self.contour_num)
+        if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
+            print(f"Setting contour levels to np.abs({cl})")
+            cl = np.abs(cl)
         plane_index = self.select_planes_dic[self.select_plane.value]
 
         pos_neg = self.pos_neg_contour_dic[self.pos_neg_contour_radiobutton.active]
