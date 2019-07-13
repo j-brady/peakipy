@@ -21,6 +21,7 @@
 
 
 import sys
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -28,16 +29,24 @@ import numpy as np
 import nmrglue as ng
 import matplotlib.pyplot as plt
 import pandas as pd
+import textwrap
 
 from numba import jit
 from numpy import sqrt, log, pi, exp
+from tabulate import tabulate
+
 from lmfit import Model
 from lmfit.model import ModelResult
 from lmfit.models import LinearModel
+
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Button
 
+from bokeh.palettes import Category20
+from scipy import ndimage
+from skimage.morphology import square, binary_closing, disk, rectangle
+from skimage.filters import threshold_otsu
 
 # constants
 log2 = log(2)
@@ -1087,6 +1096,18 @@ class Pseudo3D:
         # dim label
         return self._f2_label
 
+    @property
+    def planes(self):
+        return self.dims[0]
+
+    @property
+    def f1(self):
+        return self.dims[1]
+
+    @property
+    def f2(self):
+        return self.dims[2]
+
     # size of f1 and f2 in points
     @property
     def f2_size(self):
@@ -1120,6 +1141,15 @@ class Pseudo3D:
     def pt_per_hz_f2(self):
         return self.f2_size / self._udic[self._f2_dim]["sw"]
 
+    # hz per point
+    @property
+    def hz_per_pt_f1(self):
+        return 1./ self.pt_per_hz_f1
+
+    @property
+    def hz_per_pt_f2(self):
+        return 1./self.pt_per_hz_f2
+
     # ppm per point
     @property
     def ppm_per_pt_f1(self):
@@ -1130,7 +1160,37 @@ class Pseudo3D:
         return 1.0 / self.pt_per_ppm_f2
 
     # get ppm limits for ppm scales
+    @property
+    def f2_ppm_scale(self):
+        return self.uc_f2.ppm_scale()
 
+    @property
+    def f1_ppm_scale(self):
+        return self.uc_f1.ppm_scale()
+
+    @property
+    def f2_ppm_limits(self):
+        return self.uc_f2.ppm_limits()
+
+    @property
+    def f1_ppm_limits(self):
+        return self.uc_f1.ppm_limits()
+
+    @property
+    def f2_ppm_0(self):
+        return self.f2_ppm_limits[0]
+
+    @property
+    def f2_ppm_1(self):
+        return self.f2_ppm_limits[1]
+
+    @property
+    def f1_ppm_0(self):
+        return self.f1_ppm_limits[0]
+
+    @property
+    def f1_ppm_1(self):
+        return self.f1_ppm_limits[1]
 
 #    uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
 #    ppm_f1 = uc_f1.ppm_scale()
@@ -1139,3 +1199,544 @@ class Pseudo3D:
 #    uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
 #    ppm_f2 = uc_f2.ppm_scale()
 #    ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
+
+
+class Peaklist(Pseudo3D):
+    """ Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
+
+    Parameters
+    ----------
+    path : path-like or str
+        path to peaklist
+    data : ndarray
+        NMRPipe format data
+    fmt : a2|sparky|pipe
+    dims: [planes,y,x]
+    radii: [x,y]
+        Mask radii in ppm
+
+
+    Methods
+    -------
+
+    clusters :
+    adaptive_clusters :
+
+    Returns
+    -------
+    df : pandas DataFrame
+        dataframe containing peaklist
+
+    """
+
+    def __init__(self, path, data_path, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4], posF1='Position F2',posF2='Position F1', verbose=False):
+
+        dic, data = ng.pipe.read(data_path)
+        Pseudo3D.__init__(self, dic, data, dims)
+        self.fmt = fmt
+        self.peaklist_path = path
+        self.verbose = verbose
+        self._radii = radii
+
+        if self.verbose:
+            print("Points per hz f1 = %.3f, f2 = %.3f" % (self.pt_per_hz_f1, self.pt_per_hz_f2))
+
+        self._analysis_to_pipe_dic = {
+            "#": "INDEX",
+            # "": "X_AXIS",
+            # "": "Y_AXIS",
+            # "": "DX",
+            # "": "DY",
+            "Position F1": "X_PPM",
+            "Position F2": "Y_PPM",
+            # "": "X_HZ",
+            # "": "Y_HZ",
+            # "": "XW",
+            # "": "YW",
+            "Line Width F1 (Hz)": "XW_HZ",
+            "Line Width F2 (Hz)": "YW_HZ",
+            # "": "X1",
+            # "": "X3",
+            # "": "Y1",
+            # "": "Y3",
+            "Height": "HEIGHT",
+            # "Height": "DHEIGHT",
+            "Volume": "VOL",
+            # "": "PCHI2",
+            # "": "TYPE",
+            # "": "ASS",
+            # "": "CLUSTID",
+            # "": "MEMCNT"
+        }
+
+        self._sparky_to_pipe_dic = {
+            "index": "INDEX",
+            # "": "X_AXIS",
+            # "": "Y_AXIS",
+            # "": "DX",
+            # "": "DY",
+            "w1": "X_PPM",
+            "w2": "Y_PPM",
+            # "": "X_HZ",
+            # "": "Y_HZ",
+            # "": "XW",
+            # "": "YW",
+            "lw1 (hz)": "XW_HZ",
+            "lw2 (hz)": "YW_HZ",
+            # "": "X1",
+            # "": "X3",
+            # "": "Y1",
+            # "": "Y3",
+            "Height": "HEIGHT",
+            # "Height": "DHEIGHT",
+            "Volume": "VOL",
+            # "": "PCHI2",
+            # "": "TYPE",
+            "Assignment": "ASS",
+            # "": "CLUSTID",
+            # "": "MEMCNT"
+        }
+
+        self._analysis_to_pipe_dic[posF1] = "Y_PPM"
+        self._analysis_to_pipe_dic[posF2] = "X_PPM"
+
+        self._df = self.read_peaklist()
+
+    def read_peaklist(self):
+
+        if self.fmt == "a2":
+            self._df = self._read_analysis()
+
+        elif self.fmt == "sparky":
+            self._df = self._read_sparky()
+
+        elif self.fmt == "pipe":
+            self._df = self._read_pipe()
+
+        else:
+            raise (TypeError, "I don't know this format")
+
+        return self._df
+
+    @property
+    def df(self):
+        return self._df
+
+    @df.setter
+    def df(self, df):
+        self._df = df
+        return self._df
+
+    @property
+    def radii(self):
+        return self._radii
+
+    @property
+    def f2_radius(self):
+        """ radius for fitting mask in f2 """
+        return self.radii[0]
+
+    @property
+    def f1_radius(self):
+        """ radius for fitting mask in f1 """
+        return self.radii[1]
+
+    def update_df(self):
+        # int point value
+        self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: self.uc_f2(x, "ppm"))
+        self.df["Y_AXIS"] = self.df.Y_PPM.apply(lambda x: self.uc_f1(x, "ppm"))
+        # decimal point value
+        self.df["X_AXISf"] = self.df.X_PPM.apply(lambda x: self.uc_f2.f(x, "ppm"))
+        self.df["Y_AXISf"] = self.df.Y_PPM.apply(lambda x: self.uc_f1.f(x, "ppm"))
+        # in case of missing values (should estimate though)
+        self.df.XW_HZ.replace("None", "20.0", inplace=True)
+        self.df.YW_HZ.replace("None", "20.0", inplace=True)
+        self.df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
+        self.df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
+        # convert linewidths to float
+        self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
+        self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))
+        # convert Hz lw to points
+        self.df["XW"] = self.df.XW_HZ.apply(lambda x: x * self.pt_per_hz_f2)
+        self.df["YW"] = self.df.YW_HZ.apply(lambda x: x * self.pt_per_hz_f1)
+        # makes an assignment column
+        if self.fmt == "a2":
+            self.df["ASS"] = self.df.apply(
+                lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
+            )
+
+        # make default values for X and Y radii for fit masks
+        self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f2_radius
+        self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f1_radius
+        self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(
+            lambda x: x * self.pt_per_ppm_f2
+        )
+        self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(
+            lambda x: x * self.pt_per_ppm_f1
+        )
+        # add include column
+        if "include" in self.df.columns:
+            pass
+        else:
+            self.df["include"] = self.df.apply(lambda x: "yes", axis=1)
+
+        # check assignments for duplicates
+        self.check_assignments()
+        # check that peaks are within the bounds of the data
+        self.check_peak_bounds()
+
+    def _read_analysis(self):
+
+        df = pd.read_csv(self.peaklist_path, delimiter="\t")
+        new_columns = [analysis_to_pipe.get(i, i) for i in df.columns]
+        pipe_columns = dict(zip(df.columns, new_columns))
+        df = df.rename(index=str, columns=pipe_columns)
+
+        return df
+
+    def _read_sparky(self):
+
+        df = pd.read_csv(
+            self.peaklist_path,
+            skiprows=1,
+            delim_whitespace=True,
+            names=["ASS", "Y_PPM", "X_PPM", "VOLUME", "HEIGHT", "YW_HZ", "XW_HZ"],
+        )
+
+        return df
+
+    def _read_pipe(self):
+        to_skip = 0
+        with open(self.peaklist_path) as f:
+            lines = f.readlines()
+            for line in lines:
+                if line.startswith("VARS"):
+                    columns = line.strip().split()[1:]
+                elif line[:5].strip(" ").isdigit():
+                    break
+                else:
+                    to_skip += 1
+        df = pd.read_csv(
+            self.peaklist_path, skiprows=to_skip, names=columns, delim_whitespace=True
+        )
+        return df
+
+    @property
+    def analysis_to_pipe_dic(self):
+        return self._analysis_to_pipe_dic
+
+    @property
+    def sparky_to_pipe_dic(self):
+        return self._sparky_to_pipe_dic
+
+    def check_assignments(self):
+        self.df["ASS"] = self.df.ASS.astype(str)
+        duplicates_bool = self.df.ASS.duplicated()
+        duplicates = self.df.ASS[duplicates_bool]
+        if len(duplicates) > 0:
+            print(
+"""
+#############################################################################
+    You have duplicated assignments in your list...
+    Currently each peak needs a unique assignment. Sorry about that buddy...
+#############################################################################
+"""
+            )
+            self.df.loc[duplicates_bool, "ASS"] = [
+                f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
+            ]
+            if self.verbose:
+                print("Here are the duplicates")
+                print(duplicates)
+                print(self.df.ASS)
+
+            print("""
+            
+    Creating dummy assignments for duplicates
+            
+            """)
+
+    def check_peak_bounds(self):
+        # check that peaks are within the bounds of spectrum
+        within_x = self.df.X_AXIS < self.f2_size
+        within_y = self.df.Y_AXIS < self.f1_size
+        self.excluded = self.df[~(within_x & within_y)]
+        self.df = self.df[within_x & within_y]
+        if len(self.excluded)>0:
+            print(f"""
+           
+#################################################################################
+
+Excluding the following peaks as they are not within the spectrum which has shape 
+
+{self.data.shape}
+
+{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS"]],headers="keys")}
+
+
+#################################################################################
+            """)
+
+    def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
+        """ Find clusters of peaks
+
+        :param thres: threshold for positive signals above which clusters are selected. If None then threshold_otsu is used
+        :type thres: float
+
+        :param struc_el: 'square'|'disk'|'rectangle'
+            structuring element for binary_closing of thresholded data can be square, disc or rectangle
+        :type struc_el: str
+
+        :param struc_size: size/dimensions of structuring element
+            for square and disk first element of tuple is used (for disk value corresponds to radius)
+            for rectangle, tuple corresponds to (width,height).
+        :type struc_size: tuple
+
+
+        """
+        peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+
+        if thres == None:
+            self.thresh = abs(threshold_otsu(self.data[0]))
+        else:
+            self.thresh = thres
+
+        # get positive and negative
+        thresh_data = np.bitwise_or(
+            self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
+        )
+
+        if struc_el == "disk":
+            radius = struc_size[0]
+            if self.verbose:
+                print(f"using disk with {radius}")
+            closed_data = binary_closing(thresh_data, disk(int(radius)))
+
+        elif struc_el == "square":
+            width = struc_size[0]
+            if self.verbose:
+                print(f"using square with {width}")
+            closed_data = binary_closing(thresh_data, square(int(width)))
+
+        elif struc_el == "rectangle":
+            width, height = struc_size
+            if self.verbose:
+                print(f"using rectangle with {width} and {height}")
+            closed_data = binary_closing(
+                thresh_data, rectangle(int(width), int(height))
+            )
+
+        else:
+            if self.verbose:
+                print(f"Not using any closing function")
+            closed_data = self.data
+
+        labeled_array, num_features = ndimage.label(closed_data, l_struc)
+        #print(list(labeled_array),list(peaks),num_features)
+
+        self.df.loc[:, "CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+
+        #  renumber "0" clusters
+        max_clustid = self.df["CLUSTID"].max()
+        n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
+        self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+            max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+        )
+
+        # count how many peaks per cluster
+        for ind, group in self.df.groupby("CLUSTID"):
+            self.df.loc[group.index, "MEMCNT"] = len(group)
+
+        self.df.loc[:, "color"] = self.df.apply(
+            lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
+            axis=1,
+        )
+
+        return ClustersResult(labeled_array, num_features, closed_data, peaks)
+
+    # def adaptive_clusters(self, block_size, offset, l_struc=None):
+
+    #     self.thresh = threshold_otsu(self.data[0])
+
+    #     peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+
+    #     binary_adaptive = threshold_adaptive(
+    #         self.data[0], block_size=block_size, offset=offset
+    #     )
+
+    #     labeled_array, num_features = ndimage.label(binary_adaptive, l_struc)
+    #     # print(labeled_array, num_features)
+
+    #     self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+
+    #     #  renumber "0" clusters
+    #     max_clustid = self.df["CLUSTID"].max()
+    #     n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
+    #     self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+    #         max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+    #     )
+
+    def mask_method(self, x_radius=0.04, y_radius=0.4, l_struc=None):
+
+        self.thresh = threshold_otsu(self.data[0])
+
+        x_radius = self.pt_per_ppm_f2 * x_radius
+        y_radius = self.pt_per_ppm_f1 * y_radius
+
+        mask = np.zeros(self.data[0].shape, dtype=bool)
+
+        for ind, peak in self.df.iterrows():
+            mask += make_mask(
+                self.data[0], peak.X_AXISf, peak.Y_AXISf, x_radius, y_radius
+            )
+
+        peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
+        labeled_array, num_features = ndimage.label(mask, l_struc)
+
+        self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+
+        #  renumber "0" clusters
+        max_clustid = self.df["CLUSTID"].max()
+        n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
+        self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
+            max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
+        )
+        import matplotlib.pyplot as plt
+
+        plt.imshow(mask)
+        plt.show()
+
+    def get_df(self):
+        return self.df
+
+    def get_thres(self):
+        return self.thresh
+
+    def to_fuda(self, fname="params.fuda"):
+        with open("peaks.fuda", "w") as peaks_fuda:
+            for ass, f1_ppm, f2_ppm in zip(self.df.ASS, self.df.Y_PPM, self.df.X_PPM):
+                peaks_fuda.write(f"{ass}\t{f1_ppm:.3f}\t{f2_ppm:.3f}\n")
+        groups = self.df.groupby("CLUSTID")
+        fuda_params = Path(fname)
+        overlap_peaks = ""
+
+        for ind, group in groups:
+            if len(group) > 1:
+                overlap_peaks_str = ";".join(group.ASS)
+                overlap_peaks += f"OVERLAP_PEAKS=({overlap_peaks_str})\n"
+
+        fuda_file = textwrap.dedent(
+            f"""\
+# Read peaklist and spectrum info
+PEAKLIST=peaks.fuda
+SPECFILE={self.data_path}
+PARAMETERFILE=(bruker;vclist)
+NOISE={self.get_thres()} # you'll need to adjust this
+BASELINE=N
+VERBOSELEVEL=5
+PRINTDATA=Y
+LM=(MAXFEV=250;TOL=1e-5)
+#Specify the default values. All values are in ppm:
+DEF_LINEWIDTH_F1={self.f1radius}
+DEF_LINEWIDTH_F2={self.f2radius}
+DEF_RADIUS_F1={self.f1radius}
+DEF_RADIUS_F2={self.f2radius}
+SHAPE=GLORE
+# OVERLAP PEAKS
+{overlap_peaks}"""
+        )
+        with open(fuda_params, "w") as f:
+            print(f"Writing FuDA file {fuda_file}")
+            f.write(fuda_file)
+        if self.verbose:
+            print(overlap_peaks)
+
+class ClustersResult:
+
+    def __init__(self, labeled_array, num_features, closed_data, peaks):
+        self._labeled_array = labeled_array
+        self._num_features = num_features
+        self._closed_data = closed_data
+        self._peaks = peaks
+
+    @property
+    def labeled_array(self):
+        return self._labeled_array
+
+    @property
+    def num_features(self):
+        return self._num_features
+
+    @property
+    def closed_data(self):
+        return self._closed_data
+
+    @property
+    def peaks(self):
+        return self._peaks
+
+
+class LoadData(Peaklist):
+
+    def read_peaklist(self):
+
+        if self.peaklist_path.suffix == ".csv":
+            self.df = pd.read_csv(self.peaklist_path)  # , comment="#")
+
+        elif self.peaklist_path.suffix == ".tab":
+            self.df = pd.read_csv(self.peaklist_path, sep="\t")  # comment="#")
+
+        else:
+            self.df = pd.read_pickle(self.peaklist_path)
+
+        return self.df
+
+    def check_data_frame(self):
+
+        # make diameter columns
+        if "X_DIAMETER_PPM" in self.df.columns:
+            pass
+        else:
+            self.df["X_DIAMETER_PPM"] = self.df["X_RADIUS_PPM"] * 2.0
+            self.df["Y_DIAMETER_PPM"] = self.df["Y_RADIUS_PPM"] * 2.0
+
+        #  make a column to track edited peaks
+        if "Edited" in self.df.columns:
+            pass
+        else:
+            self.df["Edited"] = np.zeros(len(self.df), dtype=bool)
+
+        # create include column if it doesn't exist
+        if "include" in self.df.columns:
+            pass
+        else:
+            self.df["include"] = self.df.apply(lambda _: "yes", axis=1)
+
+        # color clusters
+        self.df["color"] = self.df.apply(
+            lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
+            axis=1,
+        )
+
+        # get rid of unnamed columns
+        unnamed_cols = [i for i in self.df.columns if "Unnamed:" in i]
+        self.df = self.df.drop(columns=unnamed_cols)
+
+def read_config(args, config_path="peakipy.config"):
+
+    # update args with values from peakipy.config file
+    config_path = Path(config_path)
+    if config_path.exists():
+        config = json.load(open(config_path))
+        print(f"Using config file with --dims={config.get('--dims')}")
+        args["--dims"] = config.get("--dims", [0, 1, 2])
+        noise = config.get("noise")
+        if noise:
+            noise = float(noise)
+    else:
+        noise = False
+
+    args["noise"] = noise
+
+    return args, config
+

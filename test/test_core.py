@@ -16,6 +16,7 @@ from peakipy.core import (
     to_prefix,
     make_models,
     Pseudo3D,
+    Peaklist,
 )
 
 import peakipy.commandline.edit
@@ -261,7 +262,6 @@ class TestReadScript(unittest.TestCase):
         self.assertIsNotNone(read)
 
     def test_read_pipe_peaklist(self):
-        from peakipy.commandline.read import Peaklist
         args = {"path":"test/test_pipe.tab", "data_path":"test/test_pipe.ft2", "dims":[0,1,2],"fmt":"pipe"}
         peaklist = Peaklist(**args)
         self.assertIsNotNone(peaklist)

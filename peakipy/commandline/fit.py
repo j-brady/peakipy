@@ -67,7 +67,6 @@
 """
 import sys
 import os
-import json
 from pathlib import Path
 from multiprocessing import cpu_count, Pool
 
@@ -79,7 +78,7 @@ from docopt import docopt
 from skimage.filters import threshold_otsu
 from schema import Schema, And, Or, Use, SchemaError
 
-from peakipy.core import fix_params, get_params, fit_first_plane, Pseudo3D, run_log
+from peakipy.core import fix_params, get_params, fit_first_plane, LoadData, run_log, read_config
 
 tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
@@ -345,11 +344,11 @@ def main(argv):
             ),
             "<data>": And(
                 os.path.exists,
-                Use(
-                    ng.pipe.read,
-                    error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
-                ),
-                error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                #Use(
+                ng.pipe.read,
+                error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
+                #),
+                #error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "<output>": Use(str),
             "--max_cluster_size": And(Use(int), lambda n: 0 < n),
@@ -416,19 +415,6 @@ def main(argv):
     except SchemaError as e:
         exit(e)
 
-    # update args with values from peakipy.config file
-    config_path = Path("peakipy.config")
-    if config_path.exists():
-        config = json.load(open(config_path))
-        print(f"Using config file with --dims={config.get('--dims')}")
-        args["--dims"] = config.get("--dims", [0, 1, 2])
-        noise = config.get("noise")
-        if noise:
-            noise = float(noise)
-    else:
-        noise = False
-
-    args["noise"] = noise
 
     lineshape = args.get("--lineshape")
     args["lineshape"] = lineshape
@@ -444,32 +430,31 @@ def main(argv):
 
     # path to peaklist
     peaklist = Path(args.get("<peaklist>"))
-
-    # determine file type
-    if peaklist.suffix == ".csv":
-        peaks = pd.read_csv(peaklist)  # , comment="#")
-    else:
-        # assume that file is a pickle
-        peaks = pd.read_pickle(peaklist)
+    # get dims from command line input
+    # read NMR data
+    args, config = read_config(args)
+    dims = args.get("--dims")
+    data = args.get("<data>")
+    peakipy_data = LoadData(peaklist,data,dims=dims)
 
     # only include peaks with 'include'
-    if "include" in peaks.columns:
+    if "include" in peakipy_data.df.columns:
         pass
     else:
         # for compatibility
-        peaks["include"] = peaks.apply(lambda _: "yes", axis=1)
+        peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
 
-    if len(peaks[peaks.include != "yes"]) > 0:
+    if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
         print(
-            f"The following peaks have been exluded:\n{peaks[peaks.include != 'yes']}"
+            f"The following peaks have been exluded:\n{peakipy_data.df[peakipy_data.df.include != 'yes']}"
         )
-        peaks = peaks[peaks.include == "yes"]
+        peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
 
     # filter list based on cluster size
     max_cluster_size = args.get("--max_cluster_size")
     if max_cluster_size == 999:
-        max_cluster_size = peaks.MEMCNT.max()
-        if peaks.MEMCNT.max() > 10:
+        max_cluster_size = peakipy_data.df.MEMCNT.max()
+        if peakipy_data.df.MEMCNT.max() > 10:
             print(
                 f"""
                 ##################################################################
@@ -507,68 +492,41 @@ def main(argv):
 
     args["plot"] = plot
 
-    # get dims from command line input
-    dims = args.get("--dims")
-
-    # read NMR data
-    dic, data = args["<data>"]
-
-    pseudo3D = Pseudo3D(dic, data, dims)
-    uc_f1 = pseudo3D.uc_f1
-    uc_f2 = pseudo3D.uc_f2
-    uc_dics = {"f1": uc_f1, "f2": uc_f2}
+    uc_dics = {"f1": peakipy_data.uc_f1, "f2": peakipy_data.uc_f2}
     args["uc_dics"] = uc_dics
 
-    dims = pseudo3D.dims
-    data = pseudo3D.data
     # check data shape is consistent with dims
-    if len(dims) != len(data.shape):
-        print(f"Dims are {dims} while data shape is {data.shape}?")
+    if len(peakipy_data.dims) != len(peakipy_data.data.shape):
+        print(f"Dims are {peakipy_data.dims} while data shape is {peakipy_data.data.shape}?")
         exit()
 
     # only fit specified planes
     if args.get("--plane", [0]) != [0]:
         _inds = args.get("--plane")
         inds = [i - 1 for i in _inds]
-        data_inds = [(i in inds) for i in range(data.shape[dims[0]])]
-        data = data[data_inds]
-        print(f"Using only planes {_inds} data now has the following shape", data.shape)
-        if data.shape[dims[0]] == 0:
-            print("You have excluded all the data!", data.shape)
+        data_inds = [(i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])]
+        peakipy_data.data = peakipy_data.data[peakipy_data.data_inds]
+        print(f"Using only planes {_inds} data now has the following shape", peakipy_data.data.shape)
+        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
+            print("You have excluded all the data!", peakipy_data.data.shape)
             exit()
 
     # do not fit these planes
     if args.get("--exclude_plane", [0]) != [0]:
         _inds = args.get("--exclude_plane")
         inds = [i - 1 for i in _inds]
-        data_inds = [(i not in inds) for i in range(data.shape[dims[0]])]
-        data = data[data_inds]
-        print(f"Excluding planes {_inds} data now has the following shape", data.shape)
-        if data.shape[dims[0]] == 0:
-            print("You have excluded all the data!", data.shape)
+        data_inds = [(i not in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])]
+        peakipy_data.data = peakipy_data.data[peakipy_data.data_inds]
+        print(f"Excluding planes {_inds} data now has the following shape", peakipy_data.data.shape)
+        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
+            print("You have excluded all the data!", peakipy_data.data.shape)
             exit()
 
-    if not noise:
-        noise = threshold_otsu(data)
+    if not args.get("noise"):
+        noise = abs(threshold_otsu(peakipy_data.data))
 
     args["noise"] = noise
     # print(noise)
-
-    # point per Hz
-    pt_per_hz_f2 = pseudo3D.pt_per_hz_f2
-    pt_per_hz_f1 = pseudo3D.pt_per_hz_f1
-
-    # point per Hz
-    hz_per_pt_f2 = 1.0 / pt_per_hz_f2
-    hz_per_pt_f1 = 1.0 / pt_per_hz_f1
-
-    # ppm per point
-    ppm_per_pt_f2 = pseudo3D.ppm_per_pt_f2
-    ppm_per_pt_f1 = pseudo3D.ppm_per_pt_f1
-
-    # point per ppm
-    pt_per_ppm_f2 = pseudo3D.pt_per_ppm_f2
-    pt_per_ppm_f1 = pseudo3D.pt_per_ppm_f1
 
     xy_bounds = args.get("--xy_bounds")
 
@@ -576,30 +534,30 @@ def main(argv):
         xy_bounds = None
     else:
         # convert ppm to points
-        xy_bounds[0] = xy_bounds[0] * pt_per_ppm_f2
-        xy_bounds[1] = xy_bounds[1] * pt_per_ppm_f1
+        xy_bounds[0] = xy_bounds[0] * peakipy_data.pt_per_ppm_f2
+        xy_bounds[1] = xy_bounds[1] * peakipy_data.pt_per_ppm_f1
 
     args["xy_bounds"] = xy_bounds
 
     # convert linewidths from Hz to points in case they were adjusted when running edit.py
-    peaks["XW"] = peaks.XW_HZ * pt_per_hz_f2
-    peaks["YW"] = peaks.YW_HZ * pt_per_hz_f1
+    peakipy_data.df["XW"] = peakipy_data.df.XW_HZ * peakipy_data.pt_per_hz_f2
+    peakipy_data.df["YW"] = peakipy_data.df.YW_HZ * peakipy_data.pt_per_hz_f1
 
     # convert peak positions from ppm to points in case they were adjusted running edit.py
-    peaks["X_AXIS"] = peaks.X_PPM.apply(lambda x: uc_f2(x, "PPM"))
-    peaks["Y_AXIS"] = peaks.Y_PPM.apply(lambda x: uc_f1(x, "PPM"))
-    peaks["X_AXISf"] = peaks.X_PPM.apply(lambda x: uc_f2.f(x, "PPM"))
-    peaks["Y_AXISf"] = peaks.Y_PPM.apply(lambda x: uc_f1.f(x, "PPM"))
+    peakipy_data.df["X_AXIS"] = peakipy_data.df.X_PPM.apply(lambda x: peakipy_data.uc_f2(x, "PPM"))
+    peakipy_data.df["Y_AXIS"] = peakipy_data.df.Y_PPM.apply(lambda x: peakipy_data.uc_f1(x, "PPM"))
+    peakipy_data.df["X_AXISf"] = peakipy_data.df.X_PPM.apply(lambda x: peakipy_data.uc_f2.f(x, "PPM"))
+    peakipy_data.df["Y_AXISf"] = peakipy_data.df.Y_PPM.apply(lambda x: peakipy_data.uc_f1.f(x, "PPM"))
 
     # prepare data for multiprocessing
-    if (peaks.CLUSTID.nunique() >= n_cpu) and not args.get("--nomp"):
+    if (peakipy_data.df.CLUSTID.nunique() >= n_cpu) and not args.get("--nomp"):
         print("Using multiprocessing")
         # split peak lists
-        tmp_dir = split_peaklist(peaks, n_cpu)
+        tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
         peaklists = [
             pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
         ]
-        args_list = [FitPeaksInput(args, data) for _ in range(n_cpu)]
+        args_list = [FitPeaksInput(args, peakipy_data.data) for _ in range(n_cpu)]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)
             result = pool.starmap(fit_peaks, zip(peaklists, args_list))
@@ -609,7 +567,7 @@ def main(argv):
                 log_file.write(i.log + "\n")
     else:
         print("Not using multiprocessing")
-        result = fit_peaks(peaks, FitPeaksInput(args, data))
+        result = fit_peaks(peakipy_data.df, FitPeaksInput(args, data))
         df = result.df
         log_file.write(result.log)
 
@@ -621,16 +579,16 @@ def main(argv):
     df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
     df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
     #  convert values to ppm
-    df["center_x_ppm"] = df.center_x.apply(lambda x: uc_f2.ppm(x))
-    df["center_y_ppm"] = df.center_y.apply(lambda x: uc_f1.ppm(x))
-    df["init_center_x_ppm"] = df.init_center_x.apply(lambda x: uc_f2.ppm(x))
-    df["init_center_y_ppm"] = df.init_center_y.apply(lambda x: uc_f1.ppm(x))
-    df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * ppm_per_pt_f2)
-    df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * ppm_per_pt_f1)
-    df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * ppm_per_pt_f2)
-    df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * ppm_per_pt_f1)
-    df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * hz_per_pt_f2)
-    df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * hz_per_pt_f1)
+    df["center_x_ppm"] = df.center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
+    df["center_y_ppm"] = df.center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
+    df["init_center_x_ppm"] = df.init_center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
+    df["init_center_y_ppm"] = df.init_center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
+    df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
+    df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
+    df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
+    df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
+    df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * peakipy_data.hz_per_pt_f2)
+    df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * peakipy_data.hz_per_pt_f1)
 
     if suffix == ".csv":
         df.to_csv(output, float_format="%.4f", index=False)
