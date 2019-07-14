@@ -535,9 +535,9 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
         :returns: None
         :rtype: None
 
-        ToDo:
-             -- deal with boundaries
-             -- currently positions in points
+        ToDo
+          -- deal with boundaries
+          -- currently positions in points
 
     """
     for k, v in param_dict.items():
@@ -711,7 +711,9 @@ def fit_first_plane(
 
     XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
-    out = mod.fit(peak_slices, XY=XY_slices, params=p_guess, weights=weights, method="leastsq")
+    out = mod.fit(
+        peak_slices, XY=XY_slices, params=p_guess, weights=weights, method="leastsq"
+    )
 
     if verbose:
         print(out.fit_report())
@@ -802,7 +804,6 @@ class FitResult:
         XY_slices: np.array,
         weights: np.array,
         mod: Model,
-
     ):
         """ Store output of fit_first_plane function """
         self.out = out
@@ -842,13 +843,17 @@ class FitResult:
             X = np.delete(self.XY_slices[0], i, None)
             Y = np.delete(self.XY_slices[1], i, None)
             weights = np.delete(self.weights, i, None)
-            jk_results.append(self.mod.fit(peak_slices, XY=[X,Y], params=self.out.params, weights=weights))
+            jk_results.append(
+                self.mod.fit(
+                    peak_slices, XY=[X, Y], params=self.out.params, weights=weights
+                )
+            )
 
-        #print(jk_results)
+        # print(jk_results)
         amps = []
         sigmas = []
         names = []
-        with open("test_jackknife","w") as f:
+        with open("test_jackknife", "w") as f:
             for i in jk_results:
                 f.write(i.fit_report())
                 amp, amp_err, name = get_params(i.params, "amp")
@@ -858,7 +863,7 @@ class FitResult:
                 names.extend(name)
                 sigmas.extend(sigma)
 
-            df = pd.DataFrame({"amp":amps, "name":names, "sigma":sigmas})
+            df = pd.DataFrame({"amp": amps, "name": names, "sigma": sigmas})
             grouped = df.groupby("name")
             mean_amps = grouped.amp.mean()
             std_amps = grouped.amp.std()
@@ -868,11 +873,10 @@ class FitResult:
             f.write(f"{mean_amps}, {std_amps}, {mean_sigmas}, {std_sigmas}")
             f.write(self.out.fit_report())
             f.write("#####################################\n")
-        #print(amps)
-        #mean = np.mean(amps)
-        #std =  np.std(amps)
+        # print(amps)
+        # mean = np.mean(amps)
+        # std =  np.std(amps)
         return JackKnifeResult(mean=mean_amps, std=std_amps)
-
 
     def plot(self, plot_path=None, show=False, nomp=True):
         """ Matplotlib interactive plot of the fits """
@@ -984,11 +988,12 @@ class FitResult:
         else:
             pass
 
-class JackKnifeResult:
 
+class JackKnifeResult:
     def __init__(self, mean, std):
         self.mean = mean
         self.std = std
+
 
 class Pseudo3D:
     """Read dic, data from NMRGlue and dims from input to create a Pseudo3D dataset
@@ -1144,11 +1149,11 @@ class Pseudo3D:
     # hz per point
     @property
     def hz_per_pt_f1(self):
-        return 1./ self.pt_per_hz_f1
+        return 1.0 / self.pt_per_hz_f1
 
     @property
     def hz_per_pt_f2(self):
-        return 1./self.pt_per_hz_f2
+        return 1.0 / self.pt_per_hz_f2
 
     # ppm per point
     @property
@@ -1192,6 +1197,7 @@ class Pseudo3D:
     def f1_ppm_1(self):
         return self.f1_ppm_limits[1]
 
+
 #    uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
 #    ppm_f1 = uc_f1.ppm_scale()
 #    ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()
@@ -1208,7 +1214,7 @@ class Peaklist(Pseudo3D):
     ----------
     path : path-like or str
         path to peaklist
-    data : ndarray
+    data_path : ndarray
         NMRPipe format data
     fmt : a2|sparky|pipe
     dims: [planes,y,x]
@@ -1220,6 +1226,7 @@ class Peaklist(Pseudo3D):
     -------
 
     clusters :
+    mask_method :
     adaptive_clusters :
 
     Returns
@@ -1229,7 +1236,17 @@ class Peaklist(Pseudo3D):
 
     """
 
-    def __init__(self, path, data_path, fmt="a2", dims=[0, 1, 2], radii=[0.04, 0.4], posF1='Position F2',posF2='Position F1', verbose=False):
+    def __init__(
+        self,
+        path,
+        data_path,
+        fmt="a2",
+        dims=[0, 1, 2],
+        radii=[0.04, 0.4],
+        posF1="Position F2",
+        posF2="Position F1",
+        verbose=False,
+    ):
 
         dic, data = ng.pipe.read(data_path)
         Pseudo3D.__init__(self, dic, data, dims)
@@ -1240,7 +1257,10 @@ class Peaklist(Pseudo3D):
         self._radii = radii
         self._thres = None
         if self.verbose:
-            print("Points per hz f1 = %.3f, f2 = %.3f" % (self.pt_per_hz_f1, self.pt_per_hz_f2))
+            print(
+                "Points per hz f1 = %.3f, f2 = %.3f"
+                % (self.pt_per_hz_f1, self.pt_per_hz_f2)
+            )
 
         self._analysis_to_pipe_dic = {
             "#": "INDEX",
@@ -1434,14 +1454,13 @@ class Peaklist(Pseudo3D):
         )
         return df
 
-
     def check_assignments(self):
         self.df["ASS"] = self.df.ASS.astype(str)
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates) > 0:
             print(
-"""
+                """
 #############################################################################
     You have duplicated assignments in your list...
     Currently each peak needs a unique assignment. Sorry about that buddy...
@@ -1456,11 +1475,13 @@ class Peaklist(Pseudo3D):
                 print(duplicates)
                 print(self.df.ASS)
 
-            print("""
+            print(
+                """
             
     Creating dummy assignments for duplicates
             
-            """)
+            """
+            )
 
     def check_peak_bounds(self):
         # check that peaks are within the bounds of spectrum
@@ -1468,8 +1489,9 @@ class Peaklist(Pseudo3D):
         within_y = self.df.Y_AXIS < self.f1_size
         self.excluded = self.df[~(within_x & within_y)]
         self.df = self.df[within_x & within_y]
-        if len(self.excluded)>0:
-            print(f"""
+        if len(self.excluded) > 0:
+            print(
+                f"""
            
 #################################################################################
 
@@ -1481,7 +1503,8 @@ Excluding the following peaks as they are not within the spectrum which has shap
 
 
 #################################################################################
-            """)
+            """
+            )
 
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks
@@ -1580,24 +1603,25 @@ Excluding the following peaks as they are not within the spectrum which has shap
     #         max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
     #     )
 
-    def mask_method(self, x_radius=0.04, y_radius=0.4, l_struc=None):
+    def mask_method(self, overlap=1.0, l_struc=None):
 
         self._thres = threshold_otsu(self.data[0])
-
-        x_radius = self.pt_per_ppm_f2 * x_radius
-        y_radius = self.pt_per_ppm_f1 * y_radius
 
         mask = np.zeros(self.data[0].shape, dtype=bool)
 
         for ind, peak in self.df.iterrows():
             mask += make_mask(
-                self.data[0], peak.X_AXISf, peak.Y_AXISf, x_radius, y_radius
+                self.data[0],
+                peak.X_AXISf,
+                peak.Y_AXISf,
+                peak.X_RADIUS * overlap,
+                peak.Y_RADIUS * overlap,
             )
 
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
         labeled_array, num_features = ndimage.label(mask, l_struc)
 
-        self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
+        self.df.loc[:, "CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
 
         #  renumber "0" clusters
         max_clustid = self.df["CLUSTID"].max()
@@ -1605,11 +1629,20 @@ Excluding the following peaks as they are not within the spectrum which has shap
         self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
             max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
         )
-        import matplotlib.pyplot as plt
 
-        plt.imshow(mask)
-        plt.show()
+        # count how many peaks per cluster
+        for ind, group in self.df.groupby("CLUSTID"):
+            self.df.loc[group.index, "MEMCNT"] = len(group)
 
+        self.df.loc[:, "color"] = self.df.apply(
+            lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
+            axis=1,
+        )
+        # import matplotlib.pyplot as plt
+        #
+        # plt.imshow(mask)
+        # plt.show()
+        return ClustersResult(labeled_array, num_features, mask, peaks)
 
     def to_fuda(self, fname="params.fuda"):
         with open("peaks.fuda", "w") as peaks_fuda:
@@ -1650,8 +1683,8 @@ SHAPE=GLORE
         if self.verbose:
             print(overlap_peaks)
 
-class ClustersResult:
 
+class ClustersResult:
     def __init__(self, labeled_array, num_features, closed_data, peaks):
         self._labeled_array = labeled_array
         self._num_features = num_features
@@ -1676,7 +1709,6 @@ class ClustersResult:
 
 
 class LoadData(Peaklist):
-
     def read_peaklist(self):
 
         if self.peaklist_path.suffix == ".csv":
@@ -1721,6 +1753,7 @@ class LoadData(Peaklist):
         unnamed_cols = [i for i in self.df.columns if "Unnamed:" in i]
         self.df = self.df.drop(columns=unnamed_cols)
 
+
 def read_config(args, config_path="peakipy.config"):
 
     # update args with values from peakipy.config file
@@ -1742,4 +1775,3 @@ def read_config(args, config_path="peakipy.config"):
     args["colors"] = colors
 
     return args, config
-

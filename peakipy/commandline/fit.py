@@ -78,7 +78,14 @@ from docopt import docopt
 from skimage.filters import threshold_otsu
 from schema import Schema, And, Or, Use, SchemaError
 
-from peakipy.core import fix_params, get_params, fit_first_plane, LoadData, run_log, read_config
+from peakipy.core import (
+    fix_params,
+    get_params,
+    fit_first_plane,
+    LoadData,
+    run_log,
+    read_config,
+)
 
 tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
@@ -344,11 +351,11 @@ def main(argv):
             ),
             "<data>": And(
                 os.path.exists,
-                #Use(
+                # Use(
                 ng.pipe.read,
                 error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
-                #),
-                #error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                # ),
+                # error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "<output>": Use(str),
             "--max_cluster_size": And(Use(int), lambda n: 0 < n),
@@ -415,7 +422,6 @@ def main(argv):
     except SchemaError as e:
         exit(e)
 
-
     lineshape = args.get("--lineshape")
     args["lineshape"] = lineshape
 
@@ -435,7 +441,7 @@ def main(argv):
     args, config = read_config(args)
     dims = args.get("--dims")
     data = args.get("<data>")
-    peakipy_data = LoadData(peaklist,data,dims=dims)
+    peakipy_data = LoadData(peaklist, data, dims=dims)
 
     # only include peaks with 'include'
     if "include" in peakipy_data.df.columns:
@@ -497,16 +503,23 @@ def main(argv):
 
     # check data shape is consistent with dims
     if len(peakipy_data.dims) != len(peakipy_data.data.shape):
-        print(f"Dims are {peakipy_data.dims} while data shape is {peakipy_data.data.shape}?")
+        print(
+            f"Dims are {peakipy_data.dims} while data shape is {peakipy_data.data.shape}?"
+        )
         exit()
 
     # only fit specified planes
     if args.get("--plane", [0]) != [0]:
         _inds = args.get("--plane")
         inds = [i - 1 for i in _inds]
-        data_inds = [(i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])]
+        data_inds = [
+            (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
+        ]
         peakipy_data.data = peakipy_data.data[peakipy_data.data_inds]
-        print(f"Using only planes {_inds} data now has the following shape", peakipy_data.data.shape)
+        print(
+            f"Using only planes {_inds} data now has the following shape",
+            peakipy_data.data.shape,
+        )
         if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
             print("You have excluded all the data!", peakipy_data.data.shape)
             exit()
@@ -515,9 +528,15 @@ def main(argv):
     if args.get("--exclude_plane", [0]) != [0]:
         _inds = args.get("--exclude_plane")
         inds = [i - 1 for i in _inds]
-        data_inds = [(i not in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])]
+        data_inds = [
+            (i not in inds)
+            for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
+        ]
         peakipy_data.data = peakipy_data.data[peakipy_data.data_inds]
-        print(f"Excluding planes {_inds} data now has the following shape", peakipy_data.data.shape)
+        print(
+            f"Excluding planes {_inds} data now has the following shape",
+            peakipy_data.data.shape,
+        )
         if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
             print("You have excluded all the data!", peakipy_data.data.shape)
             exit()
@@ -544,10 +563,18 @@ def main(argv):
     peakipy_data.df["YW"] = peakipy_data.df.YW_HZ * peakipy_data.pt_per_hz_f1
 
     # convert peak positions from ppm to points in case they were adjusted running edit.py
-    peakipy_data.df["X_AXIS"] = peakipy_data.df.X_PPM.apply(lambda x: peakipy_data.uc_f2(x, "PPM"))
-    peakipy_data.df["Y_AXIS"] = peakipy_data.df.Y_PPM.apply(lambda x: peakipy_data.uc_f1(x, "PPM"))
-    peakipy_data.df["X_AXISf"] = peakipy_data.df.X_PPM.apply(lambda x: peakipy_data.uc_f2.f(x, "PPM"))
-    peakipy_data.df["Y_AXISf"] = peakipy_data.df.Y_PPM.apply(lambda x: peakipy_data.uc_f1.f(x, "PPM"))
+    peakipy_data.df["X_AXIS"] = peakipy_data.df.X_PPM.apply(
+        lambda x: peakipy_data.uc_f2(x, "PPM")
+    )
+    peakipy_data.df["Y_AXIS"] = peakipy_data.df.Y_PPM.apply(
+        lambda x: peakipy_data.uc_f1(x, "PPM")
+    )
+    peakipy_data.df["X_AXISf"] = peakipy_data.df.X_PPM.apply(
+        lambda x: peakipy_data.uc_f2.f(x, "PPM")
+    )
+    peakipy_data.df["Y_AXISf"] = peakipy_data.df.Y_PPM.apply(
+        lambda x: peakipy_data.uc_f1.f(x, "PPM")
+    )
 
     # prepare data for multiprocessing
     if (peakipy_data.df.CLUSTID.nunique() >= n_cpu) and not args.get("--nomp"):
@@ -581,8 +608,12 @@ def main(argv):
     #  convert values to ppm
     df["center_x_ppm"] = df.center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
     df["center_y_ppm"] = df.center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
-    df["init_center_x_ppm"] = df.init_center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
-    df["init_center_y_ppm"] = df.init_center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
+    df["init_center_x_ppm"] = df.init_center_x.apply(
+        lambda x: peakipy_data.uc_f2.ppm(x)
+    )
+    df["init_center_y_ppm"] = df.init_center_y.apply(
+        lambda x: peakipy_data.uc_f1.ppm(x)
+    )
     df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
     df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
     df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)

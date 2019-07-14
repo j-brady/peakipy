@@ -39,7 +39,6 @@ from subprocess import check_output
 from docopt import docopt
 from schema import Schema, And, SchemaError
 
-import pandas as pd
 import nmrglue as ng
 import numpy as np
 import matplotlib.pyplot as plt
@@ -71,12 +70,10 @@ from bokeh.models.widgets import (
 )
 from bokeh.plotting import figure
 
-# from bokeh.io import curdoc
 from bokeh.server.server import Server
 from bokeh.palettes import PuBuGn9, Category20
 
 from peakipy.core import run_log, LoadData
-
 
 
 class BokehScript:
@@ -87,7 +84,9 @@ class BokehScript:
         self._path = Path(args.get("<peaklist>"))
         self._data_path = args.get("<data>")
         self.read_config()
-        self._peakipy_data = LoadData(self._path, self._data_path, dims=self.dims, verbose=True)
+        self._peakipy_data = LoadData(
+            self._path, self._data_path, dims=self.dims, verbose=True
+        )
         # check dataframe is usable
         self.peakipy_data.check_data_frame()
         # make temporary paths
@@ -127,7 +126,6 @@ class BokehScript:
     def peakipy_data(self):
         return self._peakipy_data
 
-
     def make_temp_files(self):
         # Temp files
         self.TEMP_PATH = Path("tmp")
@@ -158,10 +156,9 @@ class BokehScript:
         else:
             # get dim numbers from commandline
             self._dims = self.args.get("--dims")
-            self.thres = False 
+            self.thres = False
 
         self.dims = [int(i) for i in self._dims.split(",")]
-
 
     def setup_radii_sliders(self):
         # configure sliders for setting radii
@@ -183,10 +180,10 @@ class BokehScript:
         )
 
         self.slider_X_RADIUS.on_change(
-            "value", lambda attr, old, new: self.slider_callback(attr, old, new)
+            "value", lambda attr, old, new: self.slider_callback_x(attr, old, new)
         )
         self.slider_Y_RADIUS.on_change(
-            "value", lambda attr, old, new: self.slider_callback(attr, old, new)
+            "value", lambda attr, old, new: self.slider_callback_y(attr, old, new)
         )
 
     def setup_save_buttons(self):
@@ -233,7 +230,12 @@ class BokehScript:
         if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
             print(f"Setting contour levels to np.abs({cl})")
             cl = np.abs(cl)
-        self.extent = (self.peakipy_data.f2_ppm_0, self.peakipy_data.f2_ppm_1, self.peakipy_data.f1_ppm_0, self.peakipy_data.f1_ppm_1)
+        self.extent = (
+            self.peakipy_data.f2_ppm_0,
+            self.peakipy_data.f2_ppm_1,
+            self.peakipy_data.f1_ppm_0,
+            self.peakipy_data.f1_ppm_1,
+        )
         self.spec_source = get_contour_data(
             self.peakipy_data.data[0], cl, extent=self.extent, cmap=viridis
         )
@@ -354,7 +356,8 @@ class BokehScript:
         )
         # Plane selection
         self.select_planes_list = [
-            f"{i+1}" for i in range(self.peakipy_data.data.shape[self.peakipy_data.planes])
+            f"{i+1}"
+            for i in range(self.peakipy_data.data.shape[self.peakipy_data.planes])
         ]
         self.select_plane = Select(
             title="Select plane:",
@@ -362,7 +365,8 @@ class BokehScript:
             options=self.select_planes_list,
         )
         self.select_planes_dic = {
-            f"{i+1}": i for i in range(self.peakipy_data.data.shape[self.peakipy_data.planes])
+            f"{i+1}": i
+            for i in range(self.peakipy_data.data.shape[self.peakipy_data.planes])
         }
         self.select_plane.on_change("value", self.update_contour)
 
@@ -454,7 +458,7 @@ class BokehScript:
         self.struct_el = Select(
             title="Structuring element:",
             value="disk",
-            options=["square", "disk", "rectangle", "None"],
+            options=["square", "disk", "rectangle", "None", "mask_method"],
             width=100,
         )
         self.struct_el_size = TextInput(
@@ -485,15 +489,22 @@ class BokehScript:
 
     def recluster_peaks(self, event):
 
-        self.struc_size = tuple([int(i) for i in self.struct_el_size.value.split(",")])
-
-        print(self.struc_size)
-
-        self.peakipy_data.clusters(
-            thres=eval(self.contour_start.value),
-            struc_el=self.struct_el.value,
-            struc_size=self.struc_size,
-        )
+        if self.struct_el.value == "mask_method":
+            self.struc_size = tuple(
+                [float(i) for i in self.struct_el_size.value.split(",")]
+            )
+            print(self.struc_size)
+            self.peakipy_data.mask_method(overlap=self.struc_size[0])
+        else:
+            self.struc_size = tuple(
+                [int(i) for i in self.struct_el_size.value.split(",")]
+            )
+            print(self.struc_size)
+            self.peakipy_data.clusters(
+                thres=eval(self.contour_start.value),
+                struc_el=self.struct_el.value,
+                struc_size=self.struc_size,
+            )
         # update data source
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
 
@@ -521,13 +532,23 @@ class BokehScript:
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
 
-        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = self.slider_X_RADIUS.value
-        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = self.slider_Y_RADIUS.value
+        self.peakipy_data.df.loc[
+            selectionIndex, "X_RADIUS_PPM"
+        ] = self.slider_X_RADIUS.value
+        self.peakipy_data.df.loc[
+            selectionIndex, "Y_RADIUS_PPM"
+        ] = self.slider_Y_RADIUS.value
 
-        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = current["X_RADIUS_PPM"] * 2.0
-        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = current["Y_RADIUS_PPM"] * 2.0
+        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
+            current["X_RADIUS_PPM"] * 2.0
+        )
+        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = (
+            current["Y_RADIUS_PPM"] * 2.0
+        )
 
-        selected_df = self.peakipy_data.df[self.peakipy_data.df.CLUSTID.isin(list(current.CLUSTID))]
+        selected_df = self.peakipy_data.df[
+            self.peakipy_data.df.CLUSTID.isin(list(current.CLUSTID))
+        ]
 
         selected_df.to_csv(self.TEMP_INPUT_CSV)
 
@@ -625,31 +646,84 @@ class BokehScript:
         self.peakipy_data.df = self.peakipy_data.df.append(new_peak, ignore_index=True)
         self.update_memcnt()
 
-    def slider_callback(self, attrname, old, new):
+    def slider_callback_x(self, attrname, old, new):
 
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
-
         self.peakipy_data.df.loc[selectionIndex, "X_RADIUS"] = (
-            self.slider_X_RADIUS.value * self.peakipy_data.pt_per_ppm_f2
+                self.slider_X_RADIUS.value * self.peakipy_data.pt_per_ppm_f2
         )
-        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS"] = (
-            self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
-        )
-        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = self.slider_X_RADIUS.value
-        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = self.slider_Y_RADIUS.value
+        self.peakipy_data.df.loc[
+            selectionIndex, "X_RADIUS_PPM"
+        ] = self.slider_X_RADIUS.value
 
-        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = current["X_RADIUS_PPM"] * 2.0
-        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = current["Y_RADIUS_PPM"] * 2.0
-        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER"] = current["X_RADIUS"] * 2.0
-        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER"] = current["Y_RADIUS"] * 2.0
+        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
+                current["X_RADIUS_PPM"] * 2.0
+        )
+        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER"] = (
+                current["X_RADIUS"] * 2.0
+        )
 
         # set edited rows to True
         self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
 
+        self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+
+    def slider_callback_y(self, attrname, old, new):
+
+        selectionIndex = self.source.selected.indices
+        current = self.peakipy_data.df.iloc[selectionIndex]
+        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS"] = (
+                self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
+        )
+        self.peakipy_data.df.loc[
+            selectionIndex, "Y_RADIUS_PPM"
+        ] = self.slider_Y_RADIUS.value
+
+        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = (
+                current["Y_RADIUS_PPM"] * 2.0
+        )
+        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER"] = (
+                current["Y_RADIUS"] * 2.0
+        )
+
+        # set edited rows to True
+        self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
+
+        self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+
+    #def slider_callback(self, attrname, old, new, dim="X"):
+    #
+    #     selectionIndex = self.source.selected.indices
+    #     current = self.peakipy_data.df.iloc[selectionIndex]
+    #     self.peakipy_data.df.loc[selectionIndex, f"{dim}_RADIUS"] = (
+    #             self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
+    #     )
+    #     self.peakipy_data.df.loc[
+    #         selectionIndex, f"{dim}_RADIUS_PPM"
+    #     ] = self.slider_Y_RADIUS.value
+    #
+    #     self.peakipy_data.df.loc[selectionIndex, f"{dim}_DIAMETER_PPM"] = (
+    #             current[f"{dim}_RADIUS_PPM"] * 2.0
+    #     )
+    #     self.peakipy_data.df.loc[selectionIndex, f"{dim}_DIAMETER"] = (
+    #             current[f"{dim}_RADIUS"] * 2.0
+    #     )
+    #
+    #     set edited rows to True
+    #     self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
+
         # selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
         # print(list(selected_df))
-        self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+        # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+
+    # def slider_callback_x(self, attrname, old, new):
+    #
+    #     self.slider_callback(attrname, old, new, dim="X")
+    #
+    # def slider_callback_y(self, attrname, old, new):
+    #
+    #     self.slider_callback(attrname, old, new, dim="Y")
 
     def update_contour(self, attrname, old, new):
 
@@ -663,26 +737,44 @@ class BokehScript:
         pos_neg = self.pos_neg_contour_dic[self.pos_neg_contour_radiobutton.active]
         if pos_neg == "pos/neg":
             self.spec_source.data = get_contour_data(
-                self.peakipy_data.data[plane_index], cl, extent=self.extent, cmap=viridis
+                self.peakipy_data.data[plane_index],
+                cl,
+                extent=self.extent,
+                cmap=viridis,
             ).data
             self.spec_source_neg.data = get_contour_data(
-                self.peakipy_data.data[plane_index] * -1.0, cl, extent=self.extent, cmap=autumn
+                self.peakipy_data.data[plane_index] * -1.0,
+                cl,
+                extent=self.extent,
+                cmap=autumn,
             ).data
 
         elif pos_neg == "pos":
             self.spec_source.data = get_contour_data(
-                self.peakipy_data.data[plane_index], cl, extent=self.extent, cmap=viridis
+                self.peakipy_data.data[plane_index],
+                cl,
+                extent=self.extent,
+                cmap=viridis,
             ).data
             self.spec_source_neg.data = get_contour_data(
-                self.peakipy_data.data[plane_index] * 0.0, cl, extent=self.extent, cmap=autumn
+                self.peakipy_data.data[plane_index] * 0.0,
+                cl,
+                extent=self.extent,
+                cmap=autumn,
             ).data
 
         elif pos_neg == "neg":
             self.spec_source.data = get_contour_data(
-                self.peakipy_data.data[plane_index] * 0.0, cl, extent=self.extent, cmap=viridis
+                self.peakipy_data.data[plane_index] * 0.0,
+                cl,
+                extent=self.extent,
+                cmap=viridis,
             ).data
             self.spec_source_neg.data = get_contour_data(
-                self.peakipy_data.data[plane_index] * -1.0, cl, extent=self.extent, cmap=autumn
+                self.peakipy_data.data[plane_index] * -1.0,
+                cl,
+                extent=self.extent,
+                cmap=autumn,
             ).data
 
         # print("Value of checkbox",checkbox_group.active)

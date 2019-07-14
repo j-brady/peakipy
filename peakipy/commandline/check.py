@@ -48,6 +48,7 @@ import numpy as np
 import nmrglue as ng
 import matplotlib.pyplot as plt
 from docopt import docopt
+from schema import SchemaError, Schema, And
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
@@ -65,6 +66,32 @@ from peakipy.core import (
     read_config,
 )
 
+def check_input(args):
+    """ validate commandline input """
+    schema = Schema(
+        {
+            "<peaklist>": And(
+                os.path.exists,
+                open,
+                error=f"{args['<peaklist>']} should exist and be readable",
+            ),
+            "<data>": And(
+                os.path.exists,
+                ng.pipe.read,
+                error=f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+            ),
+            "--dims": And(
+                lambda n: [int(i) for i in eval(n)],
+                error="--dims should be list of integers e.g. --dims=0,1,2",
+            ),
+        }
+    )
+
+    try:
+        args = schema.validate(args)
+        return args
+    except SchemaError as e:
+        sys.exit(e)
 
 def main(argv):
 
@@ -129,7 +156,6 @@ def main(argv):
         for ind, group in groups:
 
             mask = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
-            # sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
 
             first_plane = group[group.plane == 0]
 
@@ -231,83 +257,88 @@ def main(argv):
                 # slice out plot area
                 x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
                 y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
-                masked_data = masked_data[min_y:max_y, min_x:max_x]
-                sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
+                if len(x_plot)<1 or len(y_plot)<1:
+                    print(f"Nothing to plot for cluster {int(plane.clustid)}")
+                    print(f"x={x_plot},y={y_plot}")
+                    print("Maybe your F1/F2 radii for fitting were too small...")
+                else:
+                    masked_data = masked_data[min_y:max_y, min_x:max_x]
+                    sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
 
-                residual = masked_data - sim_plot
-                cset = ax.contourf(
-                    x_plot,
-                    y_plot,
-                    residual,
-                    zdir="z",
-                    offset=np.nanmin(masked_data) * 1.1,
-                    alpha=0.5,
-                    cmap=cm.coolwarm,
-                )
-                fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+                    residual = masked_data - sim_plot
+                    cset = ax.contourf(
+                        x_plot,
+                        y_plot,
+                        residual,
+                        zdir="z",
+                        offset=np.nanmin(masked_data) * 1.1,
+                        alpha=0.5,
+                        cmap=cm.coolwarm,
+                    )
+                    fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
 
-                ax.plot_wireframe(
-                    x_plot,
-                    y_plot,
-                    sim_plot,
-                    # colors=[cm.coolwarm(i) for i in np.ravel(residual)],
-                    colors=fit_color,
-                    linestyle="--",
-                    label="fit",
-                    rcount=rcount,
-                    ccount=ccount,
-                )
-                ax.plot_wireframe(
-                    x_plot,
-                    y_plot,
-                    masked_data,
-                    colors=data_color,
-                    linestyle="-",
-                    label="data",
-                    rcount=rcount,
-                    ccount=ccount,
-                )
-                ax.set_ylabel(pseudo3D.f1_label)
-                ax.set_xlabel(pseudo3D.f2_label)
+                    ax.plot_wireframe(
+                        x_plot,
+                        y_plot,
+                        sim_plot,
+                        # colors=[cm.coolwarm(i) for i in np.ravel(residual)],
+                        colors=fit_color,
+                        linestyle="--",
+                        label="fit",
+                        rcount=rcount,
+                        ccount=ccount,
+                    )
+                    ax.plot_wireframe(
+                        x_plot,
+                        y_plot,
+                        masked_data,
+                        colors=data_color,
+                        linestyle="-",
+                        label="data",
+                        rcount=rcount,
+                        ccount=ccount,
+                    )
+                    ax.set_ylabel(pseudo3D.f1_label)
+                    ax.set_xlabel(pseudo3D.f2_label)
 
-                # axes will appear inverted
-                ax.view_init(30, 120)
+                    # axes will appear inverted
+                    ax.view_init(30, 120)
 
-                # names = ",".join(plane.assignment)
-                title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
-                plt.title(title)
-                print(f"Plotting: {title}")
-                out_str = "Amplitudes\n----------------\n"
-                # chi2s = []
-                for amp, name, peak_mask in zip(plane.amp, plane.assignment, masks):
+                    # names = ",".join(plane.assignment)
+                    title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
+                    plt.title(title)
+                    print(f"Plotting: {title}")
+                    out_str = "Amplitudes\n----------------\n"
+                    # chi2s = []
+                    for amp, name, peak_mask in zip(plane.amp, plane.assignment, masks):
 
-                    out_str += f"{name} = {amp:.3e}\n"
-                ax.text2D(
-                    -0.15, 1.0, out_str, transform=ax.transAxes, fontsize=10, va="top"
-                )
-                ax.legend()
-                pdf.savefig()
+                        out_str += f"{name} = {amp:.3e}\n"
+                    ax.text2D(
+                        -0.15, 1.0, out_str, transform=ax.transAxes, fontsize=10, va="top"
+                    )
+                    ax.legend()
+                    pdf.savefig()
 
-                if show:
+                    if show:
 
-                    def exit_program(event):
-                        exit()
+                        def exit_program(event):
+                            exit()
 
-                    def next_plot(event):
-                        plt.close()
+                        def next_plot(event):
+                            plt.close()
 
-                    axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-                    bnexit = Button(axexit, "Exit")
-                    bnexit.on_clicked(exit_program)
-                    axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
-                    bnnext = Button(axnext, "Next")
-                    bnnext.on_clicked(next_plot)
-                    plt.show()
+                        axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
+                        bnexit = Button(axexit, "Exit")
+                        bnexit.on_clicked(exit_program)
+                        axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
+                        bnnext = Button(axnext, "Next")
+                        bnnext.on_clicked(next_plot)
+                        plt.show()
 
-                plt.close()
+                    plt.close()
 
-                if first_only:
-                    break
+                    if first_only:
+                        break
     run_log()
 
 

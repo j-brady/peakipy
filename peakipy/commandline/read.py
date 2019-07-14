@@ -113,23 +113,23 @@ def check_args(args):
                 ng.pipe.read,
                 error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
             ),
-            "--thres": Or(
-                "None",
-                Use(float),
-            ),
-
+            "--thres": Or("None", Use(float)),
             "--struc_el": Use(str),
-
-            #"--struc_size": Use(str),
-
-            "--f1radius": Use(float, error=f"F1 radius must be a float - you gave {args['--f1radius']}"),
-            "--f2radius": Use(float, error=f"F2 radius must be a float - you gave {args['--f2radius']}"),
+            # "--struc_size": Use(str),
+            "--f1radius": Use(
+                float,
+                error=f"F1 radius must be a float - you gave {args['--f1radius']}",
+            ),
+            "--f2radius": Use(
+                float,
+                error=f"F2 radius must be a float - you gave {args['--f2radius']}",
+            ),
             "--dims": Use(
                 lambda n: [int(i) for i in eval(n)],
                 error="🤔 --dims should be list of integers e.g. --dims=0,1,2",
             ),
-            "--posF1": Use(str), # check whether in dic
-            "--posF2": Use(str), # check whether in dic
+            "--posF1": Use(str),  # check whether in dic
+            "--posF2": Use(str),  # check whether in dic
             "--outfmt": Or("csv", error="Currently must be csv"),
             object: object,
         },
@@ -143,6 +143,7 @@ def check_args(args):
         exit(e)
 
     return args
+
 
 def main(argv):
 
@@ -179,7 +180,13 @@ def main(argv):
         posF2 = args.get("--posF2")
 
         peaks = Peaklist(
-            filename, pipe_ft_file, fmt="a2", dims=dims, radii=[f2radius, f1radius], posF1=posF1, posF2=posF2,
+            filename,
+            pipe_ft_file,
+            fmt="a2",
+            dims=dims,
+            radii=[f2radius, f1radius],
+            posF1=posF1,
+            posF2=posF2,
         )
         # peaks.adaptive_clusters(block_size=151,offset=0)
 
@@ -235,7 +242,9 @@ def main(argv):
 
     except json.decoder.JSONDecodeError:
 
-        print(f"Your {config_path} may be corrupted. Making new one (old one moved to {config_path}.bak)")
+        print(
+            f"Your {config_path} may be corrupted. Making new one (old one moved to {config_path}.bak)"
+        )
         shutil.copy(f"{config_path}", f"{config_path}.bak")
         config_dic = dict(config_kvs)
 
