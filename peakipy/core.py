@@ -1235,9 +1235,10 @@ class Peaklist(Pseudo3D):
         Pseudo3D.__init__(self, dic, data, dims)
         self.fmt = fmt
         self.peaklist_path = path
+        self.data_path = data_path
         self.verbose = verbose
         self._radii = radii
-
+        self._thres = None
         if self.verbose:
             print("Points per hz f1 = %.3f, f2 = %.3f" % (self.pt_per_hz_f1, self.pt_per_hz_f2))
 
@@ -1341,6 +1342,18 @@ class Peaklist(Pseudo3D):
         """ radius for fitting mask in f1 """
         return self.radii[1]
 
+    @property
+    def analysis_to_pipe_dic(self):
+        return self._analysis_to_pipe_dic
+
+    @property
+    def sparky_to_pipe_dic(self):
+        return self._sparky_to_pipe_dic
+
+    @property
+    def thres(self):
+        return self._thres
+
     def update_df(self):
         # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: self.uc_f2(x, "ppm"))
@@ -1421,13 +1434,6 @@ class Peaklist(Pseudo3D):
         )
         return df
 
-    @property
-    def analysis_to_pipe_dic(self):
-        return self._analysis_to_pipe_dic
-
-    @property
-    def sparky_to_pipe_dic(self):
-        return self._sparky_to_pipe_dic
 
     def check_assignments(self):
         self.df["ASS"] = self.df.ASS.astype(str)
@@ -1471,7 +1477,7 @@ Excluding the following peaks as they are not within the spectrum which has shap
 
 {self.data.shape}
 
-{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS"]],headers="keys")}
+{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS","X_PPM","Y_PPM"]],headers="keys")}
 
 
 #################################################################################
@@ -1497,13 +1503,13 @@ Excluding the following peaks as they are not within the spectrum which has shap
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
         if thres == None:
-            self.thresh = abs(threshold_otsu(self.data[0]))
+            self._thres = abs(threshold_otsu(self.data[0]))
         else:
-            self.thresh = thres
+            self._thres = thres
 
         # get positive and negative
         thresh_data = np.bitwise_or(
-            self.data[0] < (self.thresh * -1.0), self.data[0] > self.thresh
+            self.data[0] < (self._thres * -1.0), self.data[0] > self._thres
         )
 
         if struc_el == "disk":
@@ -1529,10 +1535,9 @@ Excluding the following peaks as they are not within the spectrum which has shap
         else:
             if self.verbose:
                 print(f"Not using any closing function")
-            closed_data = self.data
+            closed_data = thresh_data
 
         labeled_array, num_features = ndimage.label(closed_data, l_struc)
-        #print(list(labeled_array),list(peaks),num_features)
 
         self.df.loc[:, "CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
 
@@ -1551,7 +1556,6 @@ Excluding the following peaks as they are not within the spectrum which has shap
             lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
             axis=1,
         )
-
         return ClustersResult(labeled_array, num_features, closed_data, peaks)
 
     # def adaptive_clusters(self, block_size, offset, l_struc=None):
@@ -1578,7 +1582,7 @@ Excluding the following peaks as they are not within the spectrum which has shap
 
     def mask_method(self, x_radius=0.04, y_radius=0.4, l_struc=None):
 
-        self.thresh = threshold_otsu(self.data[0])
+        self._thres = threshold_otsu(self.data[0])
 
         x_radius = self.pt_per_ppm_f2 * x_radius
         y_radius = self.pt_per_ppm_f1 * y_radius
@@ -1606,11 +1610,6 @@ Excluding the following peaks as they are not within the spectrum which has shap
         plt.imshow(mask)
         plt.show()
 
-    def get_df(self):
-        return self.df
-
-    def get_thres(self):
-        return self.thresh
 
     def to_fuda(self, fname="params.fuda"):
         with open("peaks.fuda", "w") as peaks_fuda:
@@ -1631,16 +1630,16 @@ Excluding the following peaks as they are not within the spectrum which has shap
 PEAKLIST=peaks.fuda
 SPECFILE={self.data_path}
 PARAMETERFILE=(bruker;vclist)
-NOISE={self.get_thres()} # you'll need to adjust this
+NOISE={self.thres} # you'll need to adjust this
 BASELINE=N
 VERBOSELEVEL=5
 PRINTDATA=Y
 LM=(MAXFEV=250;TOL=1e-5)
 #Specify the default values. All values are in ppm:
-DEF_LINEWIDTH_F1={self.f1radius}
-DEF_LINEWIDTH_F2={self.f2radius}
-DEF_RADIUS_F1={self.f1radius}
-DEF_RADIUS_F2={self.f2radius}
+DEF_LINEWIDTH_F1={self.f1_radius}
+DEF_LINEWIDTH_F2={self.f2_radius}
+DEF_RADIUS_F1={self.f1_radius}
+DEF_RADIUS_F2={self.f2_radius}
 SHAPE=GLORE
 # OVERLAP PEAKS
 {overlap_peaks}"""
@@ -1733,10 +1732,14 @@ def read_config(args, config_path="peakipy.config"):
         noise = config.get("noise")
         if noise:
             noise = float(noise)
+
+        colors = config.get("--colors", ["#5e3c99", "#e66101"])
     else:
         noise = False
+        colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
 
     args["noise"] = noise
+    args["colors"] = colors
 
     return args, config
 

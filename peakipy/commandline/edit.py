@@ -87,7 +87,7 @@ class BokehScript:
         self._path = Path(args.get("<peaklist>"))
         self._data_path = args.get("<data>")
         self.read_config()
-        self._peakipy_data = LoadData(self._path, self._data_path, dims=self.dims)
+        self._peakipy_data = LoadData(self._path, self._data_path, dims=self.dims, verbose=True)
         # check dataframe is usable
         self.peakipy_data.check_data_frame()
         # make temporary paths
@@ -498,11 +498,6 @@ class BokehScript:
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
 
         return self.peakipy_data.df
-        # print("struct", struct_el.value)
-        # print("struct size", struct_el_size.value )
-        # print(type(struct_el_size.value) )
-        # print(type(eval(struct_el_size.value)) )
-        # print(type([].extend(eval(struct_el_size.value)))
 
     def update_memcnt(self):
 
@@ -765,7 +760,6 @@ def main(args):
     run_log()
     bs = BokehScript(args)
     server = Server({"/": bs.init})
-    print("using class")
     server.start()
     print("Opening peakipy: Edit fits on http://localhost:5006/")
     server.io_loop.add_callback(server.show, "/")

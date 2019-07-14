@@ -62,6 +62,7 @@ from peakipy.core import (
     gaussian_lorentzian,
     Pseudo3D,
     run_log,
+    read_config,
 )
 
 
@@ -74,17 +75,10 @@ def main(argv):
 
     # get dims from config file
     config_path = Path("peakipy.config")
-    if config_path.exists():
-        config = json.load(open(config_path))
-        print(f"Using config file with --dims={config.get('--dims')}")
-        dims = config.get("--dims", [0, 1, 2])
-        colors = config.get("--colors", ["#5e3c99", "#e66101"])
+    args, config = read_config(args, config_path)
 
-    else:
-        dims = args.get("--dims")
-        dims = [int(i) for i in eval(dims)]
-        colors = args.get("--colors").strip().split(",")
-
+    dims = args.get("--dims")
+    colors = args.get("colors")
     data_path = args.get("<nmrdata>")
     dic, data = ng.pipe.read(data_path)
     pseudo3D = Pseudo3D(dic, data, dims)

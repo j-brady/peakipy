@@ -268,8 +268,8 @@ class TestReadScript(unittest.TestCase):
         self.assertIs(len(peaklist.df), 3)
         # self.assertIs(peaklist.df.X_AXISf.iloc[0], 323.019)
         self.assertIs(peaklist.fmt, "pipe")
-        self.assertEqual(peaklist.df.ASS.iloc[0], "None")
-        self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
+        #self.assertEqual(peaklist.df.ASS.iloc[0], "None")
+        #self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
 
 
 

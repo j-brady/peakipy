@@ -89,23 +89,73 @@
 import sys
 import os
 import json
+import shutil
 from pathlib import Path
+
 from docopt import docopt
+from schema import And, Or, Use, Schema, SchemaError
+import nmrglue as ng
+
 from peakipy.core import Peaklist, run_log
 
+
+def check_args(args):
+
+    schema = Schema(
+        {
+            "<peaklist>": And(
+                os.path.exists,
+                open,
+                error=f"🤔 {args['<peaklist>']} should exist and be readable",
+            ),
+            "<data>": And(
+                os.path.exists,
+                ng.pipe.read,
+                error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
+            ),
+            "--thres": Or(
+                "None",
+                Use(float),
+            ),
+
+            "--struc_el": Use(str),
+
+            #"--struc_size": Use(str),
+
+            "--f1radius": Use(float, error=f"F1 radius must be a float - you gave {args['--f1radius']}"),
+            "--f2radius": Use(float, error=f"F2 radius must be a float - you gave {args['--f2radius']}"),
+            "--dims": Use(
+                lambda n: [int(i) for i in eval(n)],
+                error="🤔 --dims should be list of integers e.g. --dims=0,1,2",
+            ),
+            "--posF1": Use(str), # check whether in dic
+            "--posF2": Use(str), # check whether in dic
+            "--outfmt": Or("csv", error="Currently must be csv"),
+            object: object,
+        },
+        # ignore_extra_keys=True,
+    )
+
+    # validate arguments
+    try:
+        args = schema.validate(args)
+    except SchemaError as e:
+        exit(e)
+
+    return args
 
 def main(argv):
 
     args = docopt(__doc__, argv=argv)
+    args = check_args(args)
     filename = Path(args["<peaklist>"])
     # print(filename.stem)
 
     if args.get("--thres") == "None":
         args["--thres"] = None
-    else:
-        args["--thres"] = eval(args["--thres"])
 
     thres = args.get("--thres")
+
     verbose_mode = args.get("--verb")
     if verbose_mode:
         print("Using arguments:", args)
@@ -119,8 +169,8 @@ def main(argv):
     }
 
     dims = args.get("--dims")
-    dims = [int(i) for i in dims.split(",")]
     pipe_ft_file = args.get("<data>")
+
     if args.get("--a2"):
         # set X and Y ppm column names if not default (i.e. "Position F1" = "X_PPM"
         # "Position F2" = "Y_PPM" ) this is due to Analysis2 often having the
@@ -146,8 +196,8 @@ def main(argv):
 
     peaks.update_df()
     peaks.clusters(thres=thres, **clust_args, l_struc=None)
-    data = peaks.get_df()
-    thres = peaks.get_thres()
+    data = peaks.df
+    thres = peaks.thres
 
     if args.get("--fuda"):
         peaks.to_fuda()
@@ -173,16 +223,23 @@ def main(argv):
         ("--f1radius", f1radius),
         ("--f2radius", f2radius),
     ]
-    if config_path.exists():
-        config_dic = json.load(open(config_path))
-        # update values in dict
-        config_dic.update(dict(config_kvs))
+    try:
+        if config_path.exists():
+            config_dic = json.load(open(config_path))
+            # update values in dict
+            config_dic.update(dict(config_kvs))
 
-    else:
-        # make a new config
+        else:
+            # make a new config
+            config_dic = dict(config_kvs)
+
+    except json.decoder.JSONDecodeError:
+
+        print(f"Your {config_path} may be corrupted. Making new one (old one moved to {config_path}.bak)")
+        shutil.copy(f"{config_path}", f"{config_path}.bak")
         config_dic = dict(config_kvs)
 
-    with open("peakipy.config", "w") as config:
+    with open(config_path, "w") as config:
         # write json
         config.write(json.dumps(config_dic, sort_keys=True, indent=4))
         # json.dump(config_dic, fp=config, sort_keys=True, indent=4)

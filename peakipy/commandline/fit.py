@@ -567,7 +567,7 @@ def main(argv):
                 log_file.write(i.log + "\n")
     else:
         print("Not using multiprocessing")
-        result = fit_peaks(peakipy_data.df, FitPeaksInput(args, data))
+        result = fit_peaks(peakipy_data.df, FitPeaksInput(args, peakipy_data.data))
         df = result.df
         log_file.write(result.log)
 
