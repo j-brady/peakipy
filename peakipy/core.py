@@ -34,7 +34,7 @@ from colorama import Fore, init
 init(autoreset=True)
 
 from numba import jit
-from numpy import sqrt, log, pi, exp
+from numpy import sqrt, log, pi, exp, finfo
 from tabulate import tabulate
 
 from lmfit import Model
@@ -53,6 +53,7 @@ from skimage.filters import threshold_otsu
 # constants
 log2 = log(2)
 π = pi
+tiny = finfo(float).eps 
 
 
 @jit(nopython=True)
@@ -75,8 +76,8 @@ def gaussian(x, center=0.0, sigma=1.0):
         :rtype: numpy.array
 
     """
-    return (1.0 / (sqrt(2 * π) * sigma)) * exp(
-        -(1.0 * x - center) ** 2 / (2 * sigma ** 2)
+    return (1.0 / max(tiny, (sqrt(2 * π) * sigma))) * exp(
+        -(1.0 * x - center) ** 2 / max(tiny, (2 * sigma ** 2))
     )
 
 
@@ -100,7 +101,7 @@ def lorentzian(x, center=0.0, sigma=1.0):
         :rtype: numpy.array
 
     """
-    return (1.0 / (1 + ((1.0 * x - center) / sigma) ** 2)) / (π * sigma)
+    return (1.0 / (1 + ((1.0 * x - center) / max(tiny, sigma)) ** 2)) / max(tiny, (π * sigma))
 
 
 @jit(nopython=True)

@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/edit.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/edit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/fit.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/fit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/core.py" afterDir="false" />
-    </list>
+    <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,8 +25,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="561" column="213" selection-start-line="561" selection-start-column="213" selection-end-line="561" selection-end-column="213" />
+            <state relative-caret-position="369">
+              <caret line="595" column="22" selection-start-line="595" selection-start-column="22" selection-end-line="595" selection-end-column="22" />
               <folding>
                 <element signature="e#1097#1106#0" expanded="true" />
               </folding>
@@ -176,7 +171,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="777" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16679905" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -326,8 +320,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="561" column="213" selection-start-line="561" selection-start-column="213" selection-end-line="561" selection-end-column="213" />
+        <state relative-caret-position="369">
+          <caret line="595" column="22" selection-start-line="595" selection-start-column="22" selection-end-line="595" selection-end-column="22" />
           <folding>
             <element signature="e#1097#1106#0" expanded="true" />
           </folding>

@@ -49,6 +49,7 @@ import nmrglue as ng
 import matplotlib.pyplot as plt
 from colorama import Fore, init
 init(autoreset=True)
+from tabulate import tabulate
 from docopt import docopt
 from schema import SchemaError, Schema, And
 from mpl_toolkits.mplot3d import Axes3D
@@ -94,6 +95,10 @@ def check_input(args):
         return args
     except SchemaError as e:
         sys.exit(e)
+
+def print_bad(plane):
+    tab = tabulate(plane[["clustid","amp","center_x_ppm","center_y_ppm","fwhm_x_hz","fwhm_y_hz","lineshape"]], headers='keys', tablefmt="fancy_grid")
+    return tab
 
 def main(argv):
 
@@ -259,13 +264,19 @@ def main(argv):
                 # slice out plot area
                 x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
                 y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
+                masked_data = masked_data[min_y:max_y, min_x:max_x]
+                sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
+                #or len(masked_data)<1 or len(sim_plot)<1
+  
                 if len(x_plot)<1 or len(y_plot)<1:
                     print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
                     print(Fore.RED + f"x={x_plot},y={y_plot}")
-                    print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
+                    print(Fore.RED + print_bad(plane))
+                    #print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
+                elif masked_data.shape[0]==0 or masked_data.shape[1]==0:
+                    print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
+                    print(Fore.RED + print_bad(plane))
                 else:
-                    masked_data = masked_data[min_y:max_y, min_x:max_x]
-                    sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
 
                     residual = masked_data - sim_plot
                     cset = ax.contourf(
