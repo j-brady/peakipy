@@ -75,6 +75,9 @@ import numpy as np
 import pandas as pd
 
 from docopt import docopt
+from colorama import Fore, init
+init(autoreset=True)
+from tabulate import tabulate
 from skimage.filters import threshold_otsu
 from schema import Schema, And, Or, Use, SchemaError
 
@@ -98,7 +101,7 @@ def check_xybounds(x):
         xy_bounds = float(x[0]), float(x[1])
         return xy_bounds
     else:
-        print("🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
+        print(Fore.RED + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
         exit()
 
 
@@ -347,13 +350,13 @@ def main(argv):
             "<peaklist>": And(
                 os.path.exists,
                 open,
-                error=f"🤔 {args['<peaklist>']} should exist and be readable",
+                error=Fore.RED + f"🤔 {args['<peaklist>']} should exist and be readable",
             ),
             "<data>": And(
                 os.path.exists,
                 # Use(
                 ng.pipe.read,
-                error=f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
+                error=Fore.RED + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
                 # ),
                 # error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
@@ -367,7 +370,7 @@ def main(argv):
                 "PV_G",
                 "PV_L",
                 "G_L",
-                error="🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L",
+                error=Fore.RED + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L",
             ),
             "--fix": Or(
                 Use(
@@ -380,13 +383,13 @@ def main(argv):
             ),
             "--dims": Use(
                 lambda n: [int(i) for i in eval(n)],
-                error="🤔 --dims should be list of integers e.g. --dims=0,1,2",
+                error=Fore.RED + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
             ),
             "--vclist": Or(
                 "None",
                 And(
                     os.path.exists,
-                    Use(np.genfromtxt, error=f"🤔 cannot open {args.get('--vclist')}"),
+                    Use(np.genfromtxt, error=Fore.RED + f"🤔 cannot open {args.get('--vclist')}"),
                 ),
             ),
             "--plot": Or("None", Use(lambda f: Path(f))),
@@ -394,21 +397,21 @@ def main(argv):
                 "None",
                 Use(
                     check_xybounds,
-                    error="🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
+                    error=Fore.RED + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
                 ),
             ),
             "--plane": Or(
                 0,
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
-                    error="🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
+                    error=Fore.RED + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
                 ),
             ),
             "--exclude_plane": Or(
                 0,
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
-                    error="🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
+                    error=Fore.RED + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
                 ),
             ),
             object: object,
@@ -451,8 +454,9 @@ def main(argv):
         peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
 
     if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
-        print(
-            f"The following peaks have been exluded:\n{peakipy_data.df[peakipy_data.df.include != 'yes']}"
+        print(Fore.YELLOW +
+            f"The following peaks have been exluded:\n",
+tabulate("{peakipy_data.df[peakipy_data.df.include != 'yes']}",headers='keys',tablefmt='fancy_grid')
         )
         peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
 

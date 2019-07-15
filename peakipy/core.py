@@ -30,6 +30,8 @@ import nmrglue as ng
 import matplotlib.pyplot as plt
 import pandas as pd
 import textwrap
+from colorama import Fore, init
+init(autoreset=True)
 
 from numba import jit
 from numpy import sqrt, log, pi, exp
@@ -1198,15 +1200,6 @@ class Pseudo3D:
         return self.f1_ppm_limits[1]
 
 
-#    uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
-#    ppm_f1 = uc_f1.ppm_scale()
-#    ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()
-#
-#    uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
-#    ppm_f2 = uc_f2.ppm_scale()
-#    ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()
-
-
 class Peaklist(Pseudo3D):
     """ Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
 
@@ -1459,14 +1452,14 @@ class Peaklist(Pseudo3D):
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates) > 0:
-            print(
+            print(textwrap.dedent(
                 """
-#############################################################################
-    You have duplicated assignments in your list...
-    Currently each peak needs a unique assignment. Sorry about that buddy...
-#############################################################################
-"""
-            )
+                #############################################################################
+                    You have duplicated assignments in your list...
+                    Currently each peak needs a unique assignment. Sorry about that buddy...
+                #############################################################################
+                """
+            ))
             self.df.loc[duplicates_bool, "ASS"] = [
                 f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
             ]
@@ -1475,13 +1468,12 @@ class Peaklist(Pseudo3D):
                 print(duplicates)
                 print(self.df.ASS)
 
-            print(
+            print(textwrap.dedent(
                 """
-            
-    Creating dummy assignments for duplicates
-            
-            """
-            )
+                    Creating dummy assignments for duplicates
+                
+                """
+            ))
 
     def check_peak_bounds(self):
         # check that peaks are within the bounds of spectrum
@@ -1490,21 +1482,21 @@ class Peaklist(Pseudo3D):
         self.excluded = self.df[~(within_x & within_y)]
         self.df = self.df[within_x & within_y]
         if len(self.excluded) > 0:
-            print(
+            print(Fore.RED + textwrap.dedent(
                 f"""
-           
-#################################################################################
+                    #################################################################################
 
-Excluding the following peaks as they are not within the spectrum which has shape 
+                    Excluding the following peaks as they are not within the spectrum which has shape 
 
-{self.data.shape}
-
-{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS","X_PPM","Y_PPM"]],headers="keys")}
-
-
-#################################################################################
-            """
+                    {self.data.shape}
+                """)
             )
+            print(Fore.RED +
+                f"""
+{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS","X_PPM","Y_PPM"]],headers="keys", tablefmt="fancy_grid")}
+                """
+            )
+            print(Fore.RED + "#################################################################################")
 
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks
@@ -1659,6 +1651,7 @@ Excluding the following peaks as they are not within the spectrum which has shap
 
         fuda_file = textwrap.dedent(
             f"""\
+            
 # Read peaklist and spectrum info
 PEAKLIST=peaks.fuda
 SPECFILE={self.data_path}

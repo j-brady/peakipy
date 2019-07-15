@@ -47,6 +47,8 @@ import pandas as pd
 import numpy as np
 import nmrglue as ng
 import matplotlib.pyplot as plt
+from colorama import Fore, init
+init(autoreset=True)
 from docopt import docopt
 from schema import SchemaError, Schema, And
 from mpl_toolkits.mplot3d import Axes3D
@@ -258,9 +260,9 @@ def main(argv):
                 x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
                 y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
                 if len(x_plot)<1 or len(y_plot)<1:
-                    print(f"Nothing to plot for cluster {int(plane.clustid)}")
-                    print(f"x={x_plot},y={y_plot}")
-                    print("Maybe your F1/F2 radii for fitting were too small...")
+                    print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
+                    print(Fore.RED + f"x={x_plot},y={y_plot}")
+                    print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
                 else:
                     masked_data = masked_data[min_y:max_y, min_x:max_x]
                     sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
@@ -307,7 +309,7 @@ def main(argv):
                     # names = ",".join(plane.assignment)
                     title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
                     plt.title(title)
-                    print(f"Plotting: {title}")
+                    print(Fore.GREEN + f"Plotting: {title}")
                     out_str = "Amplitudes\n----------------\n"
                     # chi2s = []
                     for amp, name, peak_mask in zip(plane.amp, plane.assignment, masks):

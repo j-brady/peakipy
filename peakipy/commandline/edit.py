@@ -38,13 +38,13 @@ from pathlib import Path
 from subprocess import check_output
 from docopt import docopt
 from schema import Schema, And, SchemaError
+from colorama import Fore, init
+init(autoreset=True)
 
 import nmrglue as ng
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import magma, autumn, viridis
-
-
 from skimage.filters import threshold_otsu
 
 from bokeh.events import ButtonClick, DoubleTap
@@ -554,14 +554,14 @@ class BokehScript:
 
         lineshape = self.lineshapes[self.radio_button_group.active]
         if self.checkbox_group.active == []:
-            print("Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --nomp"
+            print(Fore.YELLOW + "Using LS = ", lineshape)
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --nomp --verb"
         else:
             plane_index = self.select_plane.value
-            print("Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --plane={plane_index} --nomp"
+            print(Fore.YELLOW + "Using LS = ", lineshape)
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --plane={plane_index} --nomp --verb"
 
-        print(fit_command)
+        print(Fore.BLUE + fit_command)
         self.fit_reports.text += fit_command + "<br>"
 
         stdout = check_output(fit_command.split(" "))
@@ -579,19 +579,24 @@ class BokehScript:
             shutil.copy(f"{to_save}", f"{to_save}.bak")
             print(f"Making backup {to_save}.bak")
 
-        print(f"Saving peaks to {to_save}")
+        print(Fore.GREEN + f"Saving peaks to {to_save}")
         if to_save.suffix == ".csv":
             self.peakipy_data.df.to_csv(to_save, float_format="%.4f", index=False)
         else:
             self.peakipy_data.df.to_pickle(to_save)
 
     def select_callback(self, attrname, old, new):
-        # print("Calling Select Callback")
-        selectionIndex = self.source.selected.indices
-        current = self.peakipy_data.df.iloc[selectionIndex]
+        #print(Fore.RED + "Calling Select Callback")
+        #selectionIndex = self.source.selected.indices
+        #current = self.peakipy_data.df.iloc[selectionIndex]
 
+        for col in self.peakipy_data.df.columns:
+            self.peakipy_data.df.loc[:, col] = self.source.data[col]
+        # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
         # update memcnt
         self.update_memcnt()
+        #print(Fore.YELLOW + "Finished Calling Select Callback")
+
 
     def peak_pick_callback(self, event):
         # global so that df is updated globally
@@ -614,7 +619,7 @@ class BokehScript:
         assignment = f"test_peak_{index}_{clustid}"
         height = self.peakipy_data.data[0][int(y_axis), int(x_axis)]
         volume = height
-        print(f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}""")
+        print(Fore.BLUE + f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}""")
 
         new_peak = {
             "INDEX": index,
@@ -827,16 +832,16 @@ def check_input(args):
             "<peaklist>": And(
                 os.path.exists,
                 open,
-                error=f"{args['<peaklist>']} should exist and be readable",
+                error=Fore.RED + f"{args['<peaklist>']} should exist and be readable .csv file",
             ),
             "<data>": And(
                 os.path.exists,
                 ng.pipe.read,
-                error=f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                error=Fore.RED + f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "--dims": And(
                 lambda n: [int(i) for i in eval(n)],
-                error="--dims should be list of integers e.g. --dims=0,1,2",
+                error=Fore.RED + "--dims should be list of integers e.g. --dims=0,1,2",
             ),
         }
     )
@@ -853,7 +858,7 @@ def main(args):
     bs = BokehScript(args)
     server = Server({"/": bs.init})
     server.start()
-    print("Opening peakipy: Edit fits on http://localhost:5006/")
+    print(Fore.GREEN + "Opening peakipy: Edit fits on http://localhost:5006/")
     server.io_loop.add_callback(server.show, "/")
     server.io_loop.start()
 

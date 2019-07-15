@@ -16,6 +16,7 @@ requirements = [
         "schema>=0.7.0",
         "numba>=0.44.1",
         "tabulate>=0.8.3",
+        "colorama>=0.4.1",
         ]
 
 setup(
