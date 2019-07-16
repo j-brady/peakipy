@@ -19,7 +19,7 @@
 
         --max_cluster_size=<max_cluster_size>       Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
 
-        --lineshape=<G/L/PV/PV_PV/PV_G/PV_L/G_L>    lineshape to fit [default: PV]
+        --lineshape=<G/L/PV/PV_PV/PV_G/PV_L/G_L/V>  lineshape to fit [default: PV]
 
         --fix=<fraction,sigma,center>               Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
@@ -98,7 +98,8 @@ log_path = Path("log.txt")
 def check_xybounds(x):
     x = x.split(",")
     if len(x) == 2:
-        xy_bounds = float(x[0]), float(x[1])
+        #xy_bounds = float(x[0]), float(x[1])
+        xy_bounds = [float(i) for i in x]
         return xy_bounds
     else:
         print(Fore.RED + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
@@ -370,7 +371,8 @@ def main(argv):
                 "PV_G",
                 "PV_L",
                 "G_L",
-                error=Fore.RED + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L",
+                "V",
+                error=Fore.RED + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
             ),
             "--fix": Or(
                 Use(

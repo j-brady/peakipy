@@ -324,6 +324,7 @@ class BokehScript:
             4: "PV_L",
             5: "PV_G",
             6: "G_L",
+            7: "V",
         }
         self.radio_button_group = RadioButtonGroup(
             labels=[self.lineshapes[i] for i in self.lineshapes.keys()], active=0
@@ -555,11 +556,11 @@ class BokehScript:
         lineshape = self.lineshapes[self.radio_button_group.active]
         if self.checkbox_group.active == []:
             print(Fore.YELLOW + "Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --nomp --verb"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --nomp"
         else:
             plane_index = self.select_plane.value
             print(Fore.YELLOW + "Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --plane={plane_index} --nomp --verb"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --plane={plane_index} --nomp"
 
         print(Fore.BLUE + fit_command)
         self.fit_reports.text += fit_command + "<br>"
@@ -854,12 +855,13 @@ def check_input(args):
 
 
 def main(args):
+    from bokeh.util.browser import view
     run_log()
     bs = BokehScript(args)
-    server = Server({"/": bs.init})
+    server = Server({"/edit": bs.init})
     server.start()
-    print(Fore.GREEN + "Opening peakipy: Edit fits on http://localhost:5006/")
-    server.io_loop.add_callback(server.show, "/")
+    print(Fore.GREEN + "Opening peakipy: Edit fits on http://localhost:5006/edit")
+    server.io_loop.add_callback(server.show, "/edit")
     server.io_loop.start()
 
 

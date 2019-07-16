@@ -29,6 +29,7 @@ setup(
     author_email="jacob.brady0449@gmail.com",
     url="https://j-brady.github.io/peakipy",
     packages=find_packages(),
+    package_data={"peakipy": ["commandline/templates/*.html",]},
     classifiers=[
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",

@@ -60,6 +60,7 @@ from matplotlib.widgets import Button
 from peakipy.core import (
     make_mask,
     pvoigt2d,
+    voigt2d,
     pv_pv,
     pv_g,
     pv_l,
@@ -251,6 +252,11 @@ def main(argv):
 
                         elif ls == "G_L":
                             sim_data += gaussian_lorentzian(
+                                XY, amp, c_x, c_y, s_x, s_y, frac
+                            ).reshape(shape)
+
+                        elif ls == "V":
+                            sim_data += voigt2d(
                                 XY, amp, c_x, c_y, s_x, s_y, frac
                             ).reshape(shape)
 

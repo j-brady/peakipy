@@ -40,6 +40,7 @@ from tabulate import tabulate
 from lmfit import Model
 from lmfit.model import ModelResult
 from lmfit.models import LinearModel
+from scipy.special import wofz
 
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -103,6 +104,20 @@ def lorentzian(x, center=0.0, sigma=1.0):
     """
     return (1.0 / (1 + ((1.0 * x - center) / max(tiny, sigma)) ** 2)) / max(tiny, (π * sigma))
 
+def voigt(x, center=0.0, sigma=1.0, gamma=None):
+    """Return a 1-dimensional Voigt function.
+
+    voigt(x, center, sigma, gamma) =
+        amplitude*wofz(z).real / (sigma*sqrt(2.0 * π))
+
+    see https://en.wikipedia.org/wiki/Voigt_profile
+
+    """
+    if gamma is None:
+        gamma = sigma
+
+    z = (x-center + 1j*gamma) / max(tiny, (sigma * sqrt(2.0)))
+    return wofz(z).real / max(tiny, (sigma * sqrt(2.0 * π)))
 
 @jit(nopython=True)
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
@@ -333,6 +348,19 @@ def gaussian_lorentzian(
     pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0)  # lorentzian
     return amplitude * pv_x * pv_y
 
+def voigt2d(
+    XY,
+    amplitude=1.0,
+    center_x=0.5,
+    center_y=0.5,
+    sigma_x=1.0,
+    sigma_y=1.0,
+    fraction=0.5,
+        ):
+    x, y = XY
+    voigt_x = voigt(x, center_x, sigma_x)
+    voigt_y = voigt(y, center_y, sigma_y)
+    return amplitude * voigt_x * voigt_y
 
 def make_mask(data, c_x, c_y, r_x, r_y):
     """ Create and elliptical mask
@@ -618,7 +646,7 @@ def fit_first_plane(
         :param uc_dics: nmrglue unit conversion dics {"f1":uc_f1,"f2":uc_f2}
         :type uc_dics: dict
         
-        :param lineshape: lineshape to fit (PV, G, L, G_L, PV_L, PV_G or PV_PV)
+        :param lineshape: lineshape to fit (PV, G, L, V, G_L, PV_L, PV_G or PV_PV)
         :type lineshape: str
 
         :param xy_bounds: set bounds on x y positions. None or (x_bound, y_bound)
@@ -649,6 +677,11 @@ def fit_first_plane(
     if (lineshape == "PV") or (lineshape == "G") or (lineshape == "L"):
         mod, p_guess = make_models(
             pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
+        )
+
+    elif lineshape == "V":
+        mod, p_guess = make_models(
+            voigt2d, group, data, lineshape="PV", xy_bounds=xy_bounds
         )
 
     elif lineshape == "G_L":
@@ -714,6 +747,7 @@ def fit_first_plane(
 
     XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
+
     out = mod.fit(
         peak_slices, XY=XY_slices, params=p_guess, weights=weights, method="leastsq"
     )
