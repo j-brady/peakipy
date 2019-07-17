@@ -609,8 +609,12 @@ tabulate("{peakipy_data.df[peakipy_data.df.include != 'yes']}",headers='keys',ta
     output = Path(args["<output>"])
     suffix = output.suffix
     #  convert sigmas to fwhm
-    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+    if args["lineshape"] == "V":
+        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 3.6013)
+        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 3.6013)
+    else:
+        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
     #  convert values to ppm
     df["center_x_ppm"] = df.center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
     df["center_y_ppm"] = df.center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))

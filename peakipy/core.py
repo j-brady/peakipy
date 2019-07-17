@@ -443,9 +443,6 @@ def make_param_dict(peaks, data, lineshape="PV"):
         # using exact value of points (i.e decimal)
         param_dict[str_form("center_x")] = peak.X_AXISf
         param_dict[str_form("center_y")] = peak.Y_AXISf
-        #  linewidth esimate
-        param_dict[str_form("sigma_x")] = peak.XW / 2.0
-        param_dict[str_form("sigma_y")] = peak.YW / 2.0
         # estimate peak volume
         amplitude_est = data[
             int(peak.Y_AXIS) - int(peak.YW) : int(peak.Y_AXIS) + int(peak.YW) + 1,
@@ -453,6 +450,15 @@ def make_param_dict(peaks, data, lineshape="PV"):
         ].sum()
 
         param_dict[str_form("amplitude")] = amplitude_est
+
+        if lineshape == "V":
+            #  Voigt sigma from linewidth esimate
+            param_dict[str_form("sigma_x")] = peak.XW / 3.6013
+            param_dict[str_form("sigma_y")] = peak.YW / 3.6013
+        else:
+            # sigma linewidth esimate
+            param_dict[str_form("sigma_x")] = peak.XW / 2.0
+            param_dict[str_form("sigma_y")] = peak.YW / 2.0
 
         if lineshape == "G":
             param_dict[str_form("fraction")] = 0.0
@@ -605,7 +611,8 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
             # fix weighting between 0 and 1
             params[k].min = 0.0
             params[k].max = 1.0
-
+            
+            # fix fraction of G or L
             if lineshape == "G":
                 params[k].vary = False
             elif lineshape == "L":
@@ -681,7 +688,7 @@ def fit_first_plane(
 
     elif lineshape == "V":
         mod, p_guess = make_models(
-            voigt2d, group, data, lineshape="PV", xy_bounds=xy_bounds
+            voigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
         )
 
     elif lineshape == "G_L":

@@ -278,10 +278,16 @@ def main(argv):
                     print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
                     print(Fore.RED + f"x={x_plot},y={y_plot}")
                     print(Fore.RED + print_bad(plane))
+                    plt.close()
                     #print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
                 elif masked_data.shape[0]==0 or masked_data.shape[1]==0:
                     print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
                     print(Fore.RED + print_bad(plane))
+                    spec_lim_f1 = " - ".join(["%8.3f"%i for i in pseudo3D.f1_ppm_limits])
+                    spec_lim_f2 = " - ".join(["%8.3f"%i for i in pseudo3D.f2_ppm_limits])
+                    print(f"Spectrum limits are {pseudo3D.f2_label:4s}:{spec_lim_f2} ppm")
+                    print(f"                    {pseudo3D.f1_label:4s}:{spec_lim_f1} ppm")
+                    plt.close()
                 else:
 
                     residual = masked_data - sim_plot
