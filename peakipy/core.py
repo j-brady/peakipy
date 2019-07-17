@@ -980,17 +980,22 @@ class FitResult:
                 elif "center_y" in k:
                     Y_lab.append(self.uc_dics["f1"].ppm(v))
             #  this is dumb as !£$@
-            Z_lab = [
-                self.Z[
-                    int(round(self.uc_dics["f1"](y, "ppm"))),
-                    int(round(self.uc_dics["f2"](x, "ppm"))),
-                ]
-                for x, y in zip(X_lab, Y_lab)
-            ]
-
-            for l, x, y, z in zip(labs, X_lab, Y_lab, Z_lab):
+            #Z_lab = [
+            #    self.Z[
+            #        int(round(self.uc_dics["f1"](y, "ppm"))),
+            #        int(round(self.uc_dics["f2"](x, "ppm"))),
+            #    ]
+            #    for x, y in zip(X_lab, Y_lab)
+            #]
+            z_max = np.nanmax(z_plot.ravel())
+            Z_lab = np.array(Z_lab)
+            z_max = z_max * (Z_lab/max(Z_lab))
+            for l, x, y, z in zip(labs, X_lab, Y_lab, z_max):
                 # print(l, x, y, z)
-                ax.text(x, y, z * 1.2, l, None)
+                #ax.text(x, y, z * 1.2, l, None)
+                z = z*1.2
+                ax.text(x, y, z, l, None)
+                ax.plot([x,x], [y,y], [0,z], linestyle='dotted', c='k',alpha=0.5)
 
             # plt.colorbar(contf)
             plt.legend(bbox_to_anchor=(1.2, 1.1))
