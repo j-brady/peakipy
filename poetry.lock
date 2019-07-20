@@ -38,6 +38,14 @@ version = "1.2.1"
 
 [[package]]
 category = "main"
+description = "Cross-platform colored terminal text."
+name = "colorama"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "0.4.1"
+
+[[package]]
+category = "main"
 description = "Backports and enhancements for the contextlib module"
 name = "contextlib2"
 optional = false
@@ -329,13 +337,14 @@ python-versions = "*"
 version = "3.1.1"
 
 [metadata]
-content-hash = "32aba97b8bee12d16d3ddbb2a26d9fb0e4f7d98cae0f98e268ef9b94a674cf83"
+content-hash = "0c2dc37defe73ba06613638b05ea1ad5458ce3bd8a2e6d31458ca0770a05e172"
 python-versions = "^3.6"
 
 [metadata.hashes]
 asteval = ["7c81fee6707a7a28e8beae891b858535a7e61f9ce275a0a4cf5f428fbc934cb8"]
 bokeh = ["d45d797b5b3f5bb688eb636fb0430b0d57af232abd8ddc07ddba922c1ef0c3ae"]
 cloudpickle = ["603244e0f552b72a267d47a7d9b347b27a3430f58a0536037a290e7e0e212ecf", "b8ba7e322f2394b9bbbdc1c976e6442c2c02acc784cb9e553cee9186166a6890"]
+colorama = ["05eed71e2e327246ad6b38c540c4a3117230b19679b875190486ddd2d721422d", "f8ac84de7840f5b9c4e3347b3c1eaa50f7e49c2b07596221daec5edaabbd7c48"]
 contextlib2 = ["509f9419ee91cdd00ba34443217d5ca51f5a364a404e1dce9e8979cea969ca48", "f5260a6e679d2ff42ec91ec5252f4eeffdcf21053db9113bd0a8e4d953769c00"]
 cycler = ["1d8a5ae1ff6c5cf9b93e8811e581232ad8920aeec647c37316ceac982b08cb2d", "cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"]
 decorator = ["86156361c50488b84a3f148056ea716ca587df2f0de1d34750d35c21312725de", "f069f3a01830ca754ba5258fde2278454a0b5b79e0d7f5c13b3b97e57d4acff6"]
