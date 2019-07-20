@@ -46,7 +46,6 @@
 
 
 
-    ToDo: change outputs (print/log.txt) so that they do not attempt to write at the same time during multiprocess
 
     peakipy - deconvolute overlapping NMR peaks
     Copyright (C) 2019  Jacob Peter Brady
@@ -76,6 +75,7 @@ import pandas as pd
 
 from docopt import docopt
 from colorama import Fore, init
+
 init(autoreset=True)
 from tabulate import tabulate
 from skimage.filters import threshold_otsu
@@ -88,8 +88,13 @@ from peakipy.core import (
     LoadData,
     run_log,
     read_config,
+    voigt2d,
+    pvoigt2d,
+    pv_pv,
 )
 
+π = np.pi
+sqrt2 = np.sqrt(2.0)
 tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
@@ -98,7 +103,7 @@ log_path = Path("log.txt")
 def check_xybounds(x):
     x = x.split(",")
     if len(x) == 2:
-        #xy_bounds = float(x[0]), float(x[1])
+        # xy_bounds = float(x[0]), float(x[1])
         xy_bounds = [float(i) for i in x]
         return xy_bounds
     else:
@@ -141,6 +146,9 @@ def fit_peaks(peaks, fit_input):
     amps = []
     amp_errs = []
 
+    # heights = []
+    # height_errs = []
+
     center_xs = []
     init_center_xs = []
     # center_x_errs = []
@@ -158,6 +166,7 @@ def fit_peaks(peaks, fit_input):
     names = []
     assign = []
     clustids = []
+    memcnts = []
     planes = []
     x_radii = []
     y_radii = []
@@ -260,6 +269,9 @@ def fit_peaks(peaks, fit_input):
                     print(fit_report)
 
                 amp, amp_err, name = get_params(first.params, "amplitude")
+                # height, height_err, h_name = get_params(first.params, "height")
+                # fwhm_x, fwhm_x_err, fx_name = get_params(first.params, "fwhm_x")
+                # fwhm_y, fwhm_y_err, fy_name = get_params(first.params, "fwhm_y")
                 cen_x, cen_x_err, cx_name = get_params(first.params, "center_x")
                 cen_y, cen_y_err, cy_name = get_params(first.params, "center_y")
                 sig_x, sig_x_err, sx_name = get_params(first.params, "sigma_x")
@@ -276,6 +288,8 @@ def fit_peaks(peaks, fit_input):
 
                 amps.extend(amp)
                 amp_errs.extend(amp_err)
+                # heights.extend(height)
+                # height_errs.extend(height_err)
                 center_xs.extend(cen_x)
                 init_center_xs.extend(group.X_AXISf)
                 # center_x_errs.extend(cen_x_err)
@@ -293,6 +307,7 @@ def fit_peaks(peaks, fit_input):
                 names.extend([i.replace("fraction", "") for i in name])
                 assign.extend(group["ASS"])
                 clustids.extend(group["CLUSTID"])
+                memcnts.extend(group["MEMCNT"])
                 x_radii.extend(group["X_RADIUS"])
                 y_radii.extend(group["Y_RADIUS"])
                 x_radii_ppm.extend(group["X_RADIUS_PPM"])
@@ -303,6 +318,8 @@ def fit_peaks(peaks, fit_input):
         "assignment": assign,
         "amp": amps,
         "amp_err": amp_errs,
+        # "height": heights,
+        # "height_err": height_errs,
         "center_x": center_xs,
         "init_center_x": init_center_xs,
         # "center_x_err": center_x_errs,
@@ -314,6 +331,7 @@ def fit_peaks(peaks, fit_input):
         "sigma_y": sigma_ys,
         # "sigma_y_err": sigma_y_errs,
         "clustid": clustids,
+        "memcnt": memcnts,
         "plane": planes,
         "x_radius": x_radii,
         "y_radius": y_radii,
@@ -357,7 +375,8 @@ def main(argv):
                 os.path.exists,
                 # Use(
                 ng.pipe.read,
-                error=Fore.RED + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
+                error=Fore.RED
+                + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
                 # ),
                 # error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
@@ -372,7 +391,8 @@ def main(argv):
                 "PV_L",
                 "G_L",
                 "V",
-                error=Fore.RED + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
+                error=Fore.RED
+                + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
             ),
             "--fix": Or(
                 Use(
@@ -385,13 +405,17 @@ def main(argv):
             ),
             "--dims": Use(
                 lambda n: [int(i) for i in eval(n)],
-                error=Fore.RED + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
+                error=Fore.RED
+                + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
             ),
             "--vclist": Or(
                 "None",
                 And(
                     os.path.exists,
-                    Use(np.genfromtxt, error=Fore.RED + f"🤔 cannot open {args.get('--vclist')}"),
+                    Use(
+                        np.genfromtxt,
+                        error=Fore.RED + f"🤔 cannot open {args.get('--vclist')}",
+                    ),
                 ),
             ),
             "--plot": Or("None", Use(lambda f: Path(f))),
@@ -399,21 +423,24 @@ def main(argv):
                 "None",
                 Use(
                     check_xybounds,
-                    error=Fore.RED + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
+                    error=Fore.RED
+                    + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
                 ),
             ),
             "--plane": Or(
                 0,
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
-                    error=Fore.RED + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
+                    error=Fore.RED
+                    + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
                 ),
             ),
             "--exclude_plane": Or(
                 0,
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
-                    error=Fore.RED + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
+                    error=Fore.RED
+                    + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
                 ),
             ),
             object: object,
@@ -456,9 +483,13 @@ def main(argv):
         peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
 
     if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
-        print(Fore.YELLOW +
-            f"The following peaks have been exluded:\n",
-tabulate("{peakipy_data.df[peakipy_data.df.include != 'yes']}",headers='keys',tablefmt='fancy_grid')
+        print(
+            Fore.YELLOW + f"The following peaks have been exluded:\n",
+            tabulate(
+                "{peakipy_data.df[peakipy_data.df.include != 'yes']}",
+                headers="keys",
+                tablefmt="fancy_grid",
+            ),
         )
         peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
 
@@ -610,8 +641,99 @@ tabulate("{peakipy_data.df[peakipy_data.df.include != 'yes']}",headers='keys',ta
     suffix = output.suffix
     #  convert sigmas to fwhm
     if args["lineshape"] == "V":
+        # calculate peak height
+        df["height"] = df.apply(
+            lambda x: voigt2d(
+                XY=[0, 0],
+                center_x=0.0,
+                center_y=0.0,
+                sigma_x=x.sigma_x,
+                sigma_y=x.sigma_y,
+                amplitude=x.amp,
+            ),
+            axis=1,
+        )
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 3.6013)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 3.6013)
+
+    if args["lineshape"] == "PV":
+        # calculate peak height
+        df["height"] = df.apply(
+            lambda x: pvoigt2d(
+                XY=[0, 0],
+                center_x=0.0,
+                center_y=0.0,
+                sigma_x=x.sigma_x,
+                sigma_y=x.sigma_y,
+                amplitude=x.amp,
+                fraction=x.fraction,
+            ),
+            axis=1,
+        )
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+
+    elif args["lineshape"] == "G":
+        #df["height"] = df.apply(
+        #    lambda x: x.amp / (x.sigma_x * x.sigma_y * 2 * π), axis=1
+        #)
+        df["height"] = df.apply(
+            lambda x: pvoigt2d(
+                XY=[0, 0],
+                center_x=0.0,
+                center_y=0.0,
+                sigma_x=x.sigma_x,
+                sigma_y=x.sigma_y,
+                amplitude=x.amp,
+                fraction=0.0, # gaussian
+            ),
+            axis=1,
+        )
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+
+    elif args["lineshape"] == "L":
+        df["height"] = df.apply(
+            lambda x: pvoigt2d(
+                XY=[0, 0],
+                center_x=0.0,
+                center_y=0.0,
+                sigma_x=x.sigma_x,
+                sigma_y=x.sigma_y,
+                amplitude=x.amp,
+                fraction=1.0, # lorentzian
+            ),
+            axis=1,
+        )
+        #df["height"] = df.apply(
+        #    lambda x: x.amp / (x.sigma_x * x.sigma_y * π ** 2.0), axis=1
+        #)
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+
+    elif args["lineshape"] == "PV_PV":
+        # calculate peak height
+        df["height"] = df.apply(
+            lambda x: pv_pv(
+                XY=[0, 0],
+                center_x=0.0,
+                center_y=0.0,
+                sigma_x=x.sigma_x,
+                sigma_y=x.sigma_y,
+                amplitude=x.amp,
+                fraction_x=x.fraction_x,
+                fraction_y=x.fraction_y,
+            ),
+            axis=1,
+        )
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+
     else:
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)

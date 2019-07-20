@@ -39,6 +39,7 @@ from subprocess import check_output
 from docopt import docopt
 from schema import Schema, And, SchemaError
 from colorama import Fore, init
+
 init(autoreset=True)
 
 import nmrglue as ng
@@ -352,11 +353,7 @@ class BokehScript:
             text="<h3><a href='https://j-brady.github.io/peakipy/build/usage/instructions.html', target='_blank'> ℹ️ click here for documentation</a></h3>"
         )
         self.fit_reports = ""
-        self.fit_reports_div = Div(
-            text="",
-            height=400,
-            style={"overflow": "scroll"},
-        )
+        self.fit_reports_div = Div(text="", height=400, style={"overflow": "scroll"})
         # Plane selection
         self.select_planes_list = [
             f"{i+1}"
@@ -485,10 +482,13 @@ class BokehScript:
         save_layout = column(self.savefilename, self.button, self.exit_button)
 
         fitting_tab = Panel(child=fitting_layout, title="Peak fitting")
-        log_tab = Panel(child=log_layout, title="Log", )
+        log_tab = Panel(child=log_layout, title="Log")
         recluster_tab = Panel(child=recluster_layout, title="Re-cluster peaks")
         save_tab = Panel(child=save_layout, title="Save edited peaklist")
-        self.tabs = Tabs(tabs=[fitting_tab, log_tab, recluster_tab, save_tab], sizing_mode="scale_both")
+        self.tabs = Tabs(
+            tabs=[fitting_tab, log_tab, recluster_tab, save_tab],
+            sizing_mode="scale_both",
+        )
 
     def recluster_peaks(self, event):
 
@@ -570,7 +570,7 @@ class BokehScript:
         stdout = check_output(fit_command.split(" "))
         self.fit_reports += stdout.decode() + "<br><hr><br>"
         self.fit_reports = self.fit_reports.replace("\n", "<br>")
-        self.fit_reports_div.text = log_div%(log_style,self.fit_reports)
+        self.fit_reports_div.text = log_div % (log_style, self.fit_reports)
 
     def save_peaks(self, event):
 
@@ -590,17 +590,16 @@ class BokehScript:
             self.peakipy_data.df.to_pickle(to_save)
 
     def select_callback(self, attrname, old, new):
-        #print(Fore.RED + "Calling Select Callback")
-        #selectionIndex = self.source.selected.indices
-        #current = self.peakipy_data.df.iloc[selectionIndex]
+        # print(Fore.RED + "Calling Select Callback")
+        # selectionIndex = self.source.selected.indices
+        # current = self.peakipy_data.df.iloc[selectionIndex]
 
         for col in self.peakipy_data.df.columns:
             self.peakipy_data.df.loc[:, col] = self.source.data[col]
         # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
         # update memcnt
         self.update_memcnt()
-        #print(Fore.YELLOW + "Finished Calling Select Callback")
-
+        # print(Fore.YELLOW + "Finished Calling Select Callback")
 
     def peak_pick_callback(self, event):
         # global so that df is updated globally
@@ -623,7 +622,9 @@ class BokehScript:
         assignment = f"test_peak_{index}_{clustid}"
         height = self.peakipy_data.data[0][int(y_axis), int(x_axis)]
         volume = height
-        print(Fore.BLUE + f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}""")
+        print(
+            Fore.BLUE + f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}"""
+        )
 
         new_peak = {
             "INDEX": index,
@@ -660,17 +661,17 @@ class BokehScript:
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
         self.peakipy_data.df.loc[selectionIndex, "X_RADIUS"] = (
-                self.slider_X_RADIUS.value * self.peakipy_data.pt_per_ppm_f2
+            self.slider_X_RADIUS.value * self.peakipy_data.pt_per_ppm_f2
         )
         self.peakipy_data.df.loc[
             selectionIndex, "X_RADIUS_PPM"
         ] = self.slider_X_RADIUS.value
 
         self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
-                current["X_RADIUS_PPM"] * 2.0
+            current["X_RADIUS_PPM"] * 2.0
         )
         self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER"] = (
-                current["X_RADIUS"] * 2.0
+            current["X_RADIUS"] * 2.0
         )
 
         # set edited rows to True
@@ -683,17 +684,17 @@ class BokehScript:
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
         self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS"] = (
-                self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
+            self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
         )
         self.peakipy_data.df.loc[
             selectionIndex, "Y_RADIUS_PPM"
         ] = self.slider_Y_RADIUS.value
 
         self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = (
-                current["Y_RADIUS_PPM"] * 2.0
+            current["Y_RADIUS_PPM"] * 2.0
         )
         self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER"] = (
-                current["Y_RADIUS"] * 2.0
+            current["Y_RADIUS"] * 2.0
         )
 
         # set edited rows to True
@@ -701,7 +702,7 @@ class BokehScript:
 
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
 
-    #def slider_callback(self, attrname, old, new, dim="X"):
+    # def slider_callback(self, attrname, old, new, dim="X"):
     #
     #     selectionIndex = self.source.selected.indices
     #     current = self.peakipy_data.df.iloc[selectionIndex]
@@ -722,9 +723,9 @@ class BokehScript:
     #     set edited rows to True
     #     self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
 
-        # selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
-        # print(list(selected_df))
-        # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+    # selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
+    # print(list(selected_df))
+    # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
 
     # def slider_callback_x(self, attrname, old, new):
     #
@@ -836,12 +837,14 @@ def check_input(args):
             "<peaklist>": And(
                 os.path.exists,
                 open,
-                error=Fore.RED + f"{args['<peaklist>']} should exist and be readable .csv file",
+                error=Fore.RED
+                + f"{args['<peaklist>']} should exist and be readable .csv file",
             ),
             "<data>": And(
                 os.path.exists,
                 ng.pipe.read,
-                error=Fore.RED + f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                error=Fore.RED
+                + f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "--dims": And(
                 lambda n: [int(i) for i in eval(n)],
@@ -859,6 +862,7 @@ def check_input(args):
 
 def main(args):
     from bokeh.util.browser import view
+
     run_log()
     bs = BokehScript(args)
     server = Server({"/edit": bs.init})

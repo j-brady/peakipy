@@ -31,13 +31,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import textwrap
 from colorama import Fore, init
+
 init(autoreset=True)
 
 from numba import jit
 from numpy import sqrt, log, pi, exp, finfo
 from tabulate import tabulate
 
-from lmfit import Model
+from lmfit import Model, Parameter
 from lmfit.model import ModelResult
 from lmfit.models import LinearModel
 from scipy.special import wofz
@@ -54,7 +55,7 @@ from skimage.filters import threshold_otsu
 # constants
 log2 = log(2)
 π = pi
-tiny = finfo(float).eps 
+tiny = finfo(float).eps
 
 
 @jit(nopython=True)
@@ -102,7 +103,10 @@ def lorentzian(x, center=0.0, sigma=1.0):
         :rtype: numpy.array
 
     """
-    return (1.0 / (1 + ((1.0 * x - center) / max(tiny, sigma)) ** 2)) / max(tiny, (π * sigma))
+    return (1.0 / (1 + ((1.0 * x - center) / max(tiny, sigma)) ** 2)) / max(
+        tiny, (π * sigma)
+    )
+
 
 def voigt(x, center=0.0, sigma=1.0, gamma=None):
     """Return a 1-dimensional Voigt function.
@@ -116,8 +120,9 @@ def voigt(x, center=0.0, sigma=1.0, gamma=None):
     if gamma is None:
         gamma = sigma
 
-    z = (x-center + 1j*gamma) / max(tiny, (sigma * sqrt(2.0)))
+    z = (x - center + 1j * gamma) / max(tiny, (sigma * sqrt(2.0)))
     return wofz(z).real / max(tiny, (sigma * sqrt(2.0 * π)))
+
 
 @jit(nopython=True)
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
@@ -348,6 +353,7 @@ def gaussian_lorentzian(
     pv_y = pseudo_voigt(y, center_y, sigma_y, 1.0)  # lorentzian
     return amplitude * pv_x * pv_y
 
+
 def voigt2d(
     XY,
     amplitude=1.0,
@@ -356,11 +362,12 @@ def voigt2d(
     sigma_x=1.0,
     sigma_y=1.0,
     fraction=0.5,
-        ):
+):
     x, y = XY
     voigt_x = voigt(x, center_x, sigma_x)
     voigt_y = voigt(y, center_y, sigma_y)
     return amplitude * voigt_x * voigt_y
+
 
 def make_mask(data, c_x, c_y, r_x, r_y):
     """ Create and elliptical mask
@@ -455,6 +462,8 @@ def make_param_dict(peaks, data, lineshape="PV"):
             #  Voigt sigma from linewidth esimate
             param_dict[str_form("sigma_x")] = peak.XW / 3.6013
             param_dict[str_form("sigma_y")] = peak.YW / 3.6013
+            # height
+            # add height here
         else:
             # sigma linewidth esimate
             param_dict[str_form("sigma_x")] = peak.XW / 2.0
@@ -611,8 +620,8 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
             # fix weighting between 0 and 1
             params[k].min = 0.0
             params[k].max = 1.0
-            
-            # fix fraction of G or L
+
+            #  fix fraction of G or L
             if lineshape == "G":
                 params[k].vary = False
             elif lineshape == "L":
@@ -987,22 +996,22 @@ class FitResult:
                 elif "center_y" in k:
                     Y_lab.append(self.uc_dics["f1"].ppm(v))
             #  this is dumb as !£$@
-            #Z_lab = [
+            # Z_lab = [
             #    self.Z[
             #        int(round(self.uc_dics["f1"](y, "ppm"))),
             #        int(round(self.uc_dics["f2"](x, "ppm"))),
             #    ]
             #    for x, y in zip(X_lab, Y_lab)
-            #]
+            # ]
             z_max = np.nanmax(z_plot.ravel())
             Z_lab = np.array(Z_lab)
-            z_max = z_max * (Z_lab/max(Z_lab))
+            z_max = z_max * (Z_lab / max(Z_lab))
             for l, x, y, z in zip(labs, X_lab, Y_lab, z_max):
                 # print(l, x, y, z)
-                #ax.text(x, y, z * 1.2, l, None)
-                z = z*1.2
+                # ax.text(x, y, z * 1.2, l, None)
+                z = z * 1.2
                 ax.text(x, y, z, l, None)
-                ax.plot([x,x], [y,y], [0,z], linestyle='dotted', c='k',alpha=0.5)
+                ax.plot([x, x], [y, y], [0, z], linestyle="dotted", c="k", alpha=0.5)
 
             # plt.colorbar(contf)
             plt.legend(bbox_to_anchor=(1.2, 1.1))
@@ -1068,7 +1077,8 @@ class Pseudo3D:
                 NMR Data should be either 2D or 3D
             ##########################################
             """
-            raise TypeError(err)
+            # raise TypeError(err)
+            sys.exit(err)
 
         # check that spectrum has correct number of dims
         elif self._ndim != len(dims):
@@ -1078,7 +1088,8 @@ class Pseudo3D:
                but you have given a dimension order of {dims}...
             #################################################################
             """
-            raise ValueError(err)
+            # raise ValueError(err)
+            sys.exit(err)
 
         elif (self._ndim == 2) and (len(dims) == 2):
             self._f1_dim, self._f2_dim = dims
@@ -1499,14 +1510,16 @@ class Peaklist(Pseudo3D):
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates) > 0:
-            print(textwrap.dedent(
-                """
+            print(
+                textwrap.dedent(
+                    """
                 #############################################################################
                     You have duplicated assignments in your list...
                     Currently each peak needs a unique assignment. Sorry about that buddy...
                 #############################################################################
                 """
-            ))
+                )
+            )
             self.df.loc[duplicates_bool, "ASS"] = [
                 f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
             ]
@@ -1515,12 +1528,14 @@ class Peaklist(Pseudo3D):
                 print(duplicates)
                 print(self.df.ASS)
 
-            print(textwrap.dedent(
-                """
+            print(
+                textwrap.dedent(
+                    """
                     Creating dummy assignments for duplicates
                 
                 """
-            ))
+                )
+            )
 
     def check_peak_bounds(self):
         # check that peaks are within the bounds of spectrum
@@ -1529,21 +1544,28 @@ class Peaklist(Pseudo3D):
         self.excluded = self.df[~(within_x & within_y)]
         self.df = self.df[within_x & within_y]
         if len(self.excluded) > 0:
-            print(Fore.RED + textwrap.dedent(
-                f"""
+            print(
+                Fore.RED
+                + textwrap.dedent(
+                    f"""
                     #################################################################################
 
                     Excluding the following peaks as they are not within the spectrum which has shape 
 
                     {self.data.shape}
-                """)
+                """
+                )
             )
-            print(Fore.RED +
-                f"""
+            print(
+                Fore.RED
+                + f"""
 {tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS","X_PPM","Y_PPM"]],headers="keys", tablefmt="fancy_grid")}
                 """
             )
-            print(Fore.RED + "#################################################################################")
+            print(
+                Fore.RED
+                + "#################################################################################"
+            )
 
     def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
         """ Find clusters of peaks
@@ -1703,6 +1725,7 @@ class Peaklist(Pseudo3D):
 PEAKLIST=peaks.fuda
 SPECFILE={self.data_path}
 PARAMETERFILE=(bruker;vclist)
+ZCORR=ncyc
 NOISE={self.thres} # you'll need to adjust this
 BASELINE=N
 VERBOSELEVEL=5

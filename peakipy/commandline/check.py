@@ -12,8 +12,10 @@
 
         --outname=<plotname>      Plot name [default: plots.pdf]
 
-        --first                   Only plot first plane
-        --show                    Invoke plt.show() for interactive plot
+        --first, -f               Only plot first plane
+        --show, -s                Invoke plt.show() for interactive plot
+        --individual, -i          Plot individual fitted peaks as surfaces with different colors  
+        --label, -l               Label individual peaks
 
 
         --rcount=<int>            row count setting for wireplot [default: 50]
@@ -48,6 +50,7 @@ import numpy as np
 import nmrglue as ng
 import matplotlib.pyplot as plt
 from colorama import Fore, init
+
 init(autoreset=True)
 from tabulate import tabulate
 from docopt import docopt
@@ -69,6 +72,7 @@ from peakipy.core import (
     run_log,
     read_config,
 )
+
 
 def check_input(args):
     """ validate commandline input """
@@ -97,9 +101,25 @@ def check_input(args):
     except SchemaError as e:
         sys.exit(e)
 
+
 def print_bad(plane):
-    tab = tabulate(plane[["clustid","amp","center_x_ppm","center_y_ppm","fwhm_x_hz","fwhm_y_hz","lineshape"]], headers='keys', tablefmt="fancy_grid")
+    tab = tabulate(
+        plane[
+            [
+                "clustid",
+                "amp",
+                "center_x_ppm",
+                "center_y_ppm",
+                "fwhm_x_hz",
+                "fwhm_y_hz",
+                "lineshape",
+            ]
+        ],
+        headers="keys",
+        tablefmt="fancy_grid",
+    )
     return tab
+
 
 def main(argv):
 
@@ -207,6 +227,7 @@ def main(argv):
 
             # generate simulated data
             for plane_id, plane in group.groupby("plane"):
+                sim_data_singles = []
                 sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
                 shape = sim_data.shape
                 try:
@@ -221,10 +242,11 @@ def main(argv):
                         plane.lineshape,
                     ):
 
-                        sim_data += pv_pv(
+                        sim_data_i = pv_pv(
                             XY, amp, c_x, c_y, s_x, s_y, frac_x, frac_y
                         ).reshape(shape)
-
+                        sim_data += sim_data_i
+                        sim_data_singles.append(sim_data_i)
                 except:
                     for amp, c_x, c_y, s_x, s_y, frac, ls in zip(
                         plane.amp,
@@ -237,28 +259,30 @@ def main(argv):
                     ):
                         # print(amp)
                         if (ls == "G") or (ls == "L") or (ls == "PV"):
-                            sim_data += pvoigt2d(
+                            sim_data_i = pvoigt2d(
                                 XY, amp, c_x, c_y, s_x, s_y, frac
                             ).reshape(shape)
                         elif ls == "PV_L":
-                            sim_data += pv_l(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
-                                shape
-                            )
+                            sim_data_i = pv_l(
+                                XY, amp, c_x, c_y, s_x, s_y, frac
+                            ).reshape(shape)
 
                         elif ls == "PV_G":
-                            sim_data += pv_g(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(
-                                shape
-                            )
+                            sim_data_i = pv_g(
+                                XY, amp, c_x, c_y, s_x, s_y, frac
+                            ).reshape(shape)
 
                         elif ls == "G_L":
-                            sim_data += gaussian_lorentzian(
+                            sim_data_i = gaussian_lorentzian(
                                 XY, amp, c_x, c_y, s_x, s_y, frac
                             ).reshape(shape)
 
                         elif ls == "V":
-                            sim_data += voigt2d(
+                            sim_data_i = voigt2d(
                                 XY, amp, c_x, c_y, s_x, s_y, frac
                             ).reshape(shape)
+                        sim_data += sim_data_i
+                        sim_data_singles.append(sim_data_i)
 
                 masked_data = pseudo3D.data[plane_id].copy()
                 masked_sim_data = sim_data.copy()
@@ -272,21 +296,33 @@ def main(argv):
                 y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
                 masked_data = masked_data[min_y:max_y, min_x:max_x]
                 sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
-                #or len(masked_data)<1 or len(sim_plot)<1
-  
-                if len(x_plot)<1 or len(y_plot)<1:
-                    print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
+                # or len(masked_data)<1 or len(sim_plot)<1
+
+                if len(x_plot) < 1 or len(y_plot) < 1:
+                    print(
+                        Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}"
+                    )
                     print(Fore.RED + f"x={x_plot},y={y_plot}")
                     print(Fore.RED + print_bad(plane))
                     plt.close()
-                    #print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
-                elif masked_data.shape[0]==0 or masked_data.shape[1]==0:
-                    print(Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}")
+                    # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
+                elif masked_data.shape[0] == 0 or masked_data.shape[1] == 0:
+                    print(
+                        Fore.RED + f"Nothing to plot for cluster {int(plane.clustid)}"
+                    )
                     print(Fore.RED + print_bad(plane))
-                    spec_lim_f1 = " - ".join(["%8.3f"%i for i in pseudo3D.f1_ppm_limits])
-                    spec_lim_f2 = " - ".join(["%8.3f"%i for i in pseudo3D.f2_ppm_limits])
-                    print(f"Spectrum limits are {pseudo3D.f2_label:4s}:{spec_lim_f2} ppm")
-                    print(f"                    {pseudo3D.f1_label:4s}:{spec_lim_f1} ppm")
+                    spec_lim_f1 = " - ".join(
+                        ["%8.3f" % i for i in pseudo3D.f1_ppm_limits]
+                    )
+                    spec_lim_f2 = " - ".join(
+                        ["%8.3f" % i for i in pseudo3D.f2_ppm_limits]
+                    )
+                    print(
+                        f"Spectrum limits are {pseudo3D.f2_label:4s}:{spec_lim_f2} ppm"
+                    )
+                    print(
+                        f"                    {pseudo3D.f1_label:4s}:{spec_lim_f1} ppm"
+                    )
                     plt.close()
                 else:
 
@@ -301,6 +337,26 @@ def main(argv):
                         cmap=cm.coolwarm,
                     )
                     fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+
+                    if args.get("--individual"):
+                        # for making colored masks
+                        for single_mask, single in zip(masks, sim_data_singles):
+                            single[~single_mask] = np.nan
+                        sim_data_singles = [
+                            sim_data_single[min_y:max_y, min_x:max_x]
+                            for sim_data_single in sim_data_singles
+                        ]
+                        #  for plotting single fit surfaces
+                        single_colors = [
+                            cm.viridis(i)
+                            for i in np.linspace(0, 1, len(sim_data_singles))
+                        ]
+                        [
+                            ax.plot_surface(
+                                x_plot, y_plot, z_single, color=c, alpha=0.5
+                            )
+                            for c, z_single in zip(single_colors, sim_data_singles)
+                        ]
 
                     ax.plot_wireframe(
                         x_plot,
@@ -333,14 +389,30 @@ def main(argv):
                     title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
                     plt.title(title)
                     print(Fore.GREEN + f"Plotting: {title}")
-                    out_str = "Amplitudes\n----------------\n"
+                    out_str = "Volumes (Heights)\n----------------\n"
                     # chi2s = []
-                    for amp, name, peak_mask in zip(plane.amp, plane.assignment, masks):
+                    label_peaks = args.get("--label")
+                    for ind, row in plane.iterrows():
 
-                        out_str += f"{name} = {amp:.3e}\n"
+                        out_str += f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
+                        if label_peaks:
+                            ax.text(
+                                row.center_x_ppm,
+                                row.center_y_ppm,
+                                row.height * 1.2,
+                                row.assignment,
+                            )
+
                     ax.text2D(
-                        -0.15, 1.0, out_str, transform=ax.transAxes, fontsize=10, va="top"
+                        -0.15,
+                        1.0,
+                        out_str,
+                        transform=ax.transAxes,
+                        fontsize=10,
+                        va="top",
+                        bbox=dict(boxstyle="round", ec="k", fc="none"),
                     )
+
                     ax.legend()
                     pdf.savefig()
 
