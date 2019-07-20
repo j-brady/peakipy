@@ -21,7 +21,7 @@ requirements = [
 
 setup(
     name="peakipy",
-    version="0.1.21",
+    version="0.1.22",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     long_description = long_description,
     long_description_content_type="text/markdown",
@@ -29,7 +29,6 @@ setup(
     author_email="jacob.brady0449@gmail.com",
     url="https://j-brady.github.io/peakipy",
     packages=find_packages(),
-    package_data={"peakipy": ["commandline/templates/*.html",]},
     classifiers=[
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
