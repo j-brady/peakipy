@@ -363,6 +363,7 @@ def voigt2d(
     sigma_y=1.0,
     fraction=0.5,
 ):
+    fraction = 0.5
     x, y = XY
     voigt_x = voigt(x, center_x, sigma_x)
     voigt_y = voigt(y, center_y, sigma_y)
@@ -650,6 +651,7 @@ def fit_first_plane(
     verbose=False,
     log=None,
     noise=1.0,
+    fit_method="leastsq",
 ):
     """ Deconvolute group of peaks
 
@@ -765,7 +767,7 @@ def fit_first_plane(
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
 
     out = mod.fit(
-        peak_slices, XY=XY_slices, params=p_guess, weights=weights, method="leastsq"
+        peak_slices, XY=XY_slices, params=p_guess, weights=weights, method=fit_method
     )
 
     if verbose:

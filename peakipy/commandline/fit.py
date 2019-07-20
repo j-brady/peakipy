@@ -19,7 +19,7 @@
 
         --max_cluster_size=<max_cluster_size>       Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
 
-        --lineshape=<G/L/PV/PV_PV/PV_G/PV_L/G_L/V>  lineshape to fit [default: PV]
+        --lineshape=<V/PV/G/L/PV_PV>                Lineshape to fit [default: V]
 
         --fix=<fraction,sigma,center>               Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
@@ -123,10 +123,11 @@ def split_peaklist(peaklist, n_cpu):
 
 
 class FitPeaksInput:
-    def __init__(self, args, data):
+    def __init__(self, args, data, config):
 
         self.data = data
         self.args = args
+        self.config = config
 
 
 class FitPeaksResult:
@@ -215,6 +216,7 @@ def fit_peaks(peaks, fit_input):
                 xy_bounds=xy_bounds,
                 verbose=verb,
                 noise=noise,
+                fit_method=fit_input.config.get("fit_method","leastsq")
             )
             fit_result.plot(
                 plot_path=fit_input.args.get("plot"),
@@ -621,7 +623,7 @@ def main(argv):
         peaklists = [
             pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
         ]
-        args_list = [FitPeaksInput(args, peakipy_data.data) for _ in range(n_cpu)]
+        args_list = [FitPeaksInput(args, peakipy_data.data, config) for _ in range(n_cpu)]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)
             result = pool.starmap(fit_peaks, zip(peaklists, args_list))
@@ -631,7 +633,7 @@ def main(argv):
                 log_file.write(i.log + "\n")
     else:
         print("Not using multiprocessing")
-        result = fit_peaks(peakipy_data.df, FitPeaksInput(args, peakipy_data.data))
+        result = fit_peaks(peakipy_data.df, FitPeaksInput(args, peakipy_data.data, config))
         df = result.df
         log_file.write(result.log)
 

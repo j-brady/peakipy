@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "peakipy"
-version = "0.1.22"
+version = "0.1.23"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 
@@ -24,6 +24,7 @@ schema = "^0.7.0"
 numba = "^0.44.1"
 tabulate = "^0.8.3"
 colorama = "^0.4.1"
+numdifftools = "^0.9.39"
 
 [tool.poetry.dev-dependencies]
 

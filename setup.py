@@ -17,11 +17,12 @@ requirements = [
         "numba>=0.44.1",
         "tabulate>=0.8.3",
         "colorama>=0.4.1",
+        "numdifftools>=0.9.39",
         ]
 
 setup(
     name="peakipy",
-    version="0.1.22",
+    version="0.1.23",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     long_description = long_description,
     long_description_content_type="text/markdown",

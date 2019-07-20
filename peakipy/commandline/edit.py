@@ -321,21 +321,21 @@ class BokehScript:
         self.fit_button = Button(label="Fit selected cluster", button_type="primary")
         # lineshape selection
         self.lineshapes = {
-            0: "PV",
-            1: "G",
-            2: "L",
-            3: "PV_PV",
-            4: "PV_L",
-            5: "PV_G",
-            6: "G_L",
-            7: "V",
+            0: "V",
+            1: "PV",
+            2: "G",
+            3: "L",
+            4: "PV_PV",
+            #5: "PV_L",
+            #6: "PV_G",
+            #7: "G_L",
         }
         self.radio_button_group = RadioButtonGroup(
             labels=[self.lineshapes[i] for i in self.lineshapes.keys()], active=0
         )
         self.ls_div = Div(
-            text="""Choose lineshape you wish to fit. This can be Pseudo-voigt (PV), Gaussian (G), Lorentzian (L),
-            PV/G, PV/L, PV_PV, G/L. PV/G fits a PV lineshape to the direct dimension and a G lineshape to the indirect."""
+            text="""Choose lineshape you wish to fit. This can be Voigt (V), pseudo-Voigt (PV), Gaussian (G), Lorentzian (L).
+            PV_PV fits a PV lineshape with independent "fraction" parameters for the direct and indirect dimensions"""
         )
         self.clust_div = Div(
             text="""If you want to adjust how the peaks are automatically clustered then try changing the
