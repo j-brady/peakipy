@@ -10,8 +10,8 @@ For example, ::
 
 
 
-Would fit to a Gaussian lineshape in both dimensions. Other options are L or PV for Lorentzian or Pseudo-Voigt in both dimensions, respectively.
-If you want to fit a seperate lineshape for the indirect dimension then PV_PV, PV_G, PV_L, G_L allow you to fit Pseudo-Voigt with seperate X and Y fraction parameters, Pseudo-Voigt in X and Gaussian/Lorentzian in Y or Gaussian in X and Lorentzian in Y, respectively. 
+Would fit to a Gaussian lineshape in both dimensions. Other options are V, L or PV for Voigt Lorentzian or Pseudo-Voigt in both dimensions, respectively.
+If you want to fit a seperate lineshape for the indirect dimension then PV_PV allows you to fit a Pseudo-Voigt with seperate X and Y fraction parameters
 
 Gaussian
 --------

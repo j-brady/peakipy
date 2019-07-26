@@ -2,7 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/environment.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/environment.pickle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/index.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/index.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/examples.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/examples.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/installation.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/installation.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/instructions.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/instructions.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/lineshapes.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/lineshapes.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/.doctrees/usage/quickstart.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/.doctrees/usage/quickstart.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/genindex.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/genindex.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/objects.inv" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/objects.inv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build/searchindex.js" beforeDir="false" afterPath="$PROJECT_DIR$/docs/build/searchindex.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/source/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/conf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/source/usage/code.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/usage/code.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/source/usage/lineshapes.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/usage/lineshapes.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/peakipy/commandline/fit.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/fit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/peakipy/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/core.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,8 +30,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/peakipy/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="227">
-              <caret line="1877" column="15" selection-start-line="1877" selection-start-column="15" selection-end-line="1877" selection-end-column="15" />
+            <state relative-caret-position="239">
+              <caret line="117" column="45" selection-start-line="117" selection-start-column="45" selection-end-line="117" selection-end-column="45" />
               <folding>
                 <element signature="e#758#768#0" expanded="true" />
               </folding>
@@ -25,10 +40,46 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/docs/source/usage/lineshapes.rst">
+          <provider selected="true" editor-type-id="restructured-text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/source/usage/code.rst">
+          <provider selected="true" editor-type-id="restructured-text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/source/conf.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="299">
+              <caret line="33" column="7" selection-start-line="33" selection-start-column="7" selection-end-line="33" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/source/usage/examples.rst">
+          <provider selected="true" editor-type-id="restructured-text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="4609">
+              <caret line="581" column="29" selection-start-line="581" selection-start-column="29" selection-end-line="581" selection-end-column="29" />
+              <folding>
+                <element signature="e#1097#1106#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="182">
-              <caret line="119" column="45" selection-start-line="119" selection-start-column="45" selection-end-line="119" selection-end-column="45" />
+            <state relative-caret-position="6444">
+              <caret line="745" column="23" selection-start-line="745" selection-start-column="23" selection-end-line="745" selection-end-column="23" />
               <folding>
                 <element signature="e#3164#3174#0" expanded="true" />
               </folding>
@@ -94,15 +145,19 @@
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/test/test_core.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/read.py" />
-        <option value="$PROJECT_DIR$/peakipy/core.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/edit.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/check.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/fit.py" />
+        <option value="$PROJECT_DIR$/docs/source/usage/code.rst" />
+        <option value="$PROJECT_DIR$/docs/source/conf.py" />
+        <option value="$PROJECT_DIR$/peakipy/core.py" />
+        <option value="$PROJECT_DIR$/docs/source/usage/lineshapes.rst" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="23" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="321" />
+    <option name="y" value="-963" />
     <option name="width" value="1280" />
     <option name="height" value="777" />
   </component>
@@ -172,7 +227,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="777" extended-state="6" />
+    <frame x="321" y="-963" width="1280" height="777" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16679905" />
@@ -293,7 +348,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/peakipy/commandline/edit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
+        <state relative-caret-position="4609">
           <caret line="581" column="29" selection-start-line="581" selection-start-column="29" selection-end-line="581" selection-end-column="29" />
           <folding>
             <element signature="e#1097#1106#0" expanded="true" />
@@ -301,13 +356,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="1877" column="15" selection-start-line="1877" selection-start-column="15" selection-end-line="1877" selection-end-column="15" />
+        <state relative-caret-position="6444">
+          <caret line="745" column="23" selection-start-line="745" selection-start-column="23" selection-end-line="745" selection-end-column="23" />
           <folding>
-            <element signature="e#758#768#0" expanded="true" />
+            <element signature="e#3164#3174#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/conf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="33" column="7" selection-start-line="33" selection-start-column="7" selection-end-line="33" selection-end-column="7" />
         </state>
       </provider>
     </entry>
@@ -321,15 +383,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
+    <entry file="file://$PROJECT_DIR$/docs/source/usage/examples.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/usage/code.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="119" column="45" selection-start-line="119" selection-start-column="45" selection-end-line="119" selection-end-column="45" />
+        <state relative-caret-position="239">
+          <caret line="117" column="45" selection-start-line="117" selection-start-column="45" selection-end-line="117" selection-end-column="45" />
           <folding>
-            <element signature="e#3164#3174#0" expanded="true" />
+            <element signature="e#758#768#0" expanded="true" />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/usage/lineshapes.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
   </component>
 </project>
