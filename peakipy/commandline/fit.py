@@ -114,12 +114,22 @@ def check_xybounds(x):
         print(Fore.RED + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
         exit()
 
+def chunks(l,n):
+    """ split list into n chunks
+
+        will return empty lists if n > len(l)
+    """
+    # create n empty lists
+    lists = [[] for _ in range(n)]
+    # append into n lists
+    for num, i in enumerate(l):
+        lists[num%n].append(i)
+    return lists
 
 def split_peaklist(peaklist, n_cpu):
     """ split peaklist into smaller files based on number of cpus"""
     clustids = peaklist.CLUSTID.unique()
-    window = int(np.ceil(len(clustids) / n_cpu))
-    clustids = [clustids[i : i + window] for i in range(0, len(clustids), window)]
+    clustids = chunks(clustids, n_cpu)
     for i in range(n_cpu):
         split_peaks = peaklist[peaklist.CLUSTID.isin(clustids[i])]
         split_peaks.to_csv(tmp_path / f"peaks_{i}.csv", index=False)

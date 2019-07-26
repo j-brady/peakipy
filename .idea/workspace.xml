@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2db227c2-72cc-4249-abe5-64b3c8b85393" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/edit.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/edit.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/peakipy/commandline/fit.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/fit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/commandline/read.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/commandline/read.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/peakipy/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/peakipy/core.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,19 +24,22 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="82" selection-start-line="82" selection-end-line="82" />
+            <state relative-caret-position="182">
+              <caret line="119" column="45" selection-start-line="119" selection-start-column="45" selection-end-line="119" selection-end-column="45" />
+              <folding>
+                <element signature="e#3164#3174#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/peakipy/commandline/check.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="290">
+            <state relative-caret-position="-4807">
               <caret line="103" column="7" selection-start-line="103" selection-start-column="7" selection-end-line="103" selection-end-column="7" />
               <folding>
                 <element signature="e#1708#1717#0" expanded="true" />
@@ -97,8 +96,8 @@
         <option value="$PROJECT_DIR$/peakipy/commandline/read.py" />
         <option value="$PROJECT_DIR$/peakipy/core.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/edit.py" />
-        <option value="$PROJECT_DIR$/peakipy/commandline/fit.py" />
         <option value="$PROJECT_DIR$/peakipy/commandline/check.py" />
+        <option value="$PROJECT_DIR$/peakipy/commandline/fit.py" />
       </list>
     </option>
   </component>
@@ -312,19 +311,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="82" selection-start-line="82" selection-end-line="82" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/peakipy/commandline/check.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="290">
+        <state relative-caret-position="-4807">
           <caret line="103" column="7" selection-start-line="103" selection-start-column="7" selection-end-line="103" selection-end-column="7" />
           <folding>
             <element signature="e#1708#1717#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/peakipy/commandline/fit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="182">
+          <caret line="119" column="45" selection-start-line="119" selection-start-column="45" selection-end-line="119" selection-end-column="45" />
+          <folding>
+            <element signature="e#3164#3174#0" expanded="true" />
           </folding>
         </state>
       </provider>
