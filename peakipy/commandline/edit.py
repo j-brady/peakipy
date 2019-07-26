@@ -151,11 +151,17 @@ class BokehScript:
         #  read dims from config
         config_path = Path("peakipy.config")
         if config_path.exists():
-            config = json.load(open(config_path))
-            print(f"Using config file with --dims={config.get('--dims')}")
-            dims = config.get("--dims", [0, 1, 2])
-            self._dims = ",".join(str(i) for i in dims)
-            self.thres = config.get("--thres")
+            try:
+                config = json.load(open(config_path))
+                print(f"Using config file with --dims={config.get('--dims')}")
+                dims = config.get("--dims", [0, 1, 2])
+                self._dims = ",".join(str(i) for i in dims)
+                self.thres = config.get("--thres")
+            except json.decoder.JSONDecodeError:
+                print(Fore.RED + "Your peakipy.config file is corrupted - maybe your JSON is not correct...")
+                print(Fore.RED + "Not using it.")
+                self._dims = self.args.get("--dims")
+                self.thres = False
 
         else:
             # get dim numbers from commandline
@@ -321,14 +327,14 @@ class BokehScript:
         self.fit_button = Button(label="Fit selected cluster", button_type="primary")
         # lineshape selection
         self.lineshapes = {
-            0: "V",
-            1: "PV",
+            0: "PV",
+            1: "V",
             2: "G",
             3: "L",
             4: "PV_PV",
-            #5: "PV_L",
-            #6: "PV_G",
-            #7: "G_L",
+            # 5: "PV_L",
+            # 6: "PV_G",
+            # 7: "G_L",
         }
         self.radio_button_group = RadioButtonGroup(
             labels=[self.lineshapes[i] for i in self.lineshapes.keys()], active=0
@@ -558,11 +564,12 @@ class BokehScript:
         lineshape = self.lineshapes[self.radio_button_group.active]
         if self.checkbox_group.active == []:
             print(Fore.YELLOW + "Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --nomp"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape={lineshape} --dims={self._dims}"
         else:
             plane_index = self.select_plane.value
             print(Fore.YELLOW + "Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --plot={self.TEMP_OUT_PLOT} --show --lineshape={lineshape} --dims={self._dims} --plane={plane_index} --nomp"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape={lineshape} --dims={self._dims} --plane={plane_index}"
+        plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} -l -i -s --outname={self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
 
         print(Fore.BLUE + fit_command)
         self.fit_reports += fit_command + "<br>"
@@ -571,6 +578,8 @@ class BokehScript:
         self.fit_reports += stdout.decode() + "<br><hr><br>"
         self.fit_reports = self.fit_reports.replace("\n", "<br>")
         self.fit_reports_div.text = log_div % (log_style, self.fit_reports)
+        # plot data
+        os.system(plot_command)
 
     def save_peaks(self, event):
 

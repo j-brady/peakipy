@@ -19,7 +19,7 @@
 
         --max_cluster_size=<max_cluster_size>       Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
 
-        --lineshape=<V/PV/G/L/PV_PV>                Lineshape to fit [default: V]
+        --lineshape=<PV/V/G/L/PV_PV>                Lineshape to fit [default: PV]
 
         --fix=<fraction,sigma,center>               Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
 
@@ -76,7 +76,6 @@ import pandas as pd
 from docopt import docopt
 from colorama import Fore, init
 
-init(autoreset=True)
 from tabulate import tabulate
 from skimage.filters import threshold_otsu
 from schema import Schema, And, Or, Use, SchemaError
@@ -92,12 +91,17 @@ from peakipy.core import (
     pvoigt2d,
     pv_pv,
 )
-
+# colorama
+init(autoreset=True)
+# some constants
 π = np.pi
 sqrt2 = np.sqrt(2.0)
+# temp and log paths
 tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
+# for printing dataframes
+column_selection = ["assignment", "center_x_ppm", "center_y_ppm", "clustid"]
 
 
 def check_xybounds(x):
@@ -123,6 +127,8 @@ def split_peaklist(peaklist, n_cpu):
 
 
 class FitPeaksInput:
+    """ input data for the fit_peaks function """
+
     def __init__(self, args, data, config):
 
         self.data = data
@@ -143,12 +149,20 @@ def fit_peaks(peaks, fit_input):
     # sum planes for initial fit
     summed_planes = fit_input.data.sum(axis=0)
 
+    # group peaks based on CLUSTID
+    groups = peaks.groupby("CLUSTID")
+    # setup arguments
+    to_fix = fit_input.args.get("to_fix")
+    noise = fit_input.args.get("noise")
+    verb = fit_input.args.get("verb")
+    lineshape = fit_input.args.get("lineshape")
+    xy_bounds = fit_input.args.get("xy_bounds")
+    vclist = fit_input.args.get("vclist")
+    uc_dics = fit_input.args.get("uc_dics")
+
     # for saving data, currently not using errs for center and sigma
     amps = []
     amp_errs = []
-
-    # heights = []
-    # height_errs = []
 
     center_xs = []
     init_center_xs = []
@@ -164,6 +178,19 @@ def fit_peaks(peaks, fit_input):
     sigma_xs = []
     # sigma_x_errs = []
 
+    if lineshape == "V":
+        # lorentzian linewidth
+        gamma_xs = []
+        gamma_ys = []
+
+    if lineshape == "PV_PV":
+        # seperate fractions for each dim
+        fractions_x = []
+        fractions_y = []
+    else:
+        fractions = []
+
+    # lists for saving data
     names = []
     assign = []
     clustids = []
@@ -174,21 +201,12 @@ def fit_peaks(peaks, fit_input):
     x_radii_ppm = []
     y_radii_ppm = []
     lineshapes = []
+    # errors
+    chisqrs = []
+    redchis = []
+    aics = []
+    res_sum = []
 
-    if fit_input.args.get("lineshape") == "PV_PV":
-        fractions_x = []
-        fractions_y = []
-    else:
-        fractions = []
-    # group peaks based on CLUSTID
-    groups = peaks.groupby("CLUSTID")
-    to_fix = fit_input.args.get("to_fix")
-    noise = fit_input.args.get("noise")
-    verb = fit_input.args.get("verb")
-    lineshape = fit_input.args.get("lineshape")
-    xy_bounds = fit_input.args.get("xy_bounds")
-    vclist = fit_input.args.get("vclist")
-    uc_dics = fit_input.args.get("uc_dics")
     # iterate over groups of peaks
     out_str = ""
     for name, group in groups:
@@ -216,7 +234,7 @@ def fit_peaks(peaks, fit_input):
                 xy_bounds=xy_bounds,
                 verbose=verb,
                 noise=noise,
-                fit_method=fit_input.config.get("fit_method","leastsq")
+                fit_method=fit_input.config.get("fit_method", "leastsq"),
             )
             fit_result.plot(
                 plot_path=fit_input.args.get("plot"),
@@ -271,27 +289,40 @@ def fit_peaks(peaks, fit_input):
                     print(fit_report)
 
                 amp, amp_err, name = get_params(first.params, "amplitude")
-                # height, height_err, h_name = get_params(first.params, "height")
-                # fwhm_x, fwhm_x_err, fx_name = get_params(first.params, "fwhm_x")
-                # fwhm_y, fwhm_y_err, fy_name = get_params(first.params, "fwhm_y")
                 cen_x, cen_x_err, cx_name = get_params(first.params, "center_x")
                 cen_y, cen_y_err, cy_name = get_params(first.params, "center_y")
                 sig_x, sig_x_err, sx_name = get_params(first.params, "sigma_x")
                 sig_y, sig_y_err, sy_name = get_params(first.params, "sigma_y")
+                # currently chi square is calculated for all peaks in cluster (not individual peaks)
+                # chi2 - residual sum of squares
+                chisqrs.extend([first.chisqr for _ in sy_name])
+                # reduced chi2
+                redchis.extend([first.redchi for _ in sy_name])
+                # Akaike Information criterion
+                aics.extend([first.aic for _ in sy_name])
+                # residual sum of squares
+                res_sum.extend([np.sum(first.residual) for _ in sy_name])
 
+                # deal with lineshape specific parameters
                 if lineshape == "PV_PV":
                     frac_x, frac_err_x, name = get_params(first.params, "fraction_x")
                     frac_y, frac_err_y, name = get_params(first.params, "fraction_y")
                     fractions_x.extend(frac_x)
                     fractions_y.extend(frac_y)
+                elif lineshape == "V":
+                    frac, frac_err, name = get_params(first.params, "fraction")
+                    gam_x, gam_x_err, gx_name = get_params(first.params, "gamma_x")
+                    gam_y, gam_y_err, gy_name = get_params(first.params, "gamma_y")
+                    gamma_xs.extend(gam_x)
+                    gamma_ys.extend(gam_y)
+                    fractions.extend(frac)
                 else:
                     frac, frac_err, name = get_params(first.params, "fraction")
                     fractions.extend(frac)
 
+                # extend lists with fit data
                 amps.extend(amp)
                 amp_errs.extend(amp_err)
-                # heights.extend(height)
-                # height_errs.extend(height_err)
                 center_xs.extend(cen_x)
                 init_center_xs.extend(group.X_AXISf)
                 # center_x_errs.extend(cen_x_err)
@@ -306,7 +337,7 @@ def fit_peaks(peaks, fit_input):
                 planes.extend([num for _ in amp])
                 lineshapes.extend([lineshape for _ in amp])
                 #  get prefix for fit
-                names.extend([i.replace("fraction", "") for i in name])
+                names.extend([first.model.prefix] * len(name))
                 assign.extend(group["ASS"])
                 clustids.extend(group["CLUSTID"])
                 memcnts.extend(group["MEMCNT"])
@@ -340,14 +371,24 @@ def fit_peaks(peaks, fit_input):
         "x_radius_ppm": x_radii_ppm,
         "y_radius_ppm": y_radii_ppm,
         "lineshape": lineshapes,
+        "aic": aics,
+        "chisqr": chisqrs,
+        "redchi": redchis,
+        "residual_sum": res_sum,
+        # "slope": slopes,
+        # "intercept": intercepts
     }
 
+    # lineshape specific
     if lineshape == "PV_PV":
         df_dic["fraction_x"] = fractions_x
         df_dic["fraction_y"] = fractions_y
     else:
         df_dic["fraction"] = fractions
 
+    if lineshape == "V":
+        df_dic["gamma_x"] = gamma_xs
+        df_dic["gamma_y"] = gamma_ys
     #  make dataframe
     df = pd.DataFrame(df_dic)
     # Fill nan values
@@ -360,12 +401,13 @@ def fit_peaks(peaks, fit_input):
     return FitPeaksResult(df=df, log=out_str)
 
 
-def main(argv):
-    # number of CPUs
-    n_cpu = cpu_count()
+def check_input(args):
+    """ Validate commandline input
 
-    args = docopt(__doc__, argv=argv)
+        :param args: docopt argument dictionary
+        :type args: dict
 
+    """
     schema = Schema(
         {
             "<peaklist>": And(
@@ -378,12 +420,12 @@ def main(argv):
                 # Use(
                 ng.pipe.read,
                 error=Fore.RED
-                + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
+                      + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
                 # ),
                 # error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "<output>": Use(str),
-            "--max_cluster_size": And(Use(int), lambda n: 0 < n),
+            "--max_cluster_size": And(Use(int), lambda n: 0 < n, error=Fore.RED + "Max cluster size must be greater than 0"),
             "--lineshape": Or(
                 "PV",
                 "L",
@@ -394,21 +436,35 @@ def main(argv):
                 "G_L",
                 "V",
                 error=Fore.RED
-                + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
+                      + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
             ),
             "--fix": Or(
                 Use(
                     lambda x: [
                         i
                         for i in x.split(",")
-                        if (i == "fraction") or (i == "center") or (i == "sigma")
+                        if i
+                           in [
+                               "fraction",
+                               "center",
+                               "sigma",
+                               "gamma",
+                               "fraction_x",
+                               "center_x",
+                               "sigma_x",
+                               "gamma_x",
+                               "fraction_y",
+                               "center_y",
+                               "sigma_y",
+                               "gamma_y",
+                           ]
                     ]
                 )
             ),
             "--dims": Use(
                 lambda n: [int(i) for i in eval(n)],
                 error=Fore.RED
-                + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
+                      + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
             ),
             "--vclist": Or(
                 "None",
@@ -426,7 +482,7 @@ def main(argv):
                 Use(
                     check_xybounds,
                     error=Fore.RED
-                    + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
+                          + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
                 ),
             ),
             "--plane": Or(
@@ -434,7 +490,7 @@ def main(argv):
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
                     error=Fore.RED
-                    + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
+                          + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
                 ),
             ),
             "--exclude_plane": Or(
@@ -442,7 +498,7 @@ def main(argv):
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
                     error=Fore.RED
-                    + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
+                          + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
                 ),
             ),
             object: object,
@@ -453,8 +509,16 @@ def main(argv):
     # validate arguments
     try:
         args = schema.validate(args)
+        return args
     except SchemaError as e:
         exit(e)
+
+
+def main(arguments):
+    # number of CPUs
+    n_cpu = cpu_count()
+
+    args = check_input(docopt(__doc__, argv=arguments))
 
     lineshape = args.get("--lineshape")
     args["lineshape"] = lineshape
@@ -488,7 +552,7 @@ def main(argv):
         print(
             Fore.YELLOW + f"The following peaks have been exluded:\n",
             tabulate(
-                "{peakipy_data.df[peakipy_data.df.include != 'yes']}",
+                f"{peakipy_data.df[peakipy_data.df.include != 'yes'][column_selection]}",
                 headers="keys",
                 tablefmt="fancy_grid",
             ),
@@ -500,7 +564,7 @@ def main(argv):
     if max_cluster_size == 999:
         max_cluster_size = peakipy_data.df.MEMCNT.max()
         if peakipy_data.df.MEMCNT.max() > 10:
-            print(
+            print(Fore.RED +
                 f"""
                 ##################################################################
                 You have some clusters of as many as {max_cluster_size} peaks.
@@ -554,7 +618,7 @@ def main(argv):
         data_inds = [
             (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
-        peakipy_data.data = peakipy_data.data[peakipy_data.data_inds]
+        peakipy_data.data = peakipy_data.data[data_inds]
         print(
             f"Using only planes {_inds} data now has the following shape",
             peakipy_data.data.shape,
@@ -571,7 +635,7 @@ def main(argv):
             (i not in inds)
             for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
-        peakipy_data.data = peakipy_data.data[peakipy_data.data_inds]
+        peakipy_data.data = peakipy_data.data[data_inds]
         print(
             f"Excluding planes {_inds} data now has the following shape",
             peakipy_data.data.shape,
@@ -580,6 +644,7 @@ def main(argv):
             print("You have excluded all the data!", peakipy_data.data.shape)
             exit()
 
+    # setting noise for calculation of chi square
     if not args.get("noise"):
         noise = abs(threshold_otsu(peakipy_data.data))
 
@@ -623,7 +688,9 @@ def main(argv):
         peaklists = [
             pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
         ]
-        args_list = [FitPeaksInput(args, peakipy_data.data, config) for _ in range(n_cpu)]
+        args_list = [
+            FitPeaksInput(args, peakipy_data.data, config) for _ in range(n_cpu)
+        ]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)
             result = pool.starmap(fit_peaks, zip(peaklists, args_list))
@@ -633,7 +700,9 @@ def main(argv):
                 log_file.write(i.log + "\n")
     else:
         print("Not using multiprocessing")
-        result = fit_peaks(peakipy_data.df, FitPeaksInput(args, peakipy_data.data, config))
+        result = fit_peaks(
+            peakipy_data.df, FitPeaksInput(args, peakipy_data.data, config)
+        )
         df = result.df
         log_file.write(result.log)
 
@@ -651,11 +720,13 @@ def main(argv):
                 center_y=0.0,
                 sigma_x=x.sigma_x,
                 sigma_y=x.sigma_y,
+                gamma_x=x.gamma_x,
+                gamma_y=x.gamma_y,
                 amplitude=x.amp,
             ),
             axis=1,
         )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 3.6013)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 3.6013)
 
@@ -673,14 +744,14 @@ def main(argv):
             ),
             axis=1,
         )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
     elif args["lineshape"] == "G":
-        #df["height"] = df.apply(
+        # df["height"] = df.apply(
         #    lambda x: x.amp / (x.sigma_x * x.sigma_y * 2 * π), axis=1
-        #)
+        # )
         df["height"] = df.apply(
             lambda x: pvoigt2d(
                 XY=[0, 0],
@@ -689,11 +760,11 @@ def main(argv):
                 sigma_x=x.sigma_x,
                 sigma_y=x.sigma_y,
                 amplitude=x.amp,
-                fraction=0.0, # gaussian
+                fraction=0.0,  # gaussian
             ),
             axis=1,
         )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -706,14 +777,14 @@ def main(argv):
                 sigma_x=x.sigma_x,
                 sigma_y=x.sigma_y,
                 amplitude=x.amp,
-                fraction=1.0, # lorentzian
+                fraction=1.0,  # lorentzian
             ),
             axis=1,
         )
-        #df["height"] = df.apply(
+        # df["height"] = df.apply(
         #    lambda x: x.amp / (x.sigma_x * x.sigma_y * π ** 2.0), axis=1
-        #)
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        # )
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -732,7 +803,7 @@ def main(argv):
             ),
             axis=1,
         )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height/x.amp), axis=1)
+        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
         df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
         df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -755,6 +826,7 @@ def main(argv):
     df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * peakipy_data.hz_per_pt_f2)
     df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * peakipy_data.hz_per_pt_f1)
 
+    # save data
     if suffix == ".csv":
         df.to_csv(output, float_format="%.4f", index=False)
 
@@ -775,4 +847,4 @@ def main(argv):
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    main(argv)
+    main(arguments=argv)

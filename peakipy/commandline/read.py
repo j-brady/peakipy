@@ -229,6 +229,7 @@ def main(argv):
         ("--thres", float(thres)),
         ("--f1radius", f1radius),
         ("--f2radius", f2radius),
+        ("fit_method", "leastsq"),
     ]
     try:
         if config_path.exists():

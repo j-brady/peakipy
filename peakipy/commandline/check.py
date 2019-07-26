@@ -41,7 +41,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-import json
+import os
 from sys import exit
 from pathlib import Path
 
@@ -78,28 +78,30 @@ def check_input(args):
     """ validate commandline input """
     schema = Schema(
         {
-            "<peaklist>": And(
+            "<fits>": And(
                 os.path.exists,
                 open,
-                error=f"{args['<peaklist>']} should exist and be readable",
+                error=Fore.RED + f"{args['<fits>']} should exist and be readable",
             ),
-            "<data>": And(
+            "<nmrdata>": And(
                 os.path.exists,
                 ng.pipe.read,
-                error=f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                error=Fore.RED + f"{args['<nmrdata>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "--dims": And(
                 lambda n: [int(i) for i in eval(n)],
-                error="--dims should be list of integers e.g. --dims=0,1,2",
+                error=Fore.RED + "--dims should be list of integers e.g. --dims=0,1,2",
             ),
-        }
+            object: object,
+
+        },
     )
 
     try:
         args = schema.validate(args)
         return args
     except SchemaError as e:
-        sys.exit(e)
+        exit(e)
 
 
 def print_bad(plane):
@@ -124,7 +126,7 @@ def print_bad(plane):
 def main(argv):
 
     args = docopt(__doc__, argv=argv)
-
+    args = check_input(args)
     fits = Path(args.get("<fits>"))
     fits = pd.read_csv(fits)
 
@@ -289,7 +291,7 @@ def main(argv):
                 masked_data[~mask] = np.nan
                 masked_sim_data[~mask] = np.nan
 
-                fig = plt.figure()
+                fig = plt.figure(figsize=(10, 6))
                 ax = fig.add_subplot(111, projection="3d")
                 # slice out plot area
                 x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
@@ -394,7 +396,9 @@ def main(argv):
                     label_peaks = args.get("--label")
                     for ind, row in plane.iterrows():
 
-                        out_str += f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
+                        out_str += (
+                            f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
+                        )
                         if label_peaks:
                             ax.text(
                                 row.center_x_ppm,

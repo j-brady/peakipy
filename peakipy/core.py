@@ -32,8 +32,6 @@ import pandas as pd
 import textwrap
 from colorama import Fore, init
 
-init(autoreset=True)
-
 from numba import jit
 from numpy import sqrt, log, pi, exp, finfo
 from tabulate import tabulate
@@ -52,6 +50,7 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, disk, rectangle
 from skimage.filters import threshold_otsu
 
+init(autoreset=True)
 # constants
 log2 = log(2)
 π = pi
@@ -361,12 +360,16 @@ def voigt2d(
     center_y=0.5,
     sigma_x=1.0,
     sigma_y=1.0,
+    gamma_x=1.0,
+    gamma_y=1.0,
     fraction=0.5,
 ):
     fraction = 0.5
+    gamma_x = None
+    gamma_y = None
     x, y = XY
-    voigt_x = voigt(x, center_x, sigma_x)
-    voigt_y = voigt(y, center_y, sigma_y)
+    voigt_x = voigt(x, center_x, sigma_x, gamma_x)
+    voigt_y = voigt(y, center_y, sigma_y, gamma_y)
     return amplitude * voigt_x * voigt_y
 
 
@@ -460,9 +463,12 @@ def make_param_dict(peaks, data, lineshape="PV"):
         param_dict[str_form("amplitude")] = amplitude_est
 
         if lineshape == "V":
-            #  Voigt sigma from linewidth esimate
-            param_dict[str_form("sigma_x")] = peak.XW / 3.6013
-            param_dict[str_form("sigma_y")] = peak.YW / 3.6013
+            #  Voigt G sigma from linewidth esimate
+            param_dict[str_form("sigma_x")] = peak.XW / (2.0*sqrt(2.0*log2))# 3.6013
+            param_dict[str_form("sigma_y")] = peak.YW / (2.0*sqrt(2.0*log2))# 3.6013
+            #  Voigt L gamma from linewidth esimate
+            param_dict[str_form("gamma_x")] = peak.XW / 2.0
+            param_dict[str_form("gamma_y")] = peak.YW / 2.0
             # height
             # add height here
         else:
@@ -611,6 +617,10 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
                     % (k, params[k].min, params[k].max)
                 )
         elif "sigma" in k:
+            params[k].min = 0.0
+            params[k].max = 1e4
+
+        elif "gamma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
             # print(
@@ -940,7 +950,7 @@ class FitResult:
             plot_path = Path(plot_path)
             plot_path.mkdir(parents=True, exist_ok=True)
             # plotting
-            fig = plt.figure()
+            fig = plt.figure(figsize=(8,6))
             ax = fig.add_subplot(111, projection="3d")
             # slice out plot area
             x_plot = self.uc_dics["f2"].ppm(
@@ -1038,7 +1048,7 @@ class FitResult:
 
                 plt.show()
             else:
-                print(
+                print(Fore.RED +
                     "Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag."
                 )
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
@@ -1074,7 +1084,7 @@ class Pseudo3D:
         self._ndim = self._udic["ndim"]
 
         if self._ndim == 1:
-            err = f"""
+            err = Fore.RED + f"""
             ##########################################
                 NMR Data should be either 2D or 3D
             ##########################################
@@ -1084,7 +1094,7 @@ class Pseudo3D:
 
         # check that spectrum has correct number of dims
         elif self._ndim != len(dims):
-            err = f"""
+            err = Fore.RED + f"""
             #################################################################
                Your spectrum has {self._ndim} dimensions with shape {data.shape}
                but you have given a dimension order of {dims}...
@@ -1140,6 +1150,10 @@ class Pseudo3D:
     def data(self):
         """ Return array containing data """
         return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
 
     @property
     def dic(self):
@@ -1667,6 +1681,16 @@ class Peaklist(Pseudo3D):
     #     )
 
     def mask_method(self, overlap=1.0, l_struc=None):
+        """ connect clusters based on overlap of fitting masks
+
+            :param overlap: fraction of mask for which overlaps are calculated
+            :type overlap: float
+
+            :returns ClusterResult: Instance of ClusterResult
+            :rtype: ClustersResult
+        """
+        # overlap is positive
+        overlap = abs(overlap)
 
         self._thres = threshold_otsu(self.data[0])
 
@@ -1701,10 +1725,7 @@ class Peaklist(Pseudo3D):
             lambda x: Category20[20][int(x.CLUSTID) % 20] if x.MEMCNT > 1 else "black",
             axis=1,
         )
-        # import matplotlib.pyplot as plt
-        #
-        # plt.imshow(mask)
-        # plt.show()
+
         return ClustersResult(labeled_array, num_features, mask, peaks)
 
     def to_fuda(self, fname="params.fuda"):
@@ -1750,6 +1771,7 @@ SHAPE=GLORE
 
 
 class ClustersResult:
+    """ Class to store results of clusters function """
     def __init__(self, labeled_array, num_features, closed_data, peaks):
         self._labeled_array = labeled_array
         self._num_features = num_features
@@ -1774,6 +1796,14 @@ class ClustersResult:
 
 
 class LoadData(Peaklist):
+    """ Load peaklist data from peakipy .csv file output from either peakipy read or edit
+
+        read_peaklist is redefined to just read a .csv file
+
+        check_data_frame makes sure data frame is in good shape for setting up fits
+
+    """
+
     def read_peaklist(self):
 
         if self.peaklist_path.suffix == ".csv":
@@ -1820,19 +1850,38 @@ class LoadData(Peaklist):
 
 
 def read_config(args, config_path="peakipy.config"):
+    """ read a peakipy config file, extract params and update args dict
 
+        :param args: dict containing params extracted from docopt command line
+        :type args: dict
+        :param config_path: path to peakipy config file [default: peakipy.config]
+        :type config_path: str
+
+        :returns args: updated args dict
+        :rtype args: dict
+        :returns config: dict that resulted from reading config file
+        :rtype config: dict
+
+    """
     # update args with values from peakipy.config file
     config_path = Path(config_path)
     if config_path.exists():
-        config = json.load(open(config_path))
-        print(f"Using config file with --dims={config.get('--dims')}")
-        args["--dims"] = config.get("--dims", [0, 1, 2])
-        noise = config.get("noise")
-        if noise:
-            noise = float(noise)
+        try:
+            config = json.load(open(config_path))
+            print(Fore.GREEN + f"Using config file with --dims={config.get('--dims')}")
+            args["--dims"] = config.get("--dims", [0, 1, 2])
+            noise = config.get("noise")
+            if noise:
+                noise = float(noise)
 
-        colors = config.get("--colors", ["#5e3c99", "#e66101"])
+            colors = config.get("--colors", ["#5e3c99", "#e66101"])
+        except json.decoder.JSONDecodeError:
+            print(Fore.RED + "Your peakipy.config file is corrupted - maybe your JSON is not correct...")
+            print(Fore.RED + "Not using")
+            noise = False
+            colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
     else:
+        print(Fore.RED + "No peakipy.config found")
         noise = False
         colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
 
