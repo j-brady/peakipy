@@ -1,12 +1,13 @@
 #*.ft2
 *.pkl
-./build/
+build/*
+!docs/build/*
 *.pyc
 defaultProject
 __pycache__
 test/**/*.png
 *.bak
-./dist/
+dist/
 log.txt
 run_log.txt
 pip-wheel-metadata
