@@ -1507,7 +1507,7 @@ class Peaklist(Pseudo3D):
     def _read_analysis(self):
 
         df = pd.read_csv(self.peaklist_path, delimiter="\t")
-        new_columns = [analysis_to_pipe.get(i, i) for i in df.columns]
+        new_columns = [analysis_to_pipe_dic.get(i, i) for i in df.columns]
         pipe_columns = dict(zip(df.columns, new_columns))
         df = df.rename(index=str, columns=pipe_columns)
 
