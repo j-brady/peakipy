@@ -935,26 +935,31 @@ class FitResult:
 
         # print(jk_results)
         amps = []
-        sigmas = []
+        sigma_xs = []
+        sigma_ys = []
         names = []
         with open("test_jackknife", "w") as f:
             for i in jk_results:
                 f.write(i.fit_report())
                 amp, amp_err, name = get_params(i.params, "amp")
-                sigma, sigma_err, name = get_params(i.params, "sigma_x")
-                f.write(f"{amp},{amp_err},{name}\n")
+                sigma_x, sigma_x_err, name_x = get_params(i.params, "sigma_x")
+                sigma_y, sigma_y_err, name_y = get_params(i.params, "sigma_y")
+                f.write(f"{amp},{amp_err},{name_y}\n")
                 amps.extend(amp)
-                names.extend(name)
-                sigmas.extend(sigma)
+                names.extend(name_y)
+                sigma_xs.extend(sigma_x)
+                sigma_ys.extend(sigma_y)
 
-            df = pd.DataFrame({"amp": amps, "name": names, "sigma": sigmas})
+            df = pd.DataFrame({"amp": amps, "name": names, "sigma_x": sigma_xs, "sigma_y": sigma_ys})
             grouped = df.groupby("name")
             mean_amps = grouped.amp.mean()
             std_amps = grouped.amp.std()
-            mean_sigmas = grouped.sigma.mean()
-            std_sigmas = grouped.sigma.std()
+            mean_sigma_x = grouped.sigma_x.mean()
+            std_sigma_x = grouped.sigma_x.std()
+            mean_sigma_y = grouped.sigma_y.mean()
+            std_sigma_y = grouped.sigma_y.std()
             f.write("#####################################\n")
-            f.write(f"{mean_amps}, {std_amps}, {mean_sigmas}, {std_sigmas}")
+            f.write(f"{mean_amps}, {std_amps}, {mean_sigma_x}, {std_sigma_x}, {mean_sigma_y}, {std_sigma_y} ")
             f.write(self.out.fit_report())
             f.write("#####################################\n")
         # print(amps)

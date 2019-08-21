@@ -101,7 +101,7 @@ tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
 # for printing dataframes
-column_selection = ["assignment", "center_x_ppm", "center_y_ppm", "clustid"]
+column_selection = ["INDEX","ASS", "X_PPM", "Y_PPM", "CLUSTID","MEMCNT"]
 
 
 
@@ -613,10 +613,11 @@ def main(arguments):
         peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
 
     if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
+        excluded = peakipy_data.df[peakipy_data.df.include != 'yes'][column_selection]
         print(
             Fore.YELLOW + f"The following peaks have been exluded:\n",
             tabulate(
-                f"{peakipy_data.df[peakipy_data.df.include != 'yes'][column_selection]}",
+                f"{excluded}",
                 headers="keys",
                 tablefmt="fancy_grid",
             ),
