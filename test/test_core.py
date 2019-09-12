@@ -228,6 +228,7 @@ class TestCoreFunctions(unittest.TestCase):
                 self.assertEqual(pseudo3D.f2_size, 546)
             test_nu += 1
 
+
 # test for read, edit, fit, check and spec scripts
 # need to actually write proper tests
 class TestBokehScript(unittest.TestCase):

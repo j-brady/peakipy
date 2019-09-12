@@ -158,7 +158,10 @@ class BokehScript:
                 self._dims = ",".join(str(i) for i in dims)
                 self.thres = config.get("--thres")
             except json.decoder.JSONDecodeError:
-                print(Fore.RED + "Your peakipy.config file is corrupted - maybe your JSON is not correct...")
+                print(
+                    Fore.RED
+                    + "Your peakipy.config file is corrupted - maybe your JSON is not correct..."
+                )
                 print(Fore.RED + "Not using it.")
                 self._dims = self.args.get("--dims")
                 self.thres = False

@@ -20,7 +20,7 @@
 
         --rcount=<int>            row count setting for wireplot [default: 50]
         --ccount=<int>            column count setting for wireplot [default: 50]
-        --colors=<data,fit>       plot colors [default: '#5e3c99','#e66101']
+        --colors=<data,fit>       plot colors [default: #5e3c99,#e66101]
         
         --help
 
@@ -54,7 +54,7 @@ from colorama import Fore, init
 init(autoreset=True)
 from tabulate import tabulate
 from docopt import docopt
-from schema import SchemaError, Schema, And
+from schema import SchemaError, Schema, And, Use
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
@@ -73,6 +73,20 @@ from peakipy.core import (
     read_config,
 )
 
+columns_to_print = [
+    "assignment",
+    "clustid",
+    "memcnt",
+    "plane",
+    "amp",
+    "height",
+    "center_x_ppm",
+    "center_y_ppm",
+    "fwhm_x_hz",
+    "fwhm_y_hz",
+    "lineshape",
+]
+
 
 def check_input(args):
     """ validate commandline input """
@@ -86,15 +100,15 @@ def check_input(args):
             "<nmrdata>": And(
                 os.path.exists,
                 ng.pipe.read,
-                error=Fore.RED + f"{args['<nmrdata>']} either does not exist or is not an NMRPipe format 2D or 3D",
+                error=Fore.RED
+                + f"{args['<nmrdata>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
-            "--dims": And(
-                lambda n: [int(i) for i in eval(n)],
+            "--dims": Use(
+                lambda n: [int(i) for i in n.split(",")],
                 error=Fore.RED + "--dims should be list of integers e.g. --dims=0,1,2",
             ),
             object: object,
-
-        },
+        }
     )
 
     try:
@@ -184,6 +198,17 @@ def main(argv):
     with PdfPages(outname) as pdf:
 
         for ind, group in groups:
+
+            print(
+                Fore.BLUE
+                + tabulate(
+                    group[columns_to_print],
+                    showindex=False,
+                    tablefmt="fancy_grid",
+                    headers="keys",
+                    floatfmt=".3f",
+                )
+            )
 
             mask = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
 

@@ -22,7 +22,7 @@ requirements = [
 
 setup(
     name="peakipy",
-    version="0.1.24",
+    version="0.1.25",
     description="Some functions and scripts for deconvoluting NMR peaks interactively",
     long_description = long_description,
     long_description_content_type="text/markdown",

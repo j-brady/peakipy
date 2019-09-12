@@ -233,9 +233,10 @@ def main(argv):
     ]
     try:
         if config_path.exists():
-            config_dic = json.load(open(config_path))
-            # update values in dict
-            config_dic.update(dict(config_kvs))
+            with open(config_path) as opened_config:
+                config_dic = json.load(opened_config)
+                # update values in dict
+                config_dic.update(dict(config_kvs))
 
         else:
             # make a new config
@@ -289,7 +290,9 @@ def main(argv):
             out.write(yaml)
         os.system("peakipy spec show_clusters.yml")
 
+    print(f"Finished! Use {outname} to run peakipy edit or fit.")
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
     main(argv)
+

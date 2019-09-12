@@ -17,11 +17,13 @@ E.g. peakipy read -h
 
 """
 from docopt import docopt
+from pkg_resources import get_distribution
 
 
 def main(argv):
+    version = get_distribution("peakipy").version
     args = docopt(
-        __doc__, version="peakipy version 0.1.19", options_first=True, argv=argv[1:]
+        __doc__, version=f"peakipy version {version}", options_first=True, argv=argv[1:]
     )
 
     argv = args["<args>"]

@@ -714,6 +714,9 @@ def fit_first_plane(
         :param noise: estimate of spectral noise for calculation of :math:`\chi^2` and :math:`\chi^2_{red}`
         :type noise: float
 
+        :param fit_method: method used by lmfit
+        :type fit_method: str
+
         :return: FitResult
         :rtype: FitResult
 
@@ -836,7 +839,7 @@ def fit_first_plane(
     else:
         print(fit_str)
 
-    if log != None:
+    if log is not None:
         log.write("".join("#" for _ in range(60)) + "\n\n")
         log.write(fit_str + "\n\n")
         # pass
@@ -1512,7 +1515,7 @@ class Peaklist(Pseudo3D):
     def _read_analysis(self):
 
         df = pd.read_csv(self.peaklist_path, delimiter="\t")
-        new_columns = [analysis_to_pipe_dic.get(i, i) for i in df.columns]
+        new_columns = [self.analysis_to_pipe_dic.get(i, i) for i in df.columns]
         pipe_columns = dict(zip(df.columns, new_columns))
         df = df.rename(index=str, columns=pipe_columns)
 
@@ -1526,6 +1529,7 @@ class Peaklist(Pseudo3D):
             delim_whitespace=True,
             names=["ASS", "Y_PPM", "X_PPM", "VOLUME", "HEIGHT", "YW_HZ", "XW_HZ"],
         )
+        df["INDEX"] = df.index
 
         return df
 
@@ -1905,9 +1909,10 @@ def read_config(args, config_path="peakipy.config"):
             noise = False
             colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
     else:
-        print(Fore.RED + "No peakipy.config found")
+        print(Fore.RED + "No peakipy.config found - maybe you need to generate one with peakipy read or see docs")
         noise = False
         colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
+        config = {}
 
     args["noise"] = noise
     args["colors"] = colors

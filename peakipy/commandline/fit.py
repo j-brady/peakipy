@@ -91,6 +91,7 @@ from peakipy.core import (
     pvoigt2d,
     pv_pv,
 )
+
 # colorama
 init(autoreset=True)
 # some constants
@@ -101,8 +102,7 @@ tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
 # for printing dataframes
-column_selection = ["INDEX","ASS", "X_PPM", "Y_PPM", "CLUSTID","MEMCNT"]
-
+column_selection = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
 
 
 def check_xybounds(x):
@@ -115,9 +115,11 @@ def check_xybounds(x):
         print(Fore.RED + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5")
         exit()
 
+
 # prepare data for multiprocessing
 
-def chunks(l,n):
+
+def chunks(l, n):
     """ split list into n chunks
 
         will return empty lists if n > len(l)
@@ -484,12 +486,16 @@ def check_input(args):
                 # Use(
                 ng.pipe.read,
                 error=Fore.RED
-                      + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
+                + f"🤔 {args['<data>']} should be NMRPipe format 2D or 3D cube",
                 # ),
                 # error=f"🤔 {args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
             ),
             "<output>": Use(str),
-            "--max_cluster_size": And(Use(int), lambda n: 0 < n, error=Fore.RED + "Max cluster size must be greater than 0"),
+            "--max_cluster_size": And(
+                Use(int),
+                lambda n: 0 < n,
+                error=Fore.RED + "Max cluster size must be greater than 0",
+            ),
             "--lineshape": Or(
                 "PV",
                 "L",
@@ -500,7 +506,7 @@ def check_input(args):
                 "G_L",
                 "V",
                 error=Fore.RED
-                      + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
+                + "🤔 --lineshape must be either PV, L, G, PV_PV, PV_G, PV_L, G_L or V",
             ),
             "--fix": Or(
                 Use(
@@ -508,27 +514,27 @@ def check_input(args):
                         i
                         for i in x.split(",")
                         if i
-                           in [
-                               "fraction",
-                               "center",
-                               "sigma",
-                               "gamma",
-                               "fraction_x",
-                               "center_x",
-                               "sigma_x",
-                               "gamma_x",
-                               "fraction_y",
-                               "center_y",
-                               "sigma_y",
-                               "gamma_y",
-                           ]
+                        in [
+                            "fraction",
+                            "center",
+                            "sigma",
+                            "gamma",
+                            "fraction_x",
+                            "center_x",
+                            "sigma_x",
+                            "gamma_x",
+                            "fraction_y",
+                            "center_y",
+                            "sigma_y",
+                            "gamma_y",
+                        ]
                     ]
                 )
             ),
             "--dims": Use(
                 lambda n: [int(i) for i in eval(n)],
                 error=Fore.RED
-                      + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
+                + "🤔 --dims should be list of integers e.g. --dims=0,1,2",
             ),
             "--vclist": Or(
                 "None",
@@ -546,7 +552,7 @@ def check_input(args):
                 Use(
                     check_xybounds,
                     error=Fore.RED
-                          + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
+                    + "🤔 xy_bounds must be pair of floats e.g. --xy_bounds=0.05,0.5",
                 ),
             ),
             "--plane": Or(
@@ -554,7 +560,7 @@ def check_input(args):
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
                     error=Fore.RED
-                          + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
+                    + "🤔 plane(s) to fit should be an integer or list of integers e.g. --plane=1,2,3,4",
                 ),
             ),
             "--exclude_plane": Or(
@@ -562,7 +568,7 @@ def check_input(args):
                 Use(
                     lambda n: [int(i) for i in n.split(",")],
                     error=Fore.RED
-                          + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
+                    + "🤔 plane(s) to exclude should be an integer or list of integers e.g. --exclude_plane=1,2,3,4",
                 ),
             ),
             object: object,
@@ -613,14 +619,10 @@ def main(arguments):
         peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
 
     if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
-        excluded = peakipy_data.df[peakipy_data.df.include != 'yes'][column_selection]
+        excluded = peakipy_data.df[peakipy_data.df.include != "yes"][column_selection]
         print(
             Fore.YELLOW + f"The following peaks have been exluded:\n",
-            tabulate(
-                f"{excluded}",
-                headers="keys",
-                tablefmt="fancy_grid",
-            ),
+            tabulate(excluded, headers="keys", tablefmt="fancy_grid"),
         )
         peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
 
@@ -629,8 +631,9 @@ def main(arguments):
     if max_cluster_size == 999:
         max_cluster_size = peakipy_data.df.MEMCNT.max()
         if peakipy_data.df.MEMCNT.max() > 10:
-            print(Fore.RED +
-                f"""
+            print(
+                Fore.RED
+                + f"""
                 ##################################################################
                 You have some clusters of as many as {max_cluster_size} peaks.
                 You may want to consider reducing the size of your clusters as the
@@ -684,8 +687,8 @@ def main(arguments):
             (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
         peakipy_data.data = peakipy_data.data[data_inds]
-        print(Fore.YELLOW +
-            f"Using only planes {_inds} data now has the following shape",
+        print(
+            Fore.YELLOW + f"Using only planes {_inds} data now has the following shape",
             peakipy_data.data.shape,
         )
         if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
@@ -701,8 +704,8 @@ def main(arguments):
             for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
         peakipy_data.data = peakipy_data.data[data_inds]
-        print(Fore.YELLOW +
-            f"Excluding planes {_inds} data now has the following shape",
+        print(
+            Fore.YELLOW + f"Excluding planes {_inds} data now has the following shape",
             peakipy_data.data.shape,
         )
         if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
@@ -794,15 +797,27 @@ def main(arguments):
             axis=1,
         )
         df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
-        df["fwhm_g_x"] = df.sigma_x.apply(lambda x: 2. * x * np.sqrt(2.0*np.log(2.0))) # fwhm of gaussian
-        df["fwhm_g_y"] = df.sigma_y.apply(lambda x: 2. * x * np.sqrt(2.0*np.log(2.0)))
-        df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2. * x) # fwhm of lorentzian
-        df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2. * x)
-        df["fwhm_x"] = df.apply(lambda x: 0.5346 * x.fwhm_l_x + np.sqrt(0.2166 * x.fwhm_l_x**2.0 + x.fwhm_g_x**2.), axis=1)
-        df["fwhm_y"] = df.apply(lambda x: 0.5346 * x.fwhm_l_y + np.sqrt(0.2166 * x.fwhm_l_y**2.0 + x.fwhm_g_y**2.), axis=1)
-        #df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
-        #df["fwhm_x"] = df.apply(lambda x: x.gamma_x + np.sqrt(x.gamma_x**2.0 + 4 * x.sigma_x**2.0 * 2.0 * np.log(2.)), axis=1)
-        #df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
+        df["fwhm_g_x"] = df.sigma_x.apply(
+            lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
+        )  # fwhm of gaussian
+        df["fwhm_g_y"] = df.sigma_y.apply(
+            lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
+        )
+        df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2.0 * x)  # fwhm of lorentzian
+        df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2.0 * x)
+        df["fwhm_x"] = df.apply(
+            lambda x: 1.0692 * x.gamma_x
+            + np.sqrt(0.8664 * x.gamma_x ** 2.0 + 5.545177*x.sigma_x ** 2.0),
+            axis=1,
+        )
+        df["fwhm_y"] = df.apply(
+            lambda x: 1.0692 * x.gamma_y
+            + np.sqrt(0.8664 * x.gamma_y ** 2.0 + 5.545177*x.sigma_y ** 2.0),
+            axis=1,
+        )
+        # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
+        # df["fwhm_x"] = df.apply(lambda x: x.gamma_x + np.sqrt(x.gamma_x**2.0 + 4 * x.sigma_x**2.0 * 2.0 * np.log(2.)), axis=1)
+        # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
 
     if args["lineshape"] == "PV":
         # calculate peak height
