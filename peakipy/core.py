@@ -1209,6 +1209,10 @@ class Pseudo3D:
         return self.dims[0]
 
     @property
+    def n_planes(self):
+        return self.data.shape[self.planes]
+
+    @property
     def f1(self):
         return self.dims[1]
 

@@ -8,11 +8,13 @@
         --dims=<id,f1,f2>         Dimension order [default: 0,1,2]
 
         --clusters=<id1,id2,etc>  Plot selected cluster based on clustid [default: None]
-                                  eg. --clusters=1 or --clusters=2,4,6,7
+                                  e.g. --clusters=1 or --clusters=2,4,6,7
+        --plane=<int>             Plot selected plane [default: 0]
+                                  e.g. --plane=2 will plot second plane only
 
         --outname=<plotname>      Plot name [default: plots.pdf]
 
-        --first, -f               Only plot first plane
+        --first, -f               Only plot first plane (overrides --plane option)
         --show, -s                Invoke plt.show() for interactive plot
         --individual, -i          Plot individual fitted peaks as surfaces with different colors  
         --label, -l               Label individual peaks
@@ -107,6 +109,10 @@ def check_input(args):
                 lambda n: [int(i) for i in n.split(",")],
                 error=Fore.RED + "--dims should be list of integers e.g. --dims=0,1,2",
             ),
+            "--plane": Use(
+                lambda n: int(n),
+                error=Fore.RED + "--plane should be integer e.g. --plane=2",
+            ),
             object: object,
         }
     )
@@ -161,6 +167,26 @@ def main(argv):
     ccount = eval(args.get("--ccount"))
     rcount = eval(args.get("--rcount"))
 
+    # first only overrides plane option
+    if first_only:
+        plane = 0
+    else:
+        plane = args.get("--plane")
+
+    if plane > pseudo3D.n_planes:
+        raise ValueError(Fore.RED + f"There are {pseudo3D.n_planes} planes in your data you selected --plane={plane}..."\
+                                    f"plane numbering starts from 0.")
+    elif plane < 0:
+        raise ValueError(Fore.RED + f"Plane number can not be negative; you selected --plane={plane}...")
+    # in case first plane is chosen
+    elif plane == 0:
+        selected_plane = plane
+    # plane numbers start from 1 so adjust for indexing
+    else:
+        selected_plane = plane
+        #fits = fits[fits["plane"] == plane]
+        #print(fits)
+
     if type(ccount) == int:
         ccount = ccount
     else:
@@ -212,7 +238,7 @@ def main(argv):
 
             mask = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
 
-            first_plane = group[group.plane == 0]
+            first_plane = group[group.plane == selected_plane]
 
             x_radius = group.x_radius.max()
             y_radius = group.y_radius.max()

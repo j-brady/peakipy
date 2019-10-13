@@ -28,10 +28,10 @@
 
         --vclist=<fname>                            Bruker style vclist [default: None]
 
-        --plane=<int>                               Specific plane(s) to fit [default: 0]
+        --plane=<int>                               Specific plane(s) to fit [default: -1]
                                                     eg. --plane=1 or --plane=1,4,5
 
-        --exclude_plane=<int>                       Specific plane(s) to fit [default: 0]
+        --exclude_plane=<int>                       Specific plane(s) to fit [default: -1]
                                                     eg. --plane=1 or --plane=1,4,5
 
         --nomp                                      Do not use multiprocessing
@@ -164,11 +164,12 @@ def split_peaklist(peaklist, n_cpu, tmp_path=tmp_path):
 class FitPeaksInput:
     """ input data for the fit_peaks function """
 
-    def __init__(self, args: dict, data: np.array, config: dict):
+    def __init__(self, args: dict, data: np.array, config: dict, plane_numbers: list):
 
         self._data = data
         self._args = args
         self._config = config
+        self._plane_numbers = plane_numbers
 
     @property
     def data(self):
@@ -181,6 +182,10 @@ class FitPeaksInput:
     @property
     def config(self):
         return self._config
+
+    @property
+    def plane_numbers(self):
+        return self._plane_numbers
 
 
 class FitPeaksResult:
@@ -336,7 +341,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput):
             out_str += float_str + "\n"
 
             for num, d in enumerate(fit_input.data):
-
+                plane_number = fit_input.plane_numbers[num]
                 first.fit(
                     data=d[mask],
                     params=first.params,
@@ -400,7 +405,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput):
                 sigma_ys.extend(sig_y)
                 # sigma_y_errs.extend(sig_y_err)
                 # add plane number, this should map to vclist
-                planes.extend([num for _ in amp])
+                planes.extend([plane_number for _ in amp])
                 lineshapes.extend([lineshape for _ in amp])
                 #  get prefix for fit
                 names.extend([first.model.prefix] * len(name))
@@ -679,13 +684,15 @@ def main(arguments):
         )
         exit()
 
+    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
     # only fit specified planes
-    if args.get("--plane", [0]) != [0]:
+    if args.get("--plane", [-1]) != [-1]:
         _inds = args.get("--plane")
-        inds = [i - 1 for i in _inds]
+        inds = [i for i in _inds]
         data_inds = [
             (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[data_inds]
         peakipy_data.data = peakipy_data.data[data_inds]
         print(
             Fore.YELLOW + f"Using only planes {_inds} data now has the following shape",
@@ -696,13 +703,14 @@ def main(arguments):
             exit()
 
     # do not fit these planes
-    if args.get("--exclude_plane", [0]) != [0]:
+    if args.get("--exclude_plane", [-1]) != [-1]:
         _inds = args.get("--exclude_plane")
-        inds = [i - 1 for i in _inds]
+        inds = [i for i in _inds]
         data_inds = [
             (i not in inds)
             for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[data_inds]
         peakipy_data.data = peakipy_data.data[data_inds]
         print(
             Fore.YELLOW + f"Excluding planes {_inds} data now has the following shape",
@@ -757,7 +765,7 @@ def main(arguments):
             pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
         ]
         args_list = [
-            FitPeaksInput(args, peakipy_data.data, config) for _ in range(n_cpu)
+            FitPeaksInput(args, peakipy_data.data, config, plane_numbers) for _ in range(n_cpu)
         ]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)
@@ -769,7 +777,7 @@ def main(arguments):
     else:
         print(Fore.GREEN + "Not using multiprocessing")
         result = fit_peaks(
-            peakipy_data.df, FitPeaksInput(args, peakipy_data.data, config)
+            peakipy_data.df, FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
         )
         df = result.df
         log_file.write(result.log)

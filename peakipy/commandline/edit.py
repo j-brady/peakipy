@@ -365,7 +365,7 @@ class BokehScript:
         self.fit_reports_div = Div(text="", height=400, style={"overflow": "scroll"})
         # Plane selection
         self.select_planes_list = [
-            f"{i+1}"
+            f"{i}"
             for i in range(self.peakipy_data.data.shape[self.peakipy_data.planes])
         ]
         self.select_plane = Select(
@@ -374,7 +374,7 @@ class BokehScript:
             options=self.select_planes_list,
         )
         self.select_planes_dic = {
-            f"{i+1}": i
+            f"{i}": i
             for i in range(self.peakipy_data.data.shape[self.peakipy_data.planes])
         }
         self.select_plane.on_change("value", self.update_contour)
@@ -568,11 +568,13 @@ class BokehScript:
         if self.checkbox_group.active == []:
             print(Fore.YELLOW + "Using LS = ", lineshape)
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape={lineshape} --dims={self._dims}"
+            plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} -l -i -s --outname={self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
         else:
             plane_index = self.select_plane.value
             print(Fore.YELLOW + "Using LS = ", lineshape)
+            print(Fore.YELLOW + f"Only fitting plane {plane_index}")
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape={lineshape} --dims={self._dims} --plane={plane_index}"
-        plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} -l -i -s --outname={self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
+            plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} -l -i -s --outname={self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane={plane_index}"
 
         print(Fore.BLUE + fit_command)
         self.fit_reports += fit_command + "<br>"
