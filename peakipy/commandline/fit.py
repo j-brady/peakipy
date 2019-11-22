@@ -814,13 +814,13 @@ def main(arguments):
         df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2.0 * x)  # fwhm of lorentzian
         df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2.0 * x)
         df["fwhm_x"] = df.apply(
-            lambda x: 1.0692 * x.gamma_x
-            + np.sqrt(0.8664 * x.gamma_x ** 2.0 + 5.545177*x.sigma_x ** 2.0),
+            lambda x: 0.5346 * x.fwhm_l_x
+            + np.sqrt(0.2166 * x.fwhm_l_x ** 2.0 + x.fwhm_g_x ** 2.0),
             axis=1,
         )
         df["fwhm_y"] = df.apply(
-            lambda x: 1.0692 * x.gamma_y
-            + np.sqrt(0.8664 * x.gamma_y ** 2.0 + 5.545177*x.sigma_y ** 2.0),
+            lambda x: 0.5346 * x.fwhm_l_y
+            + np.sqrt(0.2166 * x.fwhm_l_y ** 2.0 + x.fwhm_g_y ** 2.0),
             axis=1,
         )
         # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)

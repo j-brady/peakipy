@@ -36,7 +36,7 @@ from numba import jit
 from numpy import sqrt, log, pi, exp, finfo
 from tabulate import tabulate
 
-from lmfit import Model, Parameter
+from lmfit import Model
 from lmfit.model import ModelResult
 from lmfit.models import LinearModel
 from scipy.special import wofz
@@ -189,6 +189,9 @@ def pvoigt2d(
 
         :param XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
         :type XY: numpy.array
+
+        :param amplitude: amplitude of peak
+        :type amplitude: float
 
         :param center_x: center of peak in x
         :type center_x: float
@@ -1289,6 +1292,22 @@ class Pseudo3D:
         return self.uc_f1.ppm_limits()
 
     @property
+    def f1_ppm_max(self):
+        return max(self.f1_ppm_limits)
+
+    @property
+    def f1_ppm_min(self):
+        return min(self.f1_ppm_limits)
+
+    @property
+    def f2_ppm_max(self):
+        return max(self.f2_ppm_limits)
+
+    @property
+    def f2_ppm_min(self):
+        return min(self.f2_ppm_limits)
+
+    @property
     def f2_ppm_0(self):
         return self.f2_ppm_limits[0]
 
@@ -1516,6 +1535,25 @@ class Peaklist(Pseudo3D):
         # check that peaks are within the bounds of the data
         self.check_peak_bounds()
 
+    def add_fix_bound_columns(self):
+        """ add columns containing parameter bounds (param_upper/param_lower)
+            and whether or not parameter should be fixed (yes/no)
+
+            For parameter bounding:
+
+                Column names are <param_name>_upper and <param_name>_lower for upper and lower bounds respectively.
+                Values are given as floating point. Value of 0.0 indicates that parameter is unbounded
+                X/Y positions are given in ppm
+                Linewidths are given in Hz
+
+            For parameter fixing:
+
+                Column names are <param_name>_fix.
+                Values are given as a string 'yes' or 'no'
+
+            """
+        pass
+
     def _read_analysis(self):
 
         df = pd.read_csv(self.peaklist_path, delimiter="\t")
@@ -1587,8 +1625,8 @@ class Peaklist(Pseudo3D):
 
     def check_peak_bounds(self):
         # check that peaks are within the bounds of spectrum
-        within_x = self.df.X_AXIS < self.f2_size
-        within_y = self.df.Y_AXIS < self.f1_size
+        within_x = (self.df.X_PPM < self.f2_ppm_max) & (self.df.X_PPM > self.f2_ppm_min)
+        within_y = (self.df.Y_PPM < self.f1_ppm_max) & (self.df.Y_PPM > self.f1_ppm_min)
         self.excluded = self.df[~(within_x & within_y)]
         self.df = self.df[within_x & within_y]
         if len(self.excluded) > 0:
@@ -1846,6 +1884,8 @@ class LoadData(Peaklist):
 
         else:
             self.df = pd.read_pickle(self.peaklist_path)
+
+        self._thres = threshold_otsu(self.data[0])
 
         return self.df
 

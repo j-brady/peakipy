@@ -2,7 +2,7 @@
 """ Read NMRPipe/Analysis peaklist into pandas dataframe
 
     Usage:
-        read <peaklist> <data> (--a2|--sparky|--pipe) [options]
+        read <peaklist> <data> (--a2|--sparky|--pipe|--peakipy) [options]
 
     Arguments:
         <peaklist>                Analysis2/Sparky/NMRPipe peak list (see below)
@@ -11,6 +11,7 @@
         --a2                      Analysis peaklist as input (tab delimited)
         --sparky                  Sparky peaklist as input
         --pipe                    NMRPipe peaklist as input
+        --peakipy                 peakipy peaklist.csv or .tab (originally output from peakipy read or edit)
 
     Options:
         -h --help                 Show this screen
@@ -46,8 +47,9 @@
 
 
     Examples:
-        read_peaklist.py test.tab test.ft2 --pipe --dims0,1
-        read_peaklist.py test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
+        peakipy read test.tab test.ft2 --pipe --dims0,1
+        peakipy read test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
+        peakipy read test.csv test.ft2 --peakipy --dims=0,1,2
 
     Description:
 
@@ -95,9 +97,12 @@ from pathlib import Path
 from docopt import docopt
 from schema import And, Or, Use, Schema, SchemaError
 import nmrglue as ng
+from colorama import Fore, init
 
-from peakipy.core import Peaklist, run_log
+from peakipy.core import Peaklist, run_log, LoadData
 
+# colorama
+init(autoreset=True)
 
 def check_args(args):
 
@@ -171,6 +176,7 @@ def main(argv):
 
     dims = args.get("--dims")
     pipe_ft_file = args.get("<data>")
+    cluster = True
 
     if args.get("--a2"):
         # set X and Y ppm column names if not default (i.e. "Position F1" = "X_PPM"
@@ -201,10 +207,23 @@ def main(argv):
             filename, pipe_ft_file, fmt="pipe", dims=dims, radii=[f2radius, f1radius]
         )
 
+    elif args.get("--peakipy"):
+        # read in a peakipy .csv file
+        peaks = LoadData(
+            filename, pipe_ft_file, fmt="peakipy", dims=dims
+        )
+        cluster = False
+
     peaks.update_df()
-    peaks.clusters(thres=thres, **clust_args, l_struc=None)
+
     data = peaks.df
     thres = peaks.thres
+
+    if cluster:
+        peaks.clusters(thres=thres, **clust_args, l_struc=None)
+    else:
+        pass
+
 
     if args.get("--fuda"):
         peaks.to_fuda()
@@ -214,6 +233,10 @@ def main(argv):
 
     outfmt = args.get("--outfmt", "csv")
     outname = filename.stem
+    if args.get("--peakipy"):
+        # don't overwrite the old .csv file
+        outname = outname + "_new"
+
     if outfmt == "csv":
         outname = outname + ".csv"
         data.to_csv(outname, float_format="%.4f", index=False)
@@ -290,7 +313,7 @@ def main(argv):
             out.write(yaml)
         os.system("peakipy spec show_clusters.yml")
 
-    print(f"Finished! Use {outname} to run peakipy edit or fit.")
+    print(Fore.GREEN + f"Finished! Use {outname} to run peakipy edit or fit.")
 
 if __name__ == "__main__":
     argv = sys.argv[1:]

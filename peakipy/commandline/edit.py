@@ -303,7 +303,20 @@ class BokehScript:
             )
         )
         # p.toolbar.active_scroll = "auto"
+        # draw border around spectrum area
+        spec_border_x = [self.peakipy_data.f2_ppm_min,
+                         self.peakipy_data.f2_ppm_min,
+                         self.peakipy_data.f2_ppm_max,
+                         self.peakipy_data.f2_ppm_max,
+                         self.peakipy_data.f2_ppm_min]
 
+        spec_border_y = [self.peakipy_data.f1_ppm_min,
+                         self.peakipy_data.f1_ppm_max,
+                         self.peakipy_data.f1_ppm_max,
+                         self.peakipy_data.f1_ppm_min,
+                         self.peakipy_data.f1_ppm_min]
+
+        self.p.line(spec_border_x, spec_border_y, line_width=1, line_color='black', line_dash="dotted", line_alpha=0.5)
         self.p.circle(x="X_PPM", y="Y_PPM", source=self.source, color="color")
         # plot cluster numbers
         self.p.text(
