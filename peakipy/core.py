@@ -1489,7 +1489,11 @@ class Peaklist(Pseudo3D):
 
     @property
     def thres(self):
-        return self._thres
+        if self._thres == None:
+            self._thres = abs(threshold_otsu(self.data[0]))
+            return self._thres
+        else:
+            return self._thres
 
     def update_df(self):
         # int point value
@@ -1673,6 +1677,7 @@ class Peaklist(Pseudo3D):
         peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
 
         if thres == None:
+            thres = self.thres
             self._thres = abs(threshold_otsu(self.data[0]))
         else:
             self._thres = thres
@@ -1919,6 +1924,51 @@ class LoadData(Peaklist):
         # get rid of unnamed columns
         unnamed_cols = [i for i in self.df.columns if "Unnamed:" in i]
         self.df = self.df.drop(columns=unnamed_cols)
+
+    def update_df(self):
+        """ Slightly modified to retain previous configurations """
+        # int point value
+        self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: self.uc_f2(x, "ppm"))
+        self.df["Y_AXIS"] = self.df.Y_PPM.apply(lambda x: self.uc_f1(x, "ppm"))
+        # decimal point value
+        self.df["X_AXISf"] = self.df.X_PPM.apply(lambda x: self.uc_f2.f(x, "ppm"))
+        self.df["Y_AXISf"] = self.df.Y_PPM.apply(lambda x: self.uc_f1.f(x, "ppm"))
+        # in case of missing values (should estimate though)
+        #self.df.XW_HZ.replace("None", "20.0", inplace=True)
+        #self.df.YW_HZ.replace("None", "20.0", inplace=True)
+        self.df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
+        self.df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
+        # convert linewidths to float
+        self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
+        self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))
+        # convert Hz lw to points
+        self.df["XW"] = self.df.XW_HZ.apply(lambda x: x * self.pt_per_hz_f2)
+        self.df["YW"] = self.df.YW_HZ.apply(lambda x: x * self.pt_per_hz_f1)
+        # makes an assignment column
+        if self.fmt == "a2":
+            self.df["ASS"] = self.df.apply(
+                lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
+            )
+
+        # make default values for X and Y radii for fit masks
+        #self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f2_radius
+        #self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f1_radius
+        self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(
+            lambda x: x * self.pt_per_ppm_f2
+        )
+        self.df["Y_RADIUS"] = self.df.Y_RADIUS_PPM.apply(
+            lambda x: x * self.pt_per_ppm_f1
+        )
+        # add include column
+        if "include" in self.df.columns:
+            pass
+        else:
+            self.df["include"] = self.df.apply(lambda x: "yes", axis=1)
+
+        # check assignments for duplicates
+        self.check_assignments()
+        # check that peaks are within the bounds of the data
+        self.check_peak_bounds()
 
 
 def read_config(args, config_path="peakipy.config"):
