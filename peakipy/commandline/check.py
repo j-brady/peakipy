@@ -174,18 +174,24 @@ def main(argv):
         plane = args.get("--plane")
 
     if plane > pseudo3D.n_planes:
-        raise ValueError(Fore.RED + f"There are {pseudo3D.n_planes} planes in your data you selected --plane={plane}..."\
-                                    f"plane numbering starts from 0.")
+        raise ValueError(
+            Fore.RED
+            + f"There are {pseudo3D.n_planes} planes in your data you selected --plane={plane}..."
+            f"plane numbering starts from 0."
+        )
     elif plane < 0:
-        raise ValueError(Fore.RED + f"Plane number can not be negative; you selected --plane={plane}...")
+        raise ValueError(
+            Fore.RED
+            + f"Plane number can not be negative; you selected --plane={plane}..."
+        )
     # in case first plane is chosen
     elif plane == 0:
         selected_plane = plane
     # plane numbers start from 1 so adjust for indexing
     else:
         selected_plane = plane
-        #fits = fits[fits["plane"] == plane]
-        #print(fits)
+        # fits = fits[fits["plane"] == plane]
+        # print(fits)
 
     if type(ccount) == int:
         ccount = ccount

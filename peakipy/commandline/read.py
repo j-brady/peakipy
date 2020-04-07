@@ -104,6 +104,7 @@ from peakipy.core import Peaklist, run_log, LoadData
 # colorama
 init(autoreset=True)
 
+
 def check_args(args):
 
     schema = Schema(
@@ -209,9 +210,7 @@ def main(argv):
 
     elif args.get("--peakipy"):
         # read in a peakipy .csv file
-        peaks = LoadData(
-            filename, pipe_ft_file, fmt="peakipy", dims=dims
-        )
+        peaks = LoadData(filename, pipe_ft_file, fmt="peakipy", dims=dims)
         cluster = False
 
     peaks.update_df()
@@ -223,7 +222,6 @@ def main(argv):
         peaks.clusters(thres=thres, **clust_args, l_struc=None)
     else:
         pass
-
 
     if args.get("--fuda"):
         peaks.to_fuda()
@@ -315,7 +313,7 @@ def main(argv):
 
     print(Fore.GREEN + f"Finished! Use {outname} to run peakipy edit or fit.")
 
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     main(argv)
-

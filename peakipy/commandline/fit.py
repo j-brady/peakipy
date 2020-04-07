@@ -692,7 +692,9 @@ def main(arguments):
         data_inds = [
             (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[data_inds]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
+            data_inds
+        ]
         peakipy_data.data = peakipy_data.data[data_inds]
         print(
             Fore.YELLOW + f"Using only planes {_inds} data now has the following shape",
@@ -710,7 +712,9 @@ def main(arguments):
             (i not in inds)
             for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
         ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[data_inds]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
+            data_inds
+        ]
         peakipy_data.data = peakipy_data.data[data_inds]
         print(
             Fore.YELLOW + f"Excluding planes {_inds} data now has the following shape",
@@ -765,7 +769,8 @@ def main(arguments):
             pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
         ]
         args_list = [
-            FitPeaksInput(args, peakipy_data.data, config, plane_numbers) for _ in range(n_cpu)
+            FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
+            for _ in range(n_cpu)
         ]
         with Pool(processes=n_cpu) as pool:
             # result = pool.map(fit_peaks, peaklists)
@@ -777,7 +782,8 @@ def main(arguments):
     else:
         print(Fore.GREEN + "Not using multiprocessing")
         result = fit_peaks(
-            peakipy_data.df, FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
+            peakipy_data.df,
+            FitPeaksInput(args, peakipy_data.data, config, plane_numbers),
         )
         df = result.df
         log_file.write(result.log)

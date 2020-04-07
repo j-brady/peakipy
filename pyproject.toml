@@ -17,11 +17,10 @@ classifiers = [
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
-        "License :: OSI Approved :: GNU General Public Licens
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         ]
 
 license="GNU GPLv3"
-
 [tool.poetry.dependencies]
 python = "^3.6"
 pandas = "^0.24.0"

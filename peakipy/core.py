@@ -78,7 +78,7 @@ def gaussian(x, center=0.0, sigma=1.0):
 
     """
     return (1.0 / max(tiny, (sqrt(2 * π) * sigma))) * exp(
-        -(1.0 * x - center) ** 2 / max(tiny, (2 * sigma ** 2))
+        -((1.0 * x - center) ** 2) / max(tiny, (2 * sigma ** 2))
     )
 
 
@@ -486,8 +486,12 @@ def make_param_dict(peaks, data, lineshape="PV"):
 
         if lineshape == "V":
             #  Voigt G sigma from linewidth esimate
-            param_dict[str_form("sigma_x")] = peak.XW / (2.0*sqrt(2.0*log2))# 3.6013
-            param_dict[str_form("sigma_y")] = peak.YW / (2.0*sqrt(2.0*log2))# 3.6013
+            param_dict[str_form("sigma_x")] = peak.XW / (
+                2.0 * sqrt(2.0 * log2)
+            )  # 3.6013
+            param_dict[str_form("sigma_y")] = peak.YW / (
+                2.0 * sqrt(2.0 * log2)
+            )  # 3.6013
             #  Voigt L gamma from linewidth esimate
             param_dict[str_form("gamma_x")] = peak.XW / 2.0
             param_dict[str_form("gamma_y")] = peak.YW / 2.0
@@ -956,7 +960,9 @@ class FitResult:
                 sigma_xs.extend(sigma_x)
                 sigma_ys.extend(sigma_y)
 
-            df = pd.DataFrame({"amp": amps, "name": names, "sigma_x": sigma_xs, "sigma_y": sigma_ys})
+            df = pd.DataFrame(
+                {"amp": amps, "name": names, "sigma_x": sigma_xs, "sigma_y": sigma_ys}
+            )
             grouped = df.groupby("name")
             mean_amps = grouped.amp.mean()
             std_amps = grouped.amp.std()
@@ -965,7 +971,9 @@ class FitResult:
             mean_sigma_y = grouped.sigma_y.mean()
             std_sigma_y = grouped.sigma_y.std()
             f.write("#####################################\n")
-            f.write(f"{mean_amps}, {std_amps}, {mean_sigma_x}, {std_sigma_x}, {mean_sigma_y}, {std_sigma_y} ")
+            f.write(
+                f"{mean_amps}, {std_amps}, {mean_sigma_x}, {std_sigma_x}, {mean_sigma_y}, {std_sigma_y} "
+            )
             f.write(self.out.fit_report())
             f.write("#####################################\n")
         # print(amps)
@@ -980,7 +988,7 @@ class FitResult:
             plot_path = Path(plot_path)
             plot_path.mkdir(parents=True, exist_ok=True)
             # plotting
-            fig = plt.figure(figsize=(8,6))
+            fig = plt.figure(figsize=(8, 6))
             ax = fig.add_subplot(111, projection="3d")
             # slice out plot area
             x_plot = self.uc_dics["f2"].ppm(
@@ -1078,8 +1086,9 @@ class FitResult:
 
                 plt.show()
             else:
-                print(Fore.RED +
-                    "Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag."
+                print(
+                    Fore.RED
+                    + "Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag."
                 )
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
             #    print(p_guess)
@@ -1114,22 +1123,28 @@ class Pseudo3D:
         self._ndim = self._udic["ndim"]
 
         if self._ndim == 1:
-            err = Fore.RED + f"""
+            err = (
+                Fore.RED
+                + f"""
             ##########################################
                 NMR Data should be either 2D or 3D
             ##########################################
             """
+            )
             # raise TypeError(err)
             sys.exit(err)
 
         # check that spectrum has correct number of dims
         elif self._ndim != len(dims):
-            err = Fore.RED + f"""
+            err = (
+                Fore.RED
+                + f"""
             #################################################################
                Your spectrum has {self._ndim} dimensions with shape {data.shape}
                but you have given a dimension order of {dims}...
             #################################################################
             """
+            )
             # raise ValueError(err)
             sys.exit(err)
 
@@ -1847,6 +1862,7 @@ SHAPE=GLORE
 
 class ClustersResult:
     """ Class to store results of clusters function """
+
     def __init__(self, labeled_array, num_features, closed_data, peaks):
         self._labeled_array = labeled_array
         self._num_features = num_features
@@ -1934,8 +1950,8 @@ class LoadData(Peaklist):
         self.df["X_AXISf"] = self.df.X_PPM.apply(lambda x: self.uc_f2.f(x, "ppm"))
         self.df["Y_AXISf"] = self.df.Y_PPM.apply(lambda x: self.uc_f1.f(x, "ppm"))
         # in case of missing values (should estimate though)
-        #self.df.XW_HZ.replace("None", "20.0", inplace=True)
-        #self.df.YW_HZ.replace("None", "20.0", inplace=True)
+        # self.df.XW_HZ.replace("None", "20.0", inplace=True)
+        # self.df.YW_HZ.replace("None", "20.0", inplace=True)
         self.df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
         self.df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
         # convert linewidths to float
@@ -1951,8 +1967,8 @@ class LoadData(Peaklist):
             )
 
         # make default values for X and Y radii for fit masks
-        #self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f2_radius
-        #self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f1_radius
+        # self.df["X_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f2_radius
+        # self.df["Y_RADIUS_PPM"] = np.zeros(len(self.df)) + self.f1_radius
         self.df["X_RADIUS"] = self.df.X_RADIUS_PPM.apply(
             lambda x: x * self.pt_per_ppm_f2
         )
@@ -1998,12 +2014,18 @@ def read_config(args, config_path="peakipy.config"):
 
             colors = config.get("--colors", ["#5e3c99", "#e66101"])
         except json.decoder.JSONDecodeError:
-            print(Fore.RED + "Your peakipy.config file is corrupted - maybe your JSON is not correct...")
+            print(
+                Fore.RED
+                + "Your peakipy.config file is corrupted - maybe your JSON is not correct..."
+            )
             print(Fore.RED + "Not using")
             noise = False
             colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
     else:
-        print(Fore.RED + "No peakipy.config found - maybe you need to generate one with peakipy read or see docs")
+        print(
+            Fore.RED
+            + "No peakipy.config found - maybe you need to generate one with peakipy read or see docs"
+        )
         noise = False
         colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
         config = {}

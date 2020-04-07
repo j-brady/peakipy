@@ -27,8 +27,6 @@ import peakipy.commandline.spec
 
 
 class TestCoreFunctions(unittest.TestCase):
-
-
     def test_make_mask(self):
         data = np.ones((10, 10))
         c_x = 5
@@ -232,52 +230,56 @@ class TestCoreFunctions(unittest.TestCase):
 # test for read, edit, fit, check and spec scripts
 # need to actually write proper tests
 class TestBokehScript(unittest.TestCase):
-    @patch('peakipy.commandline.edit.BokehScript')
+    @patch("peakipy.commandline.edit.BokehScript")
     def test_BokehScript(self, MockBokehScript):
-        args = {"<peaklist>":"hello", "<data>":"data"}
+        args = {"<peaklist>": "hello", "<data>": "data"}
         bokeh_plots = MockBokehScript(args)
         self.assertIsNotNone(bokeh_plots)
 
 
 class TestCheckScript(unittest.TestCase):
-    @patch('peakipy.commandline.check')
+    @patch("peakipy.commandline.check")
     def test_main(self, MockCheck):
-        args = {"<peaklist>":"hello", "<data>":"data"}
+        args = {"<peaklist>": "hello", "<data>": "data"}
         check = MockCheck(args)
         self.assertIsNotNone(check)
 
 
 class TestFitScript(unittest.TestCase):
-    @patch('peakipy.commandline.fit')
+    @patch("peakipy.commandline.fit")
     def test_main(self, MockFit):
-        args = {"<peaklist>":"hello", "<data>":"data"}
+        args = {"<peaklist>": "hello", "<data>": "data"}
         fit = MockFit(args)
         self.assertIsNotNone(fit)
 
 
 class TestReadScript(unittest.TestCase):
-    @patch('peakipy.commandline.read')
+    @patch("peakipy.commandline.read")
     def test_main(self, MockRead):
-        args = {"<peaklist>":"hello", "<data>":"data"}
+        args = {"<peaklist>": "hello", "<data>": "data"}
         read = MockRead(args)
         self.assertIsNotNone(read)
 
     def test_read_pipe_peaklist(self):
-        args = {"path":"test/test_pipe.tab", "data_path":"test/test_pipe.ft2", "dims":[0,1,2],"fmt":"pipe"}
+        args = {
+            "path": "test/test_pipe.tab",
+            "data_path": "test/test_pipe.ft2",
+            "dims": [0, 1, 2],
+            "fmt": "pipe",
+        }
         peaklist = Peaklist(**args)
         self.assertIsNotNone(peaklist)
         self.assertIs(len(peaklist.df), 3)
         # self.assertIs(peaklist.df.X_AXISf.iloc[0], 323.019)
         self.assertIs(peaklist.fmt, "pipe")
-        #self.assertEqual(peaklist.df.ASS.iloc[0], "None")
-        #self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
-
+        # self.assertEqual(peaklist.df.ASS.iloc[0], "None")
+        # self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
 
 
 class TestSpecScript(unittest.TestCase):
-    @patch('peakipy.commandline.spec')
+    @patch("peakipy.commandline.spec")
     def test_main(self, MockSpec):
-        args = {"<peaklist>":"hello", "<data>":"data"}
+        args = {"<peaklist>": "hello", "<data>": "data"}
         spec = MockSpec(args)
         self.assertIsNotNone(spec)
 

@@ -9,7 +9,6 @@ import peakipy.commandline.spec
 
 
 class TestPeakipyCommandline(unittest.TestCase):
-
     def test_read_main_with_default_pipe(self):
         argv = ["test_protein_L/test.tab", "test_protein_L/test1.ft2", "--pipe"]
         peakipy.commandline.read.main(argv)
@@ -23,6 +22,7 @@ class TestPeakipyCommandline(unittest.TestCase):
         peakipy.commandline.read.main(argv)
         # args = docopt(peakipy.commandline.read.__doc__, argv=argv)
         # print(args)
+
     # def test_read_main_args(self):
     #     argv = ["test_protein_L/test.tab", "test_protein_L/test1.ft2", "--pipe", ]
     #     peakipy.commandline.read.main(argv)
@@ -32,7 +32,15 @@ class TestPeakipyCommandline(unittest.TestCase):
         peakipy.commandline.fit.main(argv)
 
     def test_check_main_with_default(self):
-        argv = ["test_protein_L/fits.csv", "test_protein_L/test1.ft2", "--first", "--clusters=30", "-l", "-s", "-i"]
+        argv = [
+            "test_protein_L/fits.csv",
+            "test_protein_L/test1.ft2",
+            "--first",
+            "--clusters=30",
+            "-l",
+            "-s",
+            "-i",
+        ]
         peakipy.commandline.check.main(argv)
 
     # def test_edit_with_default(self):
