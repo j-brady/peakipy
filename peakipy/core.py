@@ -32,7 +32,6 @@ import pandas as pd
 import textwrap
 from colorama import Fore, init
 
-from numba import jit
 from numpy import sqrt, log, pi, exp, finfo
 from tabulate import tabulate
 
@@ -57,7 +56,6 @@ log2 = log(2)
 tiny = finfo(float).eps
 
 
-@jit(nopython=True)
 def gaussian(x, center=0.0, sigma=1.0):
     """ 1-dimensional Gaussian function.
 
@@ -82,7 +80,6 @@ def gaussian(x, center=0.0, sigma=1.0):
     )
 
 
-@jit(nopython=True)
 def lorentzian(x, center=0.0, sigma=1.0):
     """ 1-dimensional Lorentzian function.
 
@@ -142,7 +139,6 @@ def voigt(x, center=0.0, sigma=1.0, gamma=None):
     return wofz(z).real / max(tiny, (sigma * sqrt(2.0 * π)))
 
 
-@jit(nopython=True)
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
     """ 1-dimensional Pseudo-voigt function
     
@@ -173,7 +169,6 @@ def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
     return pv
 
 
-# @jit(nopython=True)
 def pvoigt2d(
     XY,
     amplitude=1.0,
@@ -230,7 +225,6 @@ def pvoigt2d(
     return amplitude * pv_x * pv_y
 
 
-# @jit(nopython=True)
 def pv_l(
     XY,
     amplitude=1.0,
@@ -266,7 +260,6 @@ def pv_l(
     return amplitude * pv_x * pv_y
 
 
-# @jit(nopython=True)
 def pv_g(
     XY,
     amplitude=1.0,
@@ -301,7 +294,6 @@ def pv_g(
     return amplitude * pv_x * pv_y
 
 
-# @jit(nopython=True)
 def pv_pv(
     XY,
     amplitude=1.0,
@@ -340,7 +332,6 @@ def pv_pv(
     return amplitude * pv_x * pv_y
 
 
-# @jit(nopython=True)
 def gaussian_lorentzian(
     XY,
     amplitude=1.0,
