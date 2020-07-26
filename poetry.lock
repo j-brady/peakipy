@@ -26,14 +26,6 @@ tornado = ">=4.3"
 
 [[package]]
 category = "main"
-description = "Extended pickling support for Python objects"
-name = "cloudpickle"
-optional = false
-python-versions = ">=3.5"
-version = "1.5.0"
-
-[[package]]
-category = "main"
 description = "Cross-platform colored terminal text."
 name = "colorama"
 optional = false
@@ -82,6 +74,25 @@ name = "future"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "0.18.2"
+
+[[package]]
+category = "main"
+description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
+name = "imageio"
+optional = false
+python-versions = ">=3.5"
+version = "2.9.0"
+
+[package.dependencies]
+numpy = "*"
+pillow = "*"
+
+[package.extras]
+ffmpeg = ["imageio-ffmpeg"]
+fits = ["astropy"]
+full = ["astropy", "gdal", "imageio-ffmpeg", "itk"]
+gdal = ["gdal"]
+itk = ["itk"]
 
 [[package]]
 category = "main"
@@ -290,20 +301,26 @@ contextlib2 = ">=0.5.5"
 
 [[package]]
 category = "main"
-description = "Image processing routines for SciPy"
+description = "Image processing in Python"
 name = "scikit-image"
 optional = false
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
-version = "0.14.5"
+python-versions = ">=3.6"
+version = "0.17.2"
 
 [package.dependencies]
-PyWavelets = ">=0.4.0"
-cloudpickle = ">=0.2.1"
-matplotlib = ">=2.0.0"
-networkx = ">=1.8"
-pillow = ">=4.3.0"
-scipy = ">=0.17.0"
-six = ">=1.10.0"
+PyWavelets = ">=1.1.1"
+imageio = ">=2.3.0"
+matplotlib = ">=2.0.0,<3.0.0 || >3.0.0"
+networkx = ">=2.0"
+numpy = ">=1.15.1"
+pillow = ">=4.3.0,<7.1.0 || >7.1.0,<7.1.1 || >7.1.1"
+scipy = ">=1.0.1"
+tifffile = ">=2019.7.26"
+
+[package.extras]
+docs = ["sphinx (>=1.8,<=2.4.4)", "numpydoc (>=0.9)", "sphinx-gallery (>=0.3.1)", "sphinx-copybutton", "pytest-runner", "scikit-learn", "matplotlib (>=3.0.1)", "dask (>=0.15.0)", "cloudpickle (>=0.2.1)", "pandas (>=0.23.0)", "seaborn (>=0.7.1)", "pooch (>=0.5.2)"]
+optional = ["simpleitk", "astropy (>=1.2.0)", "qtpy", "pyamg", "dask (>=0.15.0)", "cloudpickle (>=0.2.1)", "pooch (>=0.5.2)"]
+test = ["pytest (!=3.7.3)", "pytest-cov", "pytest-localserver", "flake8", "codecov"]
 
 [[package]]
 category = "main"
@@ -337,6 +354,20 @@ widechars = ["wcwidth"]
 
 [[package]]
 category = "main"
+description = "Read and write TIFF(r) files"
+name = "tifffile"
+optional = false
+python-versions = ">=3.6"
+version = "2020.7.24"
+
+[package.dependencies]
+numpy = ">=1.15.1"
+
+[package.extras]
+all = ["imagecodecs (>=2020.2.18)", "matplotlib (>=3.1)", "lxml"]
+
+[[package]]
+category = "main"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
 name = "tornado"
 optional = false
@@ -361,7 +392,7 @@ optional = ["numpy"]
 tests = ["nose", "numpy"]
 
 [metadata]
-content-hash = "4df7387126b512f41171903fdce0804d9d18c7c889f25a1ffedb1b5de2a35d51"
+content-hash = "e2212955543c07a6823c84696fff8c1067072dd5c0d17752ac3bce5e01d67fd3"
 python-versions = "^3.6.1"
 
 [metadata.files]
@@ -370,10 +401,6 @@ asteval = [
 ]
 bokeh = [
     {file = "bokeh-1.4.0.tar.gz", hash = "sha256:c60d38a41a777b8147ee4134e6142cea8026b5eebf48149e370c44689869dce7"},
-]
-cloudpickle = [
-    {file = "cloudpickle-1.5.0-py3-none-any.whl", hash = "sha256:994d503de22399a8a09091b091e3850509144ede72977ac475f323096eb72936"},
-    {file = "cloudpickle-1.5.0.tar.gz", hash = "sha256:820c9245cebdec7257211cbe88745101d5d6a042bca11336d78ebd4897ddbc82"},
 ]
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
@@ -396,6 +423,10 @@ docopt = [
 ]
 future = [
     {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
+]
+imageio = [
+    {file = "imageio-2.9.0-py3-none-any.whl", hash = "sha256:3604d751f03002e8e0e7650aa71d8d9148144a87daf17cb1f3228e80747f2e6b"},
+    {file = "imageio-2.9.0.tar.gz", hash = "sha256:52ddbaeca2dccf53ba2d6dec5676ca7bc3b2403ef8b37f7da78b7654bb3e10f0"},
 ]
 jinja2 = [
     {file = "Jinja2-2.11.2-py2.py3-none-any.whl", hash = "sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035"},
@@ -625,24 +656,19 @@ schema = [
     {file = "schema-0.7.2.tar.gz", hash = "sha256:b536f2375b49fdf56f36279addae98bd86a8afbd58b3c32ce363c464bed5fc1c"},
 ]
 scikit-image = [
-    {file = "scikit-image-0.14.5.tar.gz", hash = "sha256:1f064315cd6fb048560ac6eb03e41969aab68f9df5c145fefaece3b6823e5919"},
-    {file = "scikit_image-0.14.5-cp27-cp27m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:0370157e1e5a87ac4dd05e45592396616e754968f78830432fd10586181ef5d3"},
-    {file = "scikit_image-0.14.5-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:68cc1264a892950d77c513d4a44c560717cd31bbe5c00756048a728603bae464"},
-    {file = "scikit_image-0.14.5-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:90ce05525393680698b7d3b1a5ba2b6828d03b0272227044efd32d7ccda20ffc"},
-    {file = "scikit_image-0.14.5-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:ca13e3e70b55a0e6fda2b4ee525074e5228a41da55a2c0bef8f3acc5ccd032e7"},
-    {file = "scikit_image-0.14.5-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:152052ebb27e03f3a1643dedefca18edd110d7e5bef7cb0e0869d5e0219580cc"},
-    {file = "scikit_image-0.14.5-cp27-none-win32.whl", hash = "sha256:b26b6a5762e3953aaefccd15c5b5688c68ea90d24ebf1832fcafe06b94793c32"},
-    {file = "scikit_image-0.14.5-cp27-none-win_amd64.whl", hash = "sha256:5bad71c71ac17765c3e32a7f726a314b5351229c766cd7482d8a5da13e290968"},
-    {file = "scikit_image-0.14.5-cp36-cp36m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:4b462312fa35eb995d22922862342a5d7507b80ee855f6102570e62273581110"},
-    {file = "scikit_image-0.14.5-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:008e3be2b9cb9428c7feba56e9f2c8cbc18c8ae2396fee0667ff2a34c3800ee4"},
-    {file = "scikit_image-0.14.5-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:44e9184a6a5a9a1293a58247a56e8ec80804fc37d88c849513f63ba48aea730d"},
-    {file = "scikit_image-0.14.5-cp36-none-win32.whl", hash = "sha256:716b565c99862ded9104431bbb5c39ede1530f517296c2d3b293ef7f465ef3a3"},
-    {file = "scikit_image-0.14.5-cp36-none-win_amd64.whl", hash = "sha256:d0f8742965edf200f2d17e391469beb8cd90cecbbc5e1285bf168b3975e1c3f0"},
-    {file = "scikit_image-0.14.5-cp37-cp37m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:fe69397c5cc2bacf0221b6a68b9aaec08a205510e0786dd331b5f109b871de8c"},
-    {file = "scikit_image-0.14.5-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:29ef5fc4f2277a3a914a36ae762ab29a9eefcff7fe9548c817dcf9c545206982"},
-    {file = "scikit_image-0.14.5-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:3d3b8267aa15c57ab9926029c4a073c85907a635272c204fd1692d2a182da6df"},
-    {file = "scikit_image-0.14.5-cp37-none-win32.whl", hash = "sha256:25884e699aa52b724f6c3fba39fb022aa34c9b08c924cc7f5d7c94c6f3d08770"},
-    {file = "scikit_image-0.14.5-cp37-none-win_amd64.whl", hash = "sha256:2feb5ea7613ad33cef2b1e1b763956597c5df60f366fb3c53b7005b215ed3aa2"},
+    {file = "scikit-image-0.17.2.tar.gz", hash = "sha256:bd954c0588f0f7e81d9763dc95e06950e68247d540476e06cb77bcbcd8c2d8b3"},
+    {file = "scikit_image-0.17.2-cp36-cp36m-macosx_10_13_x86_64.whl", hash = "sha256:11eec2e65cd4cd6487fe1089aa3538dbe25525aec7a36f5a0f14145df0163ce7"},
+    {file = "scikit_image-0.17.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:c5c277704b12e702e34d1f7b7a04d5ee8418735f535d269c74c02c6c9f8abee2"},
+    {file = "scikit_image-0.17.2-cp36-cp36m-win32.whl", hash = "sha256:1fda9109a19dc9d7a4ac152d1fc226fed7282ad186a099f14c0aa9151f0c758e"},
+    {file = "scikit_image-0.17.2-cp36-cp36m-win_amd64.whl", hash = "sha256:86a834f9a4d30201c0803a48a25364fe8f93f9feb3c58f2c483d3ce0a3e5fe4a"},
+    {file = "scikit_image-0.17.2-cp37-cp37m-macosx_10_13_x86_64.whl", hash = "sha256:87ca5168c6fc36b7a298a1db2d185a8298f549854342020f282f747a4e4ddce9"},
+    {file = "scikit_image-0.17.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:e99fa7514320011b250a21ab855fdd61ddcc05d3c77ec9e8f13edcc15d3296b5"},
+    {file = "scikit_image-0.17.2-cp37-cp37m-win32.whl", hash = "sha256:ee3db438b5b9f8716a91ab26a61377a8a63356b186706f5b979822cc7241006d"},
+    {file = "scikit_image-0.17.2-cp37-cp37m-win_amd64.whl", hash = "sha256:6b65a103edbc34b22640daf3b084dc9e470c358d3298c10aa9e3b424dcc02db6"},
+    {file = "scikit_image-0.17.2-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:c0876e562991b0babff989ff4d00f35067a2ddef82e5fdd895862555ffbaec25"},
+    {file = "scikit_image-0.17.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:178210582cc62a5b25c633966658f1f2598615f9c3f27f36cf45055d2a74b401"},
+    {file = "scikit_image-0.17.2-cp38-cp38-win32.whl", hash = "sha256:7bedd3881ca4fea657a894815bcd5e5bf80944c26274f6b6417bb770c3f4f8e6"},
+    {file = "scikit_image-0.17.2-cp38-cp38-win_amd64.whl", hash = "sha256:113bcacdfc839854f527a166a71768708328208e7b66e491050d6a57fa6727c7"},
 ]
 scipy = [
     {file = "scipy-1.5.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:cca9fce15109a36a0a9f9cfc64f870f1c140cb235ddf27fe0328e6afb44dfed0"},
@@ -669,6 +695,10 @@ six = [
 tabulate = [
     {file = "tabulate-0.8.7-py3-none-any.whl", hash = "sha256:ac64cb76d53b1231d364babcd72abbb16855adac7de6665122f97b593f1eb2ba"},
     {file = "tabulate-0.8.7.tar.gz", hash = "sha256:db2723a20d04bcda8522165c73eea7c300eda74e0ce852d9022e0159d7895007"},
+]
+tifffile = [
+    {file = "tifffile-2020.7.24-py3-none-any.whl", hash = "sha256:73cd17d8df01fed38b9000c9b209eb7c894fde5abc616c5ff7b1f476e38cf07f"},
+    {file = "tifffile-2020.7.24.tar.gz", hash = "sha256:cd8549d6f0742c3c95a856744a26064a1aad1c132fbab95dc9e5dce891a62c17"},
 ]
 tornado = [
     {file = "tornado-6.0.4-cp35-cp35m-win32.whl", hash = "sha256:5217e601700f24e966ddab689f90b7ea4bd91ff3357c3600fa1045e26d68e55d"},
