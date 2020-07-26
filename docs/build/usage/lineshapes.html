@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Lineshapes &#8212; peakipy 0.1.16 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Code" href="code.html" />
@@ -40,8 +40,8 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peakipy</span> <span class="n">fit</span> <span class="n">test</span><span class="o">.</span><span class="n">csv</span> <span class="n">test1</span><span class="o">.</span><span class="n">ft2</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="o">--</span><span class="n">lineshape</span><span class="o">=</span><span class="n">G</span>
 </pre></div>
 </div>
-<p>Would fit to a Gaussian lineshape in both dimensions. Other options are L or PV for Lorentzian or Pseudo-Voigt in both dimensions, respectively.
-If you want to fit a seperate lineshape for the indirect dimension then PV_PV, PV_G, PV_L, G_L allow you to fit Pseudo-Voigt with seperate X and Y fraction parameters, Pseudo-Voigt in X and Gaussian/Lorentzian in Y or Gaussian in X and Lorentzian in Y, respectively.</p>
+<p>Would fit to a Gaussian lineshape in both dimensions. Other options are V, L or PV for Voigt Lorentzian or Pseudo-Voigt in both dimensions, respectively.
+If you want to fit a seperate lineshape for the indirect dimension then PV_PV allows you to fit a Pseudo-Voigt with seperate X and Y fraction parameters</p>
 <div class="section" id="gaussian">
 <h2>Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h2>
 <p><span class="math notranslate nohighlight">\(\frac{1}{\sigma_g\sqrt{2\pi}}\exp \frac{-(x - center)^2 } { 2 \sigma_g^2}\)</span></p>
@@ -125,7 +125,7 @@ Peakipy does calculate the linear correlation between the NMR data and the simul
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -142,7 +142,7 @@ Peakipy does calculate the linear correlation between the NMR data and the simul
       &copy;2019, Jacob Peter Brady.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

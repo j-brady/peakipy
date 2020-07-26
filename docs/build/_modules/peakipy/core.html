@@ -1,18 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>peakipy.core &#8212; peakipy 0.1.16 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -56,33 +56,32 @@
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">nmrglue</span> <span class="k">as</span> <span class="nn">ng</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">textwrap</span>
-<span class="kn">from</span> <span class="nn">colorama</span> <span class="k">import</span> <span class="n">Fore</span><span class="p">,</span> <span class="n">init</span>
+<span class="kn">from</span> <span class="nn">colorama</span> <span class="kn">import</span> <span class="n">Fore</span><span class="p">,</span> <span class="n">init</span>
 
-<span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">jit</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">finfo</span>
-<span class="kn">from</span> <span class="nn">tabulate</span> <span class="k">import</span> <span class="n">tabulate</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">finfo</span>
+<span class="kn">from</span> <span class="nn">tabulate</span> <span class="kn">import</span> <span class="n">tabulate</span>
 
-<span class="kn">from</span> <span class="nn">lmfit</span> <span class="k">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Parameter</span>
-<span class="kn">from</span> <span class="nn">lmfit.model</span> <span class="k">import</span> <span class="n">ModelResult</span>
-<span class="kn">from</span> <span class="nn">lmfit.models</span> <span class="k">import</span> <span class="n">LinearModel</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">wofz</span>
+<span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">lmfit.model</span> <span class="kn">import</span> <span class="n">ModelResult</span>
+<span class="kn">from</span> <span class="nn">lmfit.models</span> <span class="kn">import</span> <span class="n">LinearModel</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">wofz</span>
 
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">cm</span>
-<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
-<span class="kn">from</span> <span class="nn">matplotlib.widgets</span> <span class="k">import</span> <span class="n">Button</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">matplotlib.widgets</span> <span class="kn">import</span> <span class="n">Button</span>
 
-<span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="k">import</span> <span class="n">Category20</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span>
-<span class="kn">from</span> <span class="nn">skimage.morphology</span> <span class="k">import</span> <span class="n">square</span><span class="p">,</span> <span class="n">binary_closing</span><span class="p">,</span> <span class="n">disk</span><span class="p">,</span> <span class="n">rectangle</span>
-<span class="kn">from</span> <span class="nn">skimage.filters</span> <span class="k">import</span> <span class="n">threshold_otsu</span>
+<span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="kn">import</span> <span class="n">Category20</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+<span class="kn">from</span> <span class="nn">skimage.morphology</span> <span class="kn">import</span> <span class="n">square</span><span class="p">,</span> <span class="n">binary_closing</span><span class="p">,</span> <span class="n">disk</span><span class="p">,</span> <span class="n">rectangle</span>
+<span class="kn">from</span> <span class="nn">skimage.filters</span> <span class="kn">import</span> <span class="n">threshold_otsu</span>
 
 <span class="n">init</span><span class="p">(</span><span class="n">autoreset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="c1"># constants</span>
@@ -91,8 +90,7 @@
 <span class="n">tiny</span> <span class="o">=</span> <span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
 
 
-<div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.gaussian">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.gaussian">[docs]</a><span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; 1-dimensional Gaussian function.</span>
 
 <span class="sd">        gaussian(x, center, sigma) = </span>
@@ -112,12 +110,11 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tiny</span><span class="p">,</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">π</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)))</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span>
-        <span class="o">-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tiny</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="o">-</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tiny</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="lorentzian"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.lorentzian">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<div class="viewcode-block" id="lorentzian"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.lorentzian">[docs]</a><span class="k">def</span> <span class="nf">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; 1-dimensional Lorentzian function.</span>
 
 <span class="sd">        lorentzian(x, center, sigma) =</span>
@@ -176,8 +173,7 @@
     <span class="k">return</span> <span class="n">wofz</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">real</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">tiny</span><span class="p">,</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">π</span><span class="p">)))</span></div>
 
 
-<div class="viewcode-block" id="pseudo_voigt"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.pseudo_voigt">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">pseudo_voigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<div class="viewcode-block" id="pseudo_voigt"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.pseudo_voigt">[docs]</a><span class="k">def</span> <span class="nf">pseudo_voigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; 1-dimensional Pseudo-voigt function</span>
 <span class="sd">    </span>
 <span class="sd">        Superposition of Gaussian and Lorentzian function</span>
@@ -207,7 +203,6 @@
     <span class="k">return</span> <span class="n">pv</span></div>
 
 
-<span class="c1"># @jit(nopython=True)</span>
 <div class="viewcode-block" id="pvoigt2d"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.pvoigt2d">[docs]</a><span class="k">def</span> <span class="nf">pvoigt2d</span><span class="p">(</span>
     <span class="n">XY</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -223,6 +218,9 @@
 
 <span class="sd">        :param XY: meshgrid of X and Y coordinates [X,Y] each with shape Z</span>
 <span class="sd">        :type XY: numpy.array</span>
+
+<span class="sd">        :param amplitude: amplitude of peak</span>
+<span class="sd">        :type amplitude: float</span>
 
 <span class="sd">        :param center_x: center of peak in x</span>
 <span class="sd">        :type center_x: float</span>
@@ -261,7 +259,6 @@
     <span class="k">return</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">pv_x</span> <span class="o">*</span> <span class="n">pv_y</span></div>
 
 
-<span class="c1"># @jit(nopython=True)</span>
 <span class="k">def</span> <span class="nf">pv_l</span><span class="p">(</span>
     <span class="n">XY</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -297,7 +294,6 @@
     <span class="k">return</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">pv_x</span> <span class="o">*</span> <span class="n">pv_y</span>
 
 
-<span class="c1"># @jit(nopython=True)</span>
 <span class="k">def</span> <span class="nf">pv_g</span><span class="p">(</span>
     <span class="n">XY</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -332,7 +328,6 @@
     <span class="k">return</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">pv_x</span> <span class="o">*</span> <span class="n">pv_y</span>
 
 
-<span class="c1"># @jit(nopython=True)</span>
 <span class="k">def</span> <span class="nf">pv_pv</span><span class="p">(</span>
     <span class="n">XY</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -371,7 +366,6 @@
     <span class="k">return</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">pv_x</span> <span class="o">*</span> <span class="n">pv_y</span>
 
 
-<span class="c1"># @jit(nopython=True)</span>
 <span class="k">def</span> <span class="nf">gaussian_lorentzian</span><span class="p">(</span>
     <span class="n">XY</span><span class="p">,</span>
     <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -517,8 +511,12 @@
 
         <span class="k">if</span> <span class="n">lineshape</span> <span class="o">==</span> <span class="s2">&quot;V&quot;</span><span class="p">:</span>
             <span class="c1">#  Voigt G sigma from linewidth esimate</span>
-            <span class="n">param_dict</span><span class="p">[</span><span class="n">str_form</span><span class="p">(</span><span class="s2">&quot;sigma_x&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">peak</span><span class="o">.</span><span class="n">XW</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">log2</span><span class="p">))</span><span class="c1"># 3.6013</span>
-            <span class="n">param_dict</span><span class="p">[</span><span class="n">str_form</span><span class="p">(</span><span class="s2">&quot;sigma_y&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">peak</span><span class="o">.</span><span class="n">YW</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">log2</span><span class="p">))</span><span class="c1"># 3.6013</span>
+            <span class="n">param_dict</span><span class="p">[</span><span class="n">str_form</span><span class="p">(</span><span class="s2">&quot;sigma_x&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">peak</span><span class="o">.</span><span class="n">XW</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">log2</span><span class="p">)</span>
+            <span class="p">)</span>  <span class="c1"># 3.6013</span>
+            <span class="n">param_dict</span><span class="p">[</span><span class="n">str_form</span><span class="p">(</span><span class="s2">&quot;sigma_y&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">peak</span><span class="o">.</span><span class="n">YW</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">log2</span><span class="p">)</span>
+            <span class="p">)</span>  <span class="c1"># 3.6013</span>
             <span class="c1">#  Voigt L gamma from linewidth esimate</span>
             <span class="n">param_dict</span><span class="p">[</span><span class="n">str_form</span><span class="p">(</span><span class="s2">&quot;gamma_x&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">peak</span><span class="o">.</span><span class="n">XW</span> <span class="o">/</span> <span class="mf">2.0</span>
             <span class="n">param_dict</span><span class="p">[</span><span class="n">str_form</span><span class="p">(</span><span class="s2">&quot;gamma_y&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">peak</span><span class="o">.</span><span class="n">YW</span> <span class="o">/</span> <span class="mf">2.0</span>
@@ -702,7 +700,7 @@
         <span class="n">run_args</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys_argv</span><span class="p">)</span>
         <span class="n">time_stamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="n">time_stamp</span> <span class="o">=</span> <span class="n">time_stamp</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%A </span><span class="si">%d</span><span class="s2"> %B %Y at %H:%M&quot;</span><span class="p">)</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;# Script run on </span><span class="si">{time_stamp}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{run_args}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# Script run on </span><span class="si">{</span><span class="n">time_stamp</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{</span><span class="n">run_args</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="fit_first_plane"><a class="viewcode-back" href="../../usage/code.html#peakipy.core.fit_first_plane">[docs]</a><span class="k">def</span> <span class="nf">fit_first_plane</span><span class="p">(</span>
@@ -747,6 +745,9 @@
 
 <span class="sd">        :param noise: estimate of spectral noise for calculation of :math:`\chi^2` and :math:`\chi^2_{red}`</span>
 <span class="sd">        :type noise: float</span>
+
+<span class="sd">        :param fit_method: method used by lmfit</span>
+<span class="sd">        :type fit_method: str</span>
 
 <span class="sd">        :return: FitResult</span>
 <span class="sd">        :rtype: FitResult</span>
@@ -855,11 +856,11 @@
     <span class="n">chi2</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">chisqr</span>
     <span class="n">redchi</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">redchi</span>
 
-    <span class="n">fit_str</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    Cluster </span><span class="si">{peak.CLUSTID}</span><span class="s2"> containing </span><span class="si">{n_peaks}</span><span class="s2"> peaks - slope=</span><span class="si">{slope:.3f}</span><span class="s2"></span>
+    <span class="n">fit_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Cluster </span><span class="si">{</span><span class="n">peak</span><span class="o">.</span><span class="n">CLUSTID</span><span class="si">}</span><span class="s2"> containing </span><span class="si">{</span><span class="n">n_peaks</span><span class="si">}</span><span class="s2"> peaks - slope=</span><span class="si">{</span><span class="n">slope</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"></span>
 
-<span class="s2">        chi^2 = </span><span class="si">{chi2:.5f}</span><span class="s2"></span>
-<span class="s2">        redchi = </span><span class="si">{redchi:.5f}</span><span class="s2"></span>
+<span class="s2">        chi^2 = </span><span class="si">{</span><span class="n">chi2</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">        redchi = </span><span class="si">{</span><span class="n">redchi</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"></span>
 
 <span class="s2">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">slope</span> <span class="o">&gt;</span> <span class="mf">1.05</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">slope</span> <span class="o">&lt;</span> <span class="mf">0.95</span><span class="p">):</span>
@@ -870,7 +871,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">fit_str</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">log</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">60</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fit_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># pass</span>
@@ -902,7 +903,7 @@
 <span class="k">class</span> <span class="nc">FitResult</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot; Data structure for storing fit results &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">out</span><span class="p">:</span> <span class="n">ModelResult</span><span class="p">,</span>
         <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
@@ -969,26 +970,35 @@
 
         <span class="c1"># print(jk_results)</span>
         <span class="n">amps</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">sigmas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sigma_xs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sigma_ys</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;test_jackknife&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">jk_results</span><span class="p">:</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">fit_report</span><span class="p">())</span>
                 <span class="n">amp</span><span class="p">,</span> <span class="n">amp_err</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">get_params</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;amp&quot;</span><span class="p">)</span>
-                <span class="n">sigma</span><span class="p">,</span> <span class="n">sigma_err</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">get_params</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;sigma_x&quot;</span><span class="p">)</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{amp}</span><span class="s2">,</span><span class="si">{amp_err}</span><span class="s2">,</span><span class="si">{name}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigma_x_err</span><span class="p">,</span> <span class="n">name_x</span> <span class="o">=</span> <span class="n">get_params</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;sigma_x&quot;</span><span class="p">)</span>
+                <span class="n">sigma_y</span><span class="p">,</span> <span class="n">sigma_y_err</span><span class="p">,</span> <span class="n">name_y</span> <span class="o">=</span> <span class="n">get_params</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;sigma_y&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">amp</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">amp_err</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">name_y</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">amps</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">amp</span><span class="p">)</span>
-                <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-                <span class="n">sigmas</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">name_y</span><span class="p">)</span>
+                <span class="n">sigma_xs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sigma_x</span><span class="p">)</span>
+                <span class="n">sigma_ys</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sigma_y</span><span class="p">)</span>
 
-            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;amp&quot;</span><span class="p">:</span> <span class="n">amps</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">sigmas</span><span class="p">})</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;amp&quot;</span><span class="p">:</span> <span class="n">amps</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;sigma_x&quot;</span><span class="p">:</span> <span class="n">sigma_xs</span><span class="p">,</span> <span class="s2">&quot;sigma_y&quot;</span><span class="p">:</span> <span class="n">sigma_ys</span><span class="p">}</span>
+            <span class="p">)</span>
             <span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
             <span class="n">mean_amps</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="n">std_amps</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
-            <span class="n">mean_sigmas</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-            <span class="n">std_sigmas</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">mean_sigma_x</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">sigma_x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">std_sigma_x</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">sigma_x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">mean_sigma_y</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">sigma_y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">std_sigma_y</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">sigma_y</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;#####################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{mean_amps}</span><span class="s2">, </span><span class="si">{std_amps}</span><span class="s2">, </span><span class="si">{mean_sigmas}</span><span class="s2">, </span><span class="si">{std_sigmas}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_amps</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">std_amps</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">mean_sigma_x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">std_sigma_x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">mean_sigma_y</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">std_sigma_y</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">fit_report</span><span class="p">())</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;#####################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># print(amps)</span>
@@ -1003,7 +1013,7 @@
             <span class="n">plot_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">plot_path</span><span class="p">)</span>
             <span class="n">plot_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># plotting</span>
-            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
             <span class="c1"># slice out plot area</span>
             <span class="n">x_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_dics</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">ppm</span><span class="p">(</span>
@@ -1018,9 +1028,9 @@
 
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
                 <span class="s2">&quot;$\chi^2$=&quot;</span>
-                <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.out.chisqr:.3f}</span><span class="s2">, &quot;</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">chisqr</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, &quot;</span>
                 <span class="o">+</span> <span class="s2">&quot;$\chi_</span><span class="si">{red}</span><span class="s2">^2$=&quot;</span>
-                <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.out.redchi:.4f}</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">redchi</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
             <span class="n">residual</span> <span class="o">=</span> <span class="n">z_plot</span> <span class="o">-</span> <span class="n">z_sim</span>
@@ -1083,7 +1093,7 @@
 
             <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">CLUSTID</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">show</span> <span class="ow">and</span> <span class="n">nomp</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 
                 <span class="k">def</span> <span class="nf">exit_program</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
                     <span class="n">exit</span><span class="p">()</span>
@@ -1101,10 +1111,11 @@
 
                 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">Fore</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span>
-                    <span class="s2">&quot;Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag.&quot;</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
+                    <span class="o">+</span> <span class="s2">&quot;Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag.&quot;</span>
                 <span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{name}</span><span class="s2">.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
             <span class="c1">#    print(p_guess)</span>
             <span class="c1"># close plot</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1113,7 +1124,7 @@
 
 
 <span class="k">class</span> <span class="nc">JackKnifeResult</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="n">std</span>
 
@@ -1131,28 +1142,34 @@
 <span class="sd">       :type dims: list</span>
 <span class="sd">       &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">dims</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">dims</span><span class="p">):</span>
         <span class="c1"># check dimensions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_udic</span> <span class="o">=</span> <span class="n">ng</span><span class="o">.</span><span class="n">pipe</span><span class="o">.</span><span class="n">guess_udic</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ndim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_udic</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">err</span> <span class="o">=</span> <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            ##########################################</span>
 <span class="s2">                NMR Data should be either 2D or 3D</span>
 <span class="s2">            ##########################################</span>
 <span class="s2">            &quot;&quot;&quot;</span>
+            <span class="p">)</span>
             <span class="c1"># raise TypeError(err)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 
         <span class="c1"># check that spectrum has correct number of dims</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ndim</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
-            <span class="n">err</span> <span class="o">=</span> <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            #################################################################</span>
-<span class="s2">               Your spectrum has </span><span class="si">{self._ndim}</span><span class="s2"> dimensions with shape </span><span class="si">{data.shape}</span><span class="s2"></span>
-<span class="s2">               but you have given a dimension order of </span><span class="si">{dims}</span><span class="s2">...</span>
+<span class="s2">               Your spectrum has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_ndim</span><span class="si">}</span><span class="s2"> dimensions with shape </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">               but you have given a dimension order of </span><span class="si">{</span><span class="n">dims</span><span class="si">}</span><span class="s2">...</span>
 <span class="s2">            #################################################################</span>
 <span class="s2">            &quot;&quot;&quot;</span>
+            <span class="p">)</span>
             <span class="c1"># raise ValueError(err)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 
@@ -1235,6 +1252,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_planes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">planes</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -1311,6 +1332,22 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_f1</span><span class="o">.</span><span class="n">ppm_limits</span><span class="p">()</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f1_ppm_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f1_ppm_limits</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f1_ppm_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f1_ppm_limits</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f2_ppm_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f2_ppm_limits</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f2_ppm_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f2_ppm_limits</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">f2_ppm_0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f2_ppm_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -1356,7 +1393,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">,</span>
         <span class="n">data_path</span><span class="p">,</span>
@@ -1492,7 +1529,11 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">thres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">threshold_otsu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span>
 
     <span class="k">def</span> <span class="nf">update_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># int point value</span>
@@ -1538,10 +1579,29 @@
         <span class="c1"># check that peaks are within the bounds of the data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_peak_bounds</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="nf">add_fix_bound_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; add columns containing parameter bounds (param_upper/param_lower)</span>
+<span class="sd">            and whether or not parameter should be fixed (yes/no)</span>
+
+<span class="sd">            For parameter bounding:</span>
+
+<span class="sd">                Column names are &lt;param_name&gt;_upper and &lt;param_name&gt;_lower for upper and lower bounds respectively.</span>
+<span class="sd">                Values are given as floating point. Value of 0.0 indicates that parameter is unbounded</span>
+<span class="sd">                X/Y positions are given in ppm</span>
+<span class="sd">                Linewidths are given in Hz</span>
+
+<span class="sd">            For parameter fixing:</span>
+
+<span class="sd">                Column names are &lt;param_name&gt;_fix.</span>
+<span class="sd">                Values are given as a string &#39;yes&#39; or &#39;no&#39;</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
     <span class="k">def</span> <span class="nf">_read_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peaklist_path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">new_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">analysis_to_pipe</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">new_columns</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_to_pipe_dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
         <span class="n">pipe_columns</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">new_columns</span><span class="p">))</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">pipe_columns</span><span class="p">)</span>
 
@@ -1555,6 +1615,7 @@
             <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ASS&quot;</span><span class="p">,</span> <span class="s2">&quot;Y_PPM&quot;</span><span class="p">,</span> <span class="s2">&quot;X_PPM&quot;</span><span class="p">,</span> <span class="s2">&quot;VOLUME&quot;</span><span class="p">,</span> <span class="s2">&quot;HEIGHT&quot;</span><span class="p">,</span> <span class="s2">&quot;YW_HZ&quot;</span><span class="p">,</span> <span class="s2">&quot;XW_HZ&quot;</span><span class="p">],</span>
         <span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;INDEX&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
 
         <span class="k">return</span> <span class="n">df</span>
 
@@ -1590,7 +1651,7 @@
                 <span class="p">)</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">duplicates_bool</span><span class="p">,</span> <span class="s2">&quot;ASS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">f</span><span class="s2">&quot;</span><span class="si">{i}</span><span class="s2">_dummy_{num+1}&quot;</span> <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">duplicates</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_dummy_</span><span class="si">{</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">duplicates</span><span class="p">)</span>
             <span class="p">]</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here are the duplicates&quot;</span><span class="p">)</span>
@@ -1608,27 +1669,27 @@
 
     <span class="k">def</span> <span class="nf">check_peak_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># check that peaks are within the bounds of spectrum</span>
-        <span class="n">within_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_AXIS</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">f2_size</span>
-        <span class="n">within_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_AXIS</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">f1_size</span>
+        <span class="n">within_x</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_PPM</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">f2_ppm_max</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_PPM</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">f2_ppm_min</span><span class="p">)</span>
+        <span class="n">within_y</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_PPM</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">f1_ppm_max</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_PPM</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">f1_ppm_min</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">excluded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">within_x</span> <span class="o">&amp;</span> <span class="n">within_y</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">within_x</span> <span class="o">&amp;</span> <span class="n">within_y</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">excluded</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
                 <span class="o">+</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span>
-                    <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">                    #################################################################################</span>
 
 <span class="s2">                    Excluding the following peaks as they are not within the spectrum which has shape </span>
 
-<span class="s2">                    </span><span class="si">{self.data.shape}</span><span class="s2"></span>
+<span class="s2">                    </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"></span>
 <span class="s2">                &quot;&quot;&quot;</span>
                 <span class="p">)</span>
             <span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
-                <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">{tabulate(self.excluded[[&quot;INDEX&quot;,&quot;ASS&quot;,&quot;X_AXIS&quot;,&quot;Y_AXIS&quot;,&quot;X_PPM&quot;,&quot;Y_PPM&quot;]],headers=&quot;keys&quot;, tablefmt=&quot;fancy_grid&quot;)}</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="si">{</span><span class="n">tabulate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">excluded</span><span class="p">[[</span><span class="s2">&quot;INDEX&quot;</span><span class="p">,</span><span class="s2">&quot;ASS&quot;</span><span class="p">,</span><span class="s2">&quot;X_AXIS&quot;</span><span class="p">,</span><span class="s2">&quot;Y_AXIS&quot;</span><span class="p">,</span><span class="s2">&quot;X_PPM&quot;</span><span class="p">,</span><span class="s2">&quot;Y_PPM&quot;</span><span class="p">]],</span><span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;fancy_grid&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2"></span>
 <span class="s2">                &quot;&quot;&quot;</span>
             <span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
@@ -1656,6 +1717,7 @@
         <span class="n">peaks</span> <span class="o">=</span> <span class="p">[[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_AXIS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_AXIS</span><span class="p">)]</span>
 
         <span class="k">if</span> <span class="n">thres</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">thres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thres</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">threshold_otsu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span> <span class="o">=</span> <span class="n">thres</span>
@@ -1668,26 +1730,26 @@
         <span class="k">if</span> <span class="n">struc_el</span> <span class="o">==</span> <span class="s2">&quot;disk&quot;</span><span class="p">:</span>
             <span class="n">radius</span> <span class="o">=</span> <span class="n">struc_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;using disk with </span><span class="si">{radius}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using disk with </span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">closed_data</span> <span class="o">=</span> <span class="n">binary_closing</span><span class="p">(</span><span class="n">thresh_data</span><span class="p">,</span> <span class="n">disk</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">radius</span><span class="p">)))</span>
 
         <span class="k">elif</span> <span class="n">struc_el</span> <span class="o">==</span> <span class="s2">&quot;square&quot;</span><span class="p">:</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">struc_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;using square with </span><span class="si">{width}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using square with </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">closed_data</span> <span class="o">=</span> <span class="n">binary_closing</span><span class="p">(</span><span class="n">thresh_data</span><span class="p">,</span> <span class="n">square</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">width</span><span class="p">)))</span>
 
         <span class="k">elif</span> <span class="n">struc_el</span> <span class="o">==</span> <span class="s2">&quot;rectangle&quot;</span><span class="p">:</span>
             <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">struc_size</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;using rectangle with </span><span class="si">{width}</span><span class="s2"> and </span><span class="si">{height}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using rectangle with </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">closed_data</span> <span class="o">=</span> <span class="n">binary_closing</span><span class="p">(</span>
                 <span class="n">thresh_data</span><span class="p">,</span> <span class="n">rectangle</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">width</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">height</span><span class="p">))</span>
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Not using any closing function&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not using any closing function&quot;</span><span class="p">)</span>
             <span class="n">closed_data</span> <span class="o">=</span> <span class="n">thresh_data</span>
 
         <span class="n">labeled_array</span><span class="p">,</span> <span class="n">num_features</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">closed_data</span><span class="p">,</span> <span class="n">l_struc</span><span class="p">)</span>
@@ -1784,7 +1846,7 @@
     <span class="k">def</span> <span class="nf">to_fuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s2">&quot;params.fuda&quot;</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;peaks.fuda&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">peaks_fuda</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">ass</span><span class="p">,</span> <span class="n">f1_ppm</span><span class="p">,</span> <span class="n">f2_ppm</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">ASS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_PPM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_PPM</span><span class="p">):</span>
-                <span class="n">peaks_fuda</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{ass}</span><span class="se">\t</span><span class="si">{f1_ppm:.3f}</span><span class="se">\t</span><span class="si">{f2_ppm:.3f}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">peaks_fuda</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ass</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">f1_ppm</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">f2_ppm</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;CLUSTID&quot;</span><span class="p">)</span>
         <span class="n">fuda_params</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="n">overlap_peaks</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -1792,32 +1854,32 @@
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">overlap_peaks_str</span> <span class="o">=</span> <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">ASS</span><span class="p">)</span>
-                <span class="n">overlap_peaks</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&quot;OVERLAP_PEAKS=(</span><span class="si">{overlap_peaks_str}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">overlap_peaks</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;OVERLAP_PEAKS=(</span><span class="si">{</span><span class="n">overlap_peaks_str</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="n">fuda_file</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span>
-            <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s2">            </span>
 <span class="s2"># Read peaklist and spectrum info</span>
 <span class="s2">PEAKLIST=peaks.fuda</span>
-<span class="s2">SPECFILE=</span><span class="si">{self.data_path}</span><span class="s2"></span>
+<span class="s2">SPECFILE=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="si">}</span><span class="s2"></span>
 <span class="s2">PARAMETERFILE=(bruker;vclist)</span>
 <span class="s2">ZCORR=ncyc</span>
-<span class="s2">NOISE=</span><span class="si">{self.thres}</span><span class="s2"> # you&#39;ll need to adjust this</span>
+<span class="s2">NOISE=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">thres</span><span class="si">}</span><span class="s2"> # you&#39;ll need to adjust this</span>
 <span class="s2">BASELINE=N</span>
 <span class="s2">VERBOSELEVEL=5</span>
 <span class="s2">PRINTDATA=Y</span>
 <span class="s2">LM=(MAXFEV=250;TOL=1e-5)</span>
 <span class="s2">#Specify the default values. All values are in ppm:</span>
-<span class="s2">DEF_LINEWIDTH_F1=</span><span class="si">{self.f1_radius}</span><span class="s2"></span>
-<span class="s2">DEF_LINEWIDTH_F2=</span><span class="si">{self.f2_radius}</span><span class="s2"></span>
-<span class="s2">DEF_RADIUS_F1=</span><span class="si">{self.f1_radius}</span><span class="s2"></span>
-<span class="s2">DEF_RADIUS_F2=</span><span class="si">{self.f2_radius}</span><span class="s2"></span>
+<span class="s2">DEF_LINEWIDTH_F1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f1_radius</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">DEF_LINEWIDTH_F2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f2_radius</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">DEF_RADIUS_F1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f1_radius</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">DEF_RADIUS_F2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f2_radius</span><span class="si">}</span><span class="s2"></span>
 <span class="s2">SHAPE=GLORE</span>
 <span class="s2"># OVERLAP PEAKS</span>
-<span class="si">{overlap_peaks}</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="si">{</span><span class="n">overlap_peaks</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span>
         <span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fuda_params</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Writing FuDA file </span><span class="si">{fuda_file}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing FuDA file </span><span class="si">{</span><span class="n">fuda_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fuda_file</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">overlap_peaks</span><span class="p">)</span>
@@ -1825,7 +1887,8 @@
 
 <span class="k">class</span> <span class="nc">ClustersResult</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot; Class to store results of clusters function &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labeled_array</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">closed_data</span><span class="p">,</span> <span class="n">peaks</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labeled_array</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">closed_data</span><span class="p">,</span> <span class="n">peaks</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_array</span> <span class="o">=</span> <span class="n">labeled_array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_features</span> <span class="o">=</span> <span class="n">num_features</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_closed_data</span> <span class="o">=</span> <span class="n">closed_data</span>
@@ -1868,6 +1931,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peaklist_path</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thres</span> <span class="o">=</span> <span class="n">threshold_otsu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
 
     <span class="k">def</span> <span class="nf">check_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1901,6 +1966,51 @@
         <span class="n">unnamed_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;Unnamed:&quot;</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">unnamed_cols</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">update_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Slightly modified to retain previous configurations &quot;&quot;&quot;</span>
+        <span class="c1"># int point value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;X_AXIS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_PPM</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_f2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Y_AXIS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_PPM</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">))</span>
+        <span class="c1"># decimal point value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;X_AXISf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_PPM</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_f2</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Y_AXISf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_PPM</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_f1</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">))</span>
+        <span class="c1"># in case of missing values (should estimate though)</span>
+        <span class="c1"># self.df.XW_HZ.replace(&quot;None&quot;, &quot;20.0&quot;, inplace=True)</span>
+        <span class="c1"># self.df.YW_HZ.replace(&quot;None&quot;, &quot;20.0&quot;, inplace=True)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">XW_HZ</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="s2">&quot;20.0&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">YW_HZ</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="s2">&quot;20.0&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># convert linewidths to float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;XW_HZ&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">XW_HZ</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;YW_HZ&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">YW_HZ</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1"># convert Hz lw to points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;XW&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">XW_HZ</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pt_per_hz_f2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;YW&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">YW_HZ</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pt_per_hz_f1</span><span class="p">)</span>
+        <span class="c1"># makes an assignment column</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmt</span> <span class="o">==</span> <span class="s2">&quot;a2&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ASS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;Assign F1&quot;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s2">&quot;Assign F2&quot;</span><span class="p">]]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+
+        <span class="c1"># make default values for X and Y radii for fit masks</span>
+        <span class="c1"># self.df[&quot;X_RADIUS_PPM&quot;] = np.zeros(len(self.df)) + self.f2_radius</span>
+        <span class="c1"># self.df[&quot;Y_RADIUS_PPM&quot;] = np.zeros(len(self.df)) + self.f1_radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;X_RADIUS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">X_RADIUS_PPM</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pt_per_ppm_f2</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Y_RADIUS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">Y_RADIUS_PPM</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pt_per_ppm_f1</span>
+        <span class="p">)</span>
+        <span class="c1"># add include column</span>
+        <span class="k">if</span> <span class="s2">&quot;include&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;include&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># check assignments for duplicates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_assignments</span><span class="p">()</span>
+        <span class="c1"># check that peaks are within the bounds of the data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_peak_bounds</span><span class="p">()</span>
+
 
 <span class="k">def</span> <span class="nf">read_config</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;peakipy.config&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; read a peakipy config file, extract params and update args dict</span>
@@ -1921,7 +2031,7 @@
     <span class="k">if</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">Fore</span><span class="o">.</span><span class="n">GREEN</span> <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;Using config file with --dims={config.get(&#39;--dims&#39;)}&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">Fore</span><span class="o">.</span><span class="n">GREEN</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Using config file with --dims=</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;--dims&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">args</span><span class="p">[</span><span class="s2">&quot;--dims&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;--dims&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
             <span class="n">noise</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;noise&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">noise</span><span class="p">:</span>
@@ -1929,14 +2039,21 @@
 
             <span class="n">colors</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;--colors&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;#5e3c99&quot;</span><span class="p">,</span> <span class="s2">&quot;#e66101&quot;</span><span class="p">])</span>
         <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">Fore</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="s2">&quot;Your peakipy.config file is corrupted - maybe your JSON is not correct...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
+                <span class="o">+</span> <span class="s2">&quot;Your peakipy.config file is corrupted - maybe your JSON is not correct...&quot;</span>
+            <span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">Fore</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="s2">&quot;Not using&quot;</span><span class="p">)</span>
             <span class="n">noise</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">colors</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;--colors&quot;</span><span class="p">,</span> <span class="s2">&quot;#5e3c99,#e66101&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">Fore</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="s2">&quot;No peakipy.config found&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="n">Fore</span><span class="o">.</span><span class="n">RED</span>
+            <span class="o">+</span> <span class="s2">&quot;No peakipy.config found - maybe you need to generate one with peakipy read or see docs&quot;</span>
+        <span class="p">)</span>
         <span class="n">noise</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">colors</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;--colors&quot;</span><span class="p">,</span> <span class="s2">&quot;#5e3c99,#e66101&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">args</span><span class="p">[</span><span class="s2">&quot;noise&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">noise</span>
     <span class="n">args</span><span class="p">[</span><span class="s2">&quot;colors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">colors</span>
@@ -2000,7 +2117,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -2017,7 +2134,7 @@
       &copy;2019, Jacob Peter Brady.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
