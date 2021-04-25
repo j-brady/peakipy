@@ -28,6 +28,13 @@
 
         --vclist=<fname>                            Bruker style vclist [default: None]
 
+        --sorted                                    Data planes were sorted using sortPlanes.com and tauList [default: False]
+                                                    NMRPipe conversion scripts can be configured to reorder the planes.
+                                                    By default peakipy will assume that planes are in the order specified by the
+                                                    vclist.
+                                                    If this flag is activated then the vclist is sorted from smallest to largest
+                                                       
+
         --plane=<int>                               Specific plane(s) to fit [default: -1]
                                                     eg. --plane=1 or --plane=1,4,5
 
@@ -657,7 +664,11 @@ def main(arguments):
     vclist = args.get("--vclist")
     if type(vclist) == np.ndarray:
         vclist_data = vclist
-        args["vclist_data"] = vclist_data
+        # if sorted planes then return the sorted vclist
+        if args.get("--sorted"):
+            args["vclist_data"] = np.sort(vclist_data)
+        else:
+            args["vclist_data"] = vclist_data
         vclist = True
     else:
         vclist = False

@@ -181,6 +181,19 @@ If you have a ``vclist`` style file containing your delay values then you can ru
 
 This will result in an extra column being added to your ``fits.csv`` file called ``vclist`` containing the corresponding delay values.
 
+Note on vclists and plane ordering
+++++++++++++++++++++++++++++++++++
+
+In recent versions of NMRPipe, the automatically generated ``fid.com`` file from the ``bruker`` graphical conversion interface includes code to  reorder the planes in your pseudo 3D NMR spectrum (i.e. ``sortPlanes.com`` is called with your tau list). If you run peakipy using this reordered data and your original vclist then your planes will be incorrectly ordered with respect to your ``vclist``. This can be remedied in any of  the following ways:
+
+1. Reorder your vclist to reflect the actual order of your planes after running the ``bruker`` conversion script.
+2. Include the ``--sorted`` flag when running ``peakipy fit`` in order to sort the input ``vclist`` on the fly.
+3. Remove the call to ``sortPlanes.com`` from your ``fid.com`` conversion script and then call ``peakipy fit`` as shown above with your original ``vclist``
+
+Below is an example of how you would run ``peakipy fit`` if you have pre-sorted  your data ::
+
+        peakipy fit edited_peaks.csv test.ft2 fits.csv --dims=0,1,2 --lineshape=PV --vclist=vclist --sorted
+
 Checking fits
 -------------
 

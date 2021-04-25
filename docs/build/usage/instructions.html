@@ -4,15 +4,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Instructions &#8212; peakipy 0.1.16 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Examples" href="examples.html" />
@@ -135,7 +134,7 @@ If you want to edit this plot after running <code class="docutils literal notran
 </pre></div>
 </div>
 <p>This command will start a <code class="docutils literal notranslate"><span class="pre">bokeh</span></code> server and cause a tab to open in your internet browser in which you can interactively edit peak fitting parameters.</p>
-<img alt="../_images/bokeh1.png" src="../_images/bokeh1.png" />
+<img alt="../_images/bokeh.png" src="../_images/bokeh.png" />
 <p>Use the table on the right to select the cluster(s) you are interested and double click to edit values in the table.
 For example if you think peak1 should be fitted with peak2 but they have different clustids then you can simply change peak2’s clustid to match peak1’s.</p>
 <p>Once a set of peaks is selected (or at least one peak within a cluster) you can manually adjust their starting
@@ -175,6 +174,19 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p>This will result in an extra column being added to your <code class="docutils literal notranslate"><span class="pre">fits.csv</span></code> file called <code class="docutils literal notranslate"><span class="pre">vclist</span></code> containing the corresponding delay values.</p>
+<div class="section" id="note-on-vclists-and-plane-ordering">
+<h3>Note on vclists and plane ordering<a class="headerlink" href="#note-on-vclists-and-plane-ordering" title="Permalink to this headline">¶</a></h3>
+<p>In recent versions of NMRPipe, the automatically generated <code class="docutils literal notranslate"><span class="pre">fid.com</span></code> file from the <code class="docutils literal notranslate"><span class="pre">bruker</span></code> graphical conversion interface includes code to  reorder the planes in your pseudo 3D NMR spectrum (i.e. <code class="docutils literal notranslate"><span class="pre">sortPlanes.com</span></code> is called with your tau list). If you run peakipy using this reordered data and your original vclist then your planes will be incorrectly ordered with respect to your <code class="docutils literal notranslate"><span class="pre">vclist</span></code>. This can be remedied in any of  the following ways:</p>
+<ol class="arabic simple">
+<li><p>Reorder your vclist to reflect the actual order of your planes after running the <code class="docutils literal notranslate"><span class="pre">bruker</span></code> conversion script.</p></li>
+<li><p>Include the <code class="docutils literal notranslate"><span class="pre">--sorted</span></code> flag when running <code class="docutils literal notranslate"><span class="pre">peakipy</span> <span class="pre">fit</span></code> in order to sort the input <code class="docutils literal notranslate"><span class="pre">vclist</span></code> on the fly.</p></li>
+<li><p>Remove the call to <code class="docutils literal notranslate"><span class="pre">sortPlanes.com</span></code> from your <code class="docutils literal notranslate"><span class="pre">fid.com</span></code> conversion script and then call <code class="docutils literal notranslate"><span class="pre">peakipy</span> <span class="pre">fit</span></code> as shown above with your original <code class="docutils literal notranslate"><span class="pre">vclist</span></code></p></li>
+</ol>
+<p>Below is an example of how you would run <code class="docutils literal notranslate"><span class="pre">peakipy</span> <span class="pre">fit</span></code> if you have pre-sorted  your data</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peakipy</span> <span class="n">fit</span> <span class="n">edited_peaks</span><span class="o">.</span><span class="n">csv</span> <span class="n">test</span><span class="o">.</span><span class="n">ft2</span> <span class="n">fits</span><span class="o">.</span><span class="n">csv</span> <span class="o">--</span><span class="n">dims</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="o">--</span><span class="n">lineshape</span><span class="o">=</span><span class="n">PV</span> <span class="o">--</span><span class="n">vclist</span><span class="o">=</span><span class="n">vclist</span> <span class="o">--</span><span class="nb">sorted</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="checking-fits">
 <h2>Checking fits<a class="headerlink" href="#checking-fits" title="Permalink to this headline">¶</a></h2>
@@ -316,7 +328,7 @@ list at a later stage then run <code class="docutils literal notranslate"><span 
       &copy;2019, Jacob Peter Brady.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
