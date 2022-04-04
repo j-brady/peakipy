@@ -77,7 +77,7 @@ from peakipy.core import Pseudo3D
 def clusters(
     df, data, thres=None, struc_el="square", struc_size=(3,), iterations=1, l_struc=None
 ):
-    """ Find clusters of peaks
+    """Find clusters of peaks
 
     Need to update these docs.
 

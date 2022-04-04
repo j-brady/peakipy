@@ -91,7 +91,7 @@ columns_to_print = [
 
 
 def check_input(args):
-    """ validate commandline input """
+    """validate commandline input"""
     schema = Schema(
         {
             "<fits>": And(

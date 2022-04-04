@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<_StorageUnit time="Sun Apr  3 15:55:16 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2007-04-03-19:08:10_00001" originator="CCPN Python XmlIO">
+
+<DLOC.DataLocationStore _ID="1" _lastId="15" createdBy="user" guid="default_user_2022-04-03-11-03-25-911_00001">
+  <DLOC.DataLocationStore.dataStores>
+    <DLOC.BlockedBinaryMatrix _ID="6" fileType="NMRPipe" headerSize="2048" isBigEndian="false" serial="1">
+      <DLOC.BlockedBinaryMatrix.blockSizes> 546 1 1</DLOC.BlockedBinaryMatrix.blockSizes>
+      <DLOC.NumericMatrix.isComplex> false false false</DLOC.NumericMatrix.isComplex>
+      <DLOC.NumericMatrix.numPoints> 546 256 4</DLOC.NumericMatrix.numPoints>
+      <DLOC.AbstractDataStore.path>
+        <IMPL.PathString>test1.ft2</IMPL.PathString>
+      </DLOC.AbstractDataStore.path>
+    </DLOC.BlockedBinaryMatrix>
+    <DLOC.BlockedBinaryMatrix _ID="8" fileType="NMRPipe" headerSize="2048" isBigEndian="false" serial="2">
+      <DLOC.BlockedBinaryMatrix.blockSizes> 546 1</DLOC.BlockedBinaryMatrix.blockSizes>
+      <DLOC.NumericMatrix.isComplex> false false</DLOC.NumericMatrix.isComplex>
+      <DLOC.NumericMatrix.numPoints> 546 256</DLOC.NumericMatrix.numPoints>
+      <DLOC.AbstractDataStore.path>
+        <IMPL.PathString>test1_projection_H_N.dat</IMPL.PathString>
+      </DLOC.AbstractDataStore.path>
+    </DLOC.BlockedBinaryMatrix>
+  </DLOC.DataLocationStore.dataStores>
+  <DLOC.DataLocationStore.dataUrls>
+    <DLOC.DataUrl _ID="2" serial="1">
+      <DLOC.DataUrl.name>
+        <IMPL.Line>insideData</IMPL.Line>
+      </DLOC.DataUrl.name>
+      <DLOC.DataUrl.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady/src/python/peakipy/test/test_protein_L/tmp.ccpn</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </DLOC.DataUrl.url>
+    </DLOC.DataUrl>
+    <DLOC.DataUrl _ID="3" serial="2">
+      <DLOC.DataUrl.name>
+        <IMPL.Line>alongsideData</IMPL.Line>
+      </DLOC.DataUrl.name>
+      <DLOC.DataUrl.dataStores> 8 6</DLOC.DataUrl.dataStores>
+      <DLOC.DataUrl.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady/src/python/peakipy/test/test_protein_L</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </DLOC.DataUrl.url>
+    </DLOC.DataUrl>
+    <DLOC.DataUrl _ID="4" serial="3">
+      <DLOC.DataUrl.name>
+        <IMPL.Line>remoteData</IMPL.Line>
+      </DLOC.DataUrl.name>
+      <DLOC.DataUrl.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </DLOC.DataUrl.url>
+    </DLOC.DataUrl>
+  </DLOC.DataLocationStore.dataUrls>
+</DLOC.DataLocationStore>
+
+</_StorageUnit>
+<!--End of Memops Data-->

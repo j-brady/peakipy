@@ -7,24 +7,28 @@ Here are instructions for installing peakipy.
 Installation
 ------------
 
-I recommend using a virtual environment
+I recommend using a virtual environment::
+        
+        python3 -m venv peakipy_venv
 
-``python3 -m venv peakipy_venv``
 
-Then activate
+Then activate (bash)::
+        
+        source peakipy_venv/bin/activate
 
-``source peakipy_venv/bin/activate`` if using bash
+or (csh)::
+        
+        source peakipy_venv/bin/activate.csh
+        
 
-or 
-
-``source peakipy_venv/bin/activate.csh`` if using c-shell
-
-Once activated you can install peakipy... 
+Once activated you can install peakipy in any of the following ways. 
 
 With pip
 ^^^^^^^^
+::
 
-``pip install peakipy``
+        pip install peakipy
+
 
 Below is an example of an installation script and a basic use case ::
 
@@ -61,22 +65,26 @@ Run this above code by sourcing the file e.g. ``source file_containing_commands`
 With poetry
 ^^^^^^^^^^^
 
-Clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
+Clone the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github::
 
-``cd peakipy; poetry install``
+        git clone https://github.com/j-brady/peakipy.git
+        cd peakipy; poetry install
 
-If you don't have poetry you can install it with the following command
 
-``curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python``
+If you don't have poetry you can install it with the following command::
+
+        curl -sSL https://install.python-poetry.org | python3 -
+
 
 Otherwise refer to the `poetry documentation <https://poetry.eustace.io/docs/>`_ for more details.
+
 
 With setup.py
 ^^^^^^^^^^^^^
 
-After cloning the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.
-
-``cd peakipy; python setup.py install``
+After cloning the `peakipy <https://github.com/j-brady/peakipy>`_ repository from github.::
+        
+        cd peakipy; python setup.py install
 
 
 At this point the package should be installed and the main scripts (``peakipy read``, ``peakipy edit``, ``peakipy fit`` and ``peakipy check``) should have been added to your path.

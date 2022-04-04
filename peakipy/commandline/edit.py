@@ -103,7 +103,7 @@ class BokehScript:
         self.setup_plot()
 
     def init(self, doc):
-        """ initialise the bokeh app """
+        """initialise the bokeh app"""
 
         doc.add_root(
             column(
@@ -213,7 +213,7 @@ class BokehScript:
         self.exit_button.on_event(ButtonClick, self.exit_edit_peaks)
 
     def setup_plot(self):
-        """" code to setup the bokeh plots """
+        """ " code to setup the bokeh plots"""
         #  make bokeh figure
         tools = [
             "tap",
@@ -869,7 +869,7 @@ def get_contour_data(data, levels, **kwargs):
 
 
 def check_input(args):
-    """ validate commandline input """
+    """validate commandline input"""
     schema = Schema(
         {
             "<peaklist>": And(

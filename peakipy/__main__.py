@@ -2,7 +2,7 @@ __all__ = ("main",)
 
 
 def main():
-    """ execute main peakipy script """
+    """execute main peakipy script"""
     import sys
     from peakipy.commandline.peakipy import main as _main
 

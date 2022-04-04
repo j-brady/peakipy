@@ -2,7 +2,26 @@
 Instructions
 ============
 
-First you need a peak list in either Sparky, Analysis2 or NMRPipe format.
+First you need a peak list in either Sparky, Analysis2, CCPNMRv3 (assign) or NMRPipe format.
+
+CCPNMRv3 (assign) peak list
+---------------------------
+
+Example of a tab delimited peak table exported directly from CCPNMRv3 assign::
+        
+        #	Pid	Spectrum	PeakList	Id	Assign F1	Assign F2	Pos F1	Pos F2	LW F1 (Hz)	LW F2 (Hz)	Height	HeightError	Volume	VolumeError	Merit	Annotation	Comment
+        0	1	PK:test1_projection_H_N.1.1	test1_projection_H_N	1	1			10.380684043013412	129.32603752049937	14.179313120050438	18.675223392932594	66224788.0		None		1.0		
+        1	2	PK:test1_projection_H_N.1.2	test1_projection_H_N	1	2			9.335853185661527	129.6732286432531	14.962974392261438	18.644570222511447	39807284.0		None		1.0		
+        2	3	PK:test1_projection_H_N.1.3	test1_projection_H_N	1	3			9.185077855609203	128.66553436519882	13.786411378949163	18.70449353638719	56258792.0		None		1.0		
+
+
+Note that empty ``Assign F1`` and ``Assign F2`` column rows will be replaced with dummy labels. Duplicated assignments will also be appended with dummy labels.
+This table can be exported from CCPNMRv3 assign by opening your peak list of interest as a module with the following steps:
+
+- select peaks (Ctrl/Cmd + a)
+- right click and select ``Export All Columns``
+- Save in `.tsv` format (tab separated) by using the dropdown for `Files of type:`.
+
 
 Analysis2 peak list
 -------------------

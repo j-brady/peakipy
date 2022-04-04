@@ -2,13 +2,14 @@
 """ Read NMRPipe/Analysis peaklist into pandas dataframe
 
     Usage:
-        read <peaklist> <data> (--a2|--sparky|--pipe|--peakipy) [options]
+        read <peaklist> <data> (--a2|--a3|--sparky|--pipe|--peakipy) [options]
 
     Arguments:
-        <peaklist>                Analysis2/Sparky/NMRPipe peak list (see below)
+        <peaklist>                Analysis2/CCPNMRv3(assign)/Sparky/NMRPipe peak list (see below)
         <data>                    2D or pseudo3D NMRPipe data
 
         --a2                      Analysis peaklist as input (tab delimited)
+        --a3                      CCPNMR v3 peaklist as input (tab delimited)
         --sparky                  Sparky peaklist as input
         --pipe                    NMRPipe peaklist as input
         --peakipy                 peakipy peaklist.csv or .tab (originally output from peakipy read or edit)
@@ -49,6 +50,7 @@
     Examples:
         peakipy read test.tab test.ft2 --pipe --dims0,1
         peakipy read test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
+        peakipy read ccpnTable.tsv test.ft2 --a3 --f1radius=0.3 --f2radius=0.03
         peakipy read test.csv test.ft2 --peakipy --dims=0,1,2
 
     Description:
@@ -196,6 +198,15 @@ def main(argv):
             posF2=posF2,
         )
         # peaks.adaptive_clusters(block_size=151,offset=0)
+
+    elif args.get("--a3"):
+        peaks = Peaklist(
+            filename,
+            pipe_ft_file,
+            fmt="a3",
+            dims=dims,
+            radii=[f2radius, f1radius],
+        )
 
     elif args.get("--sparky"):
 

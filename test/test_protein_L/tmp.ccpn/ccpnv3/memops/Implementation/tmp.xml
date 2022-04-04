@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<_StorageUnit time="Sun Apr  3 19:48:29 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2006-08-16-14:22:53_00025" originator="CCPN Python XmlIO">
+
+<IMPL.MemopsRoot _ID="1" _lastId="43" createdBy="user" name="tmp">
+  <IMPL.MemopsRoot.repositories>
+    <IMPL.Repository _ID="3">
+      <IMPL.Repository.name>
+        <IMPL.Line>backup</IMPL.Line>
+      </IMPL.Repository.name>
+      <IMPL.Repository.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady/src/python/peakipy/test/test_protein_L/tmp_backup.ccpn</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </IMPL.Repository.url>
+    </IMPL.Repository>
+    <IMPL.Repository _ID="5">
+      <IMPL.Repository.name>
+        <IMPL.Line>generalData</IMPL.Line>
+      </IMPL.Repository.name>
+      <IMPL.Repository.stored> 14</IMPL.Repository.stored>
+      <IMPL.Repository.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady/.ccpn/data</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </IMPL.Repository.url>
+    </IMPL.Repository>
+    <IMPL.Repository _ID="4">
+      <IMPL.Repository.name>
+        <IMPL.Line>refData</IMPL.Line>
+      </IMPL.Repository.name>
+      <IMPL.Repository.stored> 13 14 7 6 8 9 10 11 12</IMPL.Repository.stored>
+      <IMPL.Repository.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady/Software/ccpnmr3.0.4/src/python/ccpnmodel/data</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </IMPL.Repository.url>
+    </IMPL.Repository>
+    <IMPL.Repository _ID="2">
+      <IMPL.Repository.name>
+        <IMPL.Line>userData</IMPL.Line>
+      </IMPL.Repository.name>
+      <IMPL.Repository.stored> 15 7 6 8 9 12</IMPL.Repository.stored>
+      <IMPL.Repository.url>
+        <IMPL.Url>
+          <IMPL.Url.path>
+            <IMPL.PathString>/home/j-brady/src/python/peakipy/test/test_protein_L/tmp.ccpn</IMPL.PathString>
+          </IMPL.Url.path>
+        </IMPL.Url>
+      </IMPL.Repository.url>
+    </IMPL.Repository>
+  </IMPL.MemopsRoot.repositories>
+  <IMPL.MemopsRoot.packageLocators>
+    <IMPL.PackageLocator _ID="15">
+      <IMPL.PackageLocator.repositories> 2</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="6" targetName="ccp.molecule.ChemComp">
+      <IMPL.PackageLocator.repositories> 2 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="7" targetName="ccp.molecule.ChemCompCharge">
+      <IMPL.PackageLocator.repositories> 2 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="8" targetName="ccp.molecule.ChemCompCoord">
+      <IMPL.PackageLocator.repositories> 2 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="9" targetName="ccp.molecule.ChemCompLabel">
+      <IMPL.PackageLocator.repositories> 2 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="10" targetName="ccp.molecule.ChemElement">
+      <IMPL.PackageLocator.repositories> 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="11" targetName="ccp.molecule.StereoChemistry">
+      <IMPL.PackageLocator.repositories> 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="12" targetName="ccp.nmr.NmrExpPrototype">
+      <IMPL.PackageLocator.repositories> 2 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="13" targetName="ccp.nmr.NmrReference">
+      <IMPL.PackageLocator.repositories> 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+    <IMPL.PackageLocator _ID="14" targetName="ccpnmr.AnalysisProfile">
+      <IMPL.PackageLocator.repositories> 5 4</IMPL.PackageLocator.repositories>
+    </IMPL.PackageLocator>
+  </IMPL.MemopsRoot.packageLocators>
+  <IMPL.MemopsRoot.currentDataLocationStore>
+    <DLOC.exo-DataLocationStore>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-911_00001</IMPL.GuidString>
+    </DLOC.exo-DataLocationStore>
+  </IMPL.MemopsRoot.currentDataLocationStore>
+  <IMPL.MemopsRoot.currentGuiTask>
+    <GUIT.exo-GuiTask>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-913_00001</IMPL.GuidString>
+    </GUIT.exo-GuiTask>
+  </IMPL.MemopsRoot.currentGuiTask>
+  <IMPL.MemopsRoot.currentLabelingScheme>
+    <CCLB.exo-LabelingScheme>
+      <IMPL.GuidString>IsoSchemeProj_user_2008-08-01-11-46-16_00026</IMPL.GuidString>
+    </CCLB.exo-LabelingScheme>
+  </IMPL.MemopsRoot.currentLabelingScheme>
+  <IMPL.MemopsRoot.currentMolSystem>
+    <MOLS.exo-MolSystem>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00004</IMPL.GuidString>
+    </MOLS.exo-MolSystem>
+  </IMPL.MemopsRoot.currentMolSystem>
+  <IMPL.MemopsRoot.currentNmrProject>
+    <NMR.exo-NmrProject>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00001</IMPL.GuidString>
+    </NMR.exo-NmrProject>
+  </IMPL.MemopsRoot.currentNmrProject>
+  <IMPL.MemopsRoot.currentRefSampleComponentStore>
+    <REFS.exo-RefSampleComponentStore>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00003</IMPL.GuidString>
+    </REFS.exo-RefSampleComponentStore>
+  </IMPL.MemopsRoot.currentRefSampleComponentStore>
+  <IMPL.MemopsRoot.currentSampleStore>
+    <SAM.exo-SampleStore>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00002</IMPL.GuidString>
+    </SAM.exo-SampleStore>
+  </IMPL.MemopsRoot.currentSampleStore>
+  <IMPL.MemopsRoot.currentWindowStore>
+    <GUIW.exo-WindowStore>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00005</IMPL.GuidString>
+    </GUIW.exo-WindowStore>
+  </IMPL.MemopsRoot.currentWindowStore>
+  <IMPL.MemopsRoot.dataLocationStores>
+    <DLOC.DataLocationStore _ID="1" _lastId="20" createdBy="user" guid="default_user_2022-04-03-11-03-25-911_00001">
+    </DLOC.DataLocationStore>
+  </IMPL.MemopsRoot.dataLocationStores>
+  <IMPL.MemopsRoot.guiTasks>
+    <GUIT.GuiTask _ID="1" _lastId="55" createdBy="user" guid="default_user_2022-04-03-11-03-25-913_00001" name="View">
+      <GUIT.GuiTask.nmrProjectName>
+        <IMPL.Line>default</IMPL.Line>
+      </GUIT.GuiTask.nmrProjectName>
+      <GUIT.GuiTask.nmrProject>
+        <NMR.exo-NmrProject>
+          <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00001</IMPL.GuidString>
+        </NMR.exo-NmrProject>
+      </GUIT.GuiTask.nmrProject>
+    </GUIT.GuiTask>
+  </IMPL.MemopsRoot.guiTasks>
+  <IMPL.MemopsRoot.labelingSchemes>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00024" lastUnlockedBy="ccpn_auto" name="13Glycerol">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>95% 1,3-13C glycerol, 15N</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>1,3-13C Glycerol</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00026" lastUnlockedBy="ccpn_auto" name="2Glycerol">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>95% 2-13C glycerol, 15N</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>2-13C Glycerol</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00023" lastUnlockedBy="ccpn_auto" name="GAFY">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>G,A,S: 95% 13C,15N; F,Y: 95% 2,3-13C,15N</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>GAFY</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="Labelling_vicky_2009-11-12-15-38-04-232_00001" lastUnlockedBy="ccpn_auto" name="IVL">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Uniform 95% 15N, 13C, 2H; V,L: single 1H Me; I: 1H delta Me</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>IVL protonated Me groups</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00025" lastUnlockedBy="ccpn_auto" name="NatAbun">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Unlabelled isotopomers</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>Natural Abundances</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="Labelling_vicky_2009-11-12-16-11-30-865_00001" lastUnlockedBy="ccpn_auto" name="SAIL">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Stereo-array Isotope Labelling</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>SAIL</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="Labelling_vicky_2010-11-16-15-06-28-227_00001" lastUnlockedBy="ccpn_auto" name="uni_13C">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Uniform 95% 13C</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>Uniform 13C</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00022" lastUnlockedBy="ccpn_auto" name="uni_15N">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Uniform 95% 15N</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>Uniform 15N</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00028" lastUnlockedBy="ccpn_auto" name="uni_15N13C">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Uniform 95% 15N, 13C</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>Uniform 15N, 13C</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+    <CCLB.LabelingScheme _ID="1" _lastId="1" createdBy="ccpn_auto" guid="IsoSchemeProj_user_2008-08-01-11-46-16_00027" lastUnlockedBy="ccpn_auto" name="uni_15N13C2H">
+      <CCLB.LabelingScheme.details>
+        <IMPL.String>Uniform 95% 15N, 13C, 2H</IMPL.String>
+      </CCLB.LabelingScheme.details>
+      <CCLB.LabelingScheme.longName>
+        <IMPL.Line>Uniform 15N, 13C, 2H</IMPL.Line>
+      </CCLB.LabelingScheme.longName>
+    </CCLB.LabelingScheme>
+  </IMPL.MemopsRoot.labelingSchemes>
+  <IMPL.MemopsRoot.molSystems>
+    <MOLS.MolSystem _ID="1" _lastId="1" code="default" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00004">
+      <MOLS.MolSystem.name>
+        <IMPL.String>default</IMPL.String>
+      </MOLS.MolSystem.name>
+    </MOLS.MolSystem>
+  </IMPL.MemopsRoot.molSystems>
+  <IMPL.MemopsRoot.nmrProjects>
+    <NMR.NmrProject _ID="1" _lastId="677" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00001">
+      <NMR.NmrProject.name>
+        <IMPL.Line>default</IMPL.Line>
+      </NMR.NmrProject.name>
+      <NMR.NmrProject.molSystem>
+        <MOLS.exo-MolSystem>
+          <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00004</IMPL.GuidString>
+        </MOLS.exo-MolSystem>
+      </NMR.NmrProject.molSystem>
+      <NMR.NmrProject.sampleStore>
+        <SAM.exo-SampleStore>
+          <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00002</IMPL.GuidString>
+        </SAM.exo-SampleStore>
+      </NMR.NmrProject.sampleStore>
+    </NMR.NmrProject>
+  </IMPL.MemopsRoot.nmrProjects>
+  <IMPL.MemopsRoot.refSampleComponentStores>
+    <REFS.RefSampleComponentStore _ID="1" _lastId="1" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00003">
+      <REFS.RefSampleComponentStore.name>
+        <IMPL.Line>default</IMPL.Line>
+      </REFS.RefSampleComponentStore.name>
+    </REFS.RefSampleComponentStore>
+  </IMPL.MemopsRoot.refSampleComponentStores>
+  <IMPL.MemopsRoot.sampleStores>
+    <SAM.SampleStore _ID="1" _lastId="1" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00002">
+      <SAM.SampleStore.name>
+        <IMPL.Line>default</IMPL.Line>
+      </SAM.SampleStore.name>
+      <SAM.SampleStore.refSampleComponentStore>
+        <REFS.exo-RefSampleComponentStore>
+          <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00003</IMPL.GuidString>
+        </REFS.exo-RefSampleComponentStore>
+      </SAM.SampleStore.refSampleComponentStore>
+    </SAM.SampleStore>
+  </IMPL.MemopsRoot.sampleStores>
+  <IMPL.MemopsRoot.windowStores>
+    <GUIW.WindowStore _ID="1" _lastId="3" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00005">
+      <GUIW.WindowStore.nmrProject>
+        <NMR.exo-NmrProject>
+          <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00001</IMPL.GuidString>
+        </NMR.exo-NmrProject>
+      </GUIW.WindowStore.nmrProject>
+    </GUIW.WindowStore>
+  </IMPL.MemopsRoot.windowStores>
+</IMPL.MemopsRoot>
+
+</_StorageUnit>
+<!--End of Memops Data-->
