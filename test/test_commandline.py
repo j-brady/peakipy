@@ -28,24 +28,91 @@ class TestPeakipyCommandline(unittest.TestCase):
     #     peakipy.commandline.read.main(argv)
 
     def test_fit_main_with_default(self):
-        argv = ["test_protein_L/test.csv", "test_protein_L/test1.ft2", "fits.csv"]
+        argv = [
+            "test_protein_L/test.csv",
+            "test_protein_L/test1.ft2",
+            "test_protein_L/fits_PV.csv",
+        ]
+        peakipy.commandline.fit.main(argv)
+
+    def test_fit_main_with_gaussian(self):
+        argv = [
+            "test_protein_L/test.csv",
+            "test_protein_L/test1.ft2",
+            "test_protein_L/fits_G.csv",
+            "--lineshape=G",
+        ]
+        peakipy.commandline.fit.main(argv)
+
+    def test_fit_main_with_lorentzian(self):
+        argv = [
+            "test_protein_L/test.csv",
+            "test_protein_L/test1.ft2",
+            "test_protein_L/fits_L.csv",
+            "--lineshape=L",
+        ]
+        peakipy.commandline.fit.main(argv)
+
+    def test_fit_main_with_voigt(self):
+        argv = [
+            "test_protein_L/test.csv",
+            "test_protein_L/test1.ft2",
+            "test_protein_L/fits_V.csv",
+            "--lineshape=V",
+        ]
         peakipy.commandline.fit.main(argv)
 
     def test_check_main_with_default(self):
         argv = [
-            "test_protein_L/fits.csv",
+            "test_protein_L/fits_PV.csv",
             "test_protein_L/test1.ft2",
             "--first",
-            "--clusters=30",
+            # "--clusters=1",
             "-l",
             "-s",
             "-i",
         ]
         peakipy.commandline.check.main(argv)
 
-    # def test_edit_with_default(self):
-    #     argv = ["test_protein_L/peaks.csv", "test_protein_L/test1.ft2"]
-    #     peakipy.commandline.edit.main(argv)
+    def test_check_main_with_gaussian(self):
+        argv = [
+            "test_protein_L/fits_G.csv",
+            "test_protein_L/test1.ft2",
+            "--first",
+            # "--clusters=1",
+            "-l",
+            "-s",
+            "-i",
+        ]
+        peakipy.commandline.check.main(argv)
+
+    def test_check_main_with_lorentzian(self):
+        argv = [
+            "test_protein_L/fits_L.csv",
+            "test_protein_L/test1.ft2",
+            "--first",
+            # "--clusters=1",
+            "-l",
+            "-s",
+            "-i",
+        ]
+        peakipy.commandline.check.main(argv)
+
+    def test_check_main_with_voigt(self):
+        argv = [
+            "test_protein_L/fits_V.csv",
+            "test_protein_L/test1.ft2",
+            "--first",
+            # "--clusters=1",
+            "-l",
+            "-s",
+            "-i",
+        ]
+        peakipy.commandline.check.main(argv)
+
+    def test_edit_with_default(self):
+        argv = ["test_protein_L/peaks.csv", "test_protein_L/test1.ft2"]
+        peakipy.commandline.edit.main(argv)
 
 
 if __name__ == "__main__":

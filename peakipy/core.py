@@ -30,6 +30,8 @@ import nmrglue as ng
 import matplotlib.pyplot as plt
 import pandas as pd
 import textwrap
+from rich import print
+from rich.console import Console
 from colorama import Fore, init
 
 from numpy import sqrt, log, pi, exp, finfo
@@ -50,6 +52,7 @@ from skimage.morphology import square, binary_closing, disk, rectangle
 from skimage.filters import threshold_otsu
 
 init(autoreset=True)
+console = Console()
 # constants
 log2 = log(2)
 π = pi
@@ -752,6 +755,8 @@ def fit_first_plane(
         mod, p_guess = make_models(
             pv_pv, group, data, lineshape="PV_PV", xy_bounds=xy_bounds
         )
+    else:
+        raise Exception("No lineshape was selected!")
 
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
@@ -795,6 +800,7 @@ def fit_first_plane(
     X, Y = XY
 
     XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
+    # print("XY_slices", XY_slices)
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
 
     out = mod.fit(
@@ -802,7 +808,7 @@ def fit_first_plane(
     )
 
     if verbose:
-        print(out.fit_report())
+        console.print(out.fit_report(),style="bold")
 
     z_sim = mod.eval(XY=XY, params=out.params)
     z_sim[~mask] = np.nan
@@ -834,9 +840,9 @@ def fit_first_plane(
         fit_str += """
         🧐 NEEDS CHECKING 🧐
         """
-        print(fit_str)
+        console.print(fit_str, style="bold yellow")
     else:
-        print(fit_str)
+        console.print(fit_str, style="green")
 
     if log is not None:
         log.write("".join("#" for _ in range(60)) + "\n\n")
@@ -1635,7 +1641,7 @@ class Peaklist(Pseudo3D):
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates) > 0:
-            print(
+            console.print(
                 textwrap.dedent(
                     """
                 #############################################################################
@@ -1643,7 +1649,7 @@ class Peaklist(Pseudo3D):
                     Currently each peak needs a unique assignment. Sorry about that buddy...
                 #############################################################################
                 """
-                )
+                ), style="yellow"
             )
             self.df.loc[duplicates_bool, "ASS"] = [
                 f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)

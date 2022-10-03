@@ -1,5 +1,0 @@
-#!/home/j-brady/src/python/peakipy/venv/bin/python
-from peakipy.cli.test import app
-
-if __name__ == '__main__':
-    app()

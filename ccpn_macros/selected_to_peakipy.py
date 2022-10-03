@@ -4,6 +4,20 @@ from pathlib import Path
 import pandas as pd
 
 
+import peakipy.commandline.read
+import peakipy.commandline.fit
+import peakipy.commandline.check
+
+# set temp path
+path = Path(os.getenv("HOME")) / ".peakipy"
+path.mkdir(exist_ok=True)
+# spectrum
+current_spectrum = "SP:test_protein_L"
+current_spectrum_path = Path(get(current_spectrum).path)
+# change to directory containing spectrum
+os.chdir(current_spectrum_path.resolve().parent)
+
+
 def PeakToTableRow(peak):
     dic = dict(
         Pid=peak.serial,
@@ -34,31 +48,65 @@ def PeaksToDataFrame(peaks):
     return pd.DataFrame(dic_list)
 
 
-path = Path(os.getenv("HOME")) / "tmp"
-path.mkdir(exist_ok=True)
-peaks = current.peaks
-df = PeaksToDataFrame(peaks)
-column_order = [
-    "Pid",
-    "Spectrum",
-    "PeakList",
-    "Id",
-    "Assign F1",
-    "Assign F2",
-    "Pos F1",
-    "Pos F2",
-    "LW F1 (Hz)",
-    "LW F2 (Hz)",
-    "Height",
-    "HeightError",
-    "Volume",
-    "VolumeError",
-    "Merit",
-    "Annotation",
-    "Comment",
-]
-df = df[column_order]
-out = path / "test.tsv"
-print(f"Saving selected peaks to {out}.")
-df.to_csv(out, sep="\t")
-print(df)
+def peakipy_read(path=path):
+    argv = [f"{path}/test.tsv", f"{current_spectrum_path}", "--a3"]
+    peakipy.commandline.read.main(argv)
+
+
+def peakipy_fit():
+    out_path = current_spectrum_path.parent
+    argv = [
+        f"{ out_path / 'test.csv'}",
+        f"{current_spectrum_path}",
+        f"{out_path  /  'fits.csv'}",
+    ]
+    peakipy.commandline.fit.main(argv)
+
+
+def peakipy_check():
+    # plt = None
+    out_path = current_spectrum_path.parent
+    argv = [
+        f"{out_path / 'fits.csv'}",
+        f"{current_spectrum_path}",
+        "-s",
+        "--first",
+        "-l",
+        "-i",
+        "--ccpn",
+    ]
+    peakipy.commandline.check.main(argv)
+
+
+if __name__ == "__main__":
+
+    peaks = current.peaks
+    df = PeaksToDataFrame(peaks)
+    column_order = [
+        "Pid",
+        "Spectrum",
+        "PeakList",
+        "Id",
+        "Assign F1",
+        "Assign F2",
+        "Pos F1",
+        "Pos F2",
+        "LW F1 (Hz)",
+        "LW F2 (Hz)",
+        "Height",
+        "HeightError",
+        "Volume",
+        "VolumeError",
+        "Merit",
+        "Annotation",
+        "Comment",
+    ]
+    df = df[column_order]
+    out = path / "test.tsv"
+    print(f"Saving selected peaks to {out}.")
+    df.to_csv(out, sep="\t")
+    print(df)
+    peakipy_read()
+    peakipy_fit()
+    peakipy_check()
+    # plt.show()

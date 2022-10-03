@@ -14,4 +14,6 @@ pip-wheel-metadata
 peakipy.egg-info
 scripts/fit_peaks_mp
 scripts/fit_peaks_old
+tmp*
+venv/*
 #doc/build/

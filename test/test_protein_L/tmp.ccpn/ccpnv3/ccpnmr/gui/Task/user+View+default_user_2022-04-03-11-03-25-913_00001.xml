@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<_StorageUnit time="Sun Apr  3 21:35:01 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2014-10-31-16:36:26_00004" originator="CCPN Python XmlIO">
+<_StorageUnit time="Sun Aug  7 12:22:08 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2014-10-31-16:36:26_00004" originator="CCPN Python XmlIO">
 
-<GUIT.GuiTask _ID="1" _lastId="55" createdBy="user" guid="default_user_2022-04-03-11-03-25-913_00001" name="View">
+<GUIT.GuiTask _ID="1" _lastId="163" createdBy="user" guid="default_user_2022-04-03-11-03-25-913_00001" name="View">
   <GUIT.GuiTask.nmrProjectName>
     <IMPL.Line>default</IMPL.Line>
   </GUIT.GuiTask.nmrProjectName>
@@ -41,13 +41,13 @@
         </GUIW.exo-Window>
       </GUIT.Module.window>
       <GUIT.SpectrumDisplay.axes>
-        <GUIT.FrequencyAxis _ID="3" code="H" position="8.059387185451296" stripSerial="1" width="6.861999614421391">
+        <GUIT.FrequencyAxis _ID="3" code="H" position="8.376413212077725" stripSerial="1" width="4.324223736692035">
           <GUIT.Axis.stripAxes> 8</GUIT.Axis.stripAxes>
         </GUIT.FrequencyAxis>
         <GUIT.FrequencyAxis _ID="5" code="I" position="2.0" stripSerial="1" width="1.0">
           <GUIT.Axis.stripAxes> 7</GUIT.Axis.stripAxes>
         </GUIT.FrequencyAxis>
-        <GUIT.FrequencyAxis _ID="4" code="N" position="118.94719874262299" stripSerial="1" width="35.26045040188045">
+        <GUIT.FrequencyAxis _ID="4" code="N" position="122.11528563258616" stripSerial="1" width="22.220064873483935">
           <GUIT.Axis.stripAxes> 9</GUIT.Axis.stripAxes>
         </GUIT.FrequencyAxis>
       </GUIT.SpectrumDisplay.axes>

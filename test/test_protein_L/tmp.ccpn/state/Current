@@ -15,12 +15,10 @@
   "nmrChains": [],
   "nmrResidue": null,
   "nmrResidues": [],
-  "peak": "PK:test1_projection_H_N.1.28",
+  "peak": "PK:test1_projection_H_N.1.15",
   "peaks": [
-    "PK:test1_projection_H_N.1.25",
-    "PK:test1_projection_H_N.1.26",
-    "PK:test1_projection_H_N.1.27",
-    "PK:test1_projection_H_N.1.28"
+    "PK:test1_projection_H_N.1.5",
+    "PK:test1_projection_H_N.1.15"
   ],
   "residue": null,
   "residues": [],

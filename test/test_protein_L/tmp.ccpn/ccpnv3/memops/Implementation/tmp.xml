@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<_StorageUnit time="Sun Apr  3 19:48:29 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2006-08-16-14:22:53_00025" originator="CCPN Python XmlIO">
+<_StorageUnit time="Sun Aug  7 12:22:08 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2006-08-16-14:22:53_00025" originator="CCPN Python XmlIO">
 
-<IMPL.MemopsRoot _ID="1" _lastId="43" createdBy="user" name="tmp">
+<IMPL.MemopsRoot _ID="1" _lastId="169" createdBy="user" name="tmp">
   <IMPL.MemopsRoot.repositories>
     <IMPL.Repository _ID="3">
       <IMPL.Repository.name>
@@ -32,7 +32,7 @@
       <IMPL.Repository.name>
         <IMPL.Line>refData</IMPL.Line>
       </IMPL.Repository.name>
-      <IMPL.Repository.stored> 13 14 7 6 8 9 10 11 12</IMPL.Repository.stored>
+      <IMPL.Repository.stored> 7 6 8 9 10 11 12 13 14</IMPL.Repository.stored>
       <IMPL.Repository.url>
         <IMPL.Url>
           <IMPL.Url.path>
@@ -132,7 +132,7 @@
     </DLOC.DataLocationStore>
   </IMPL.MemopsRoot.dataLocationStores>
   <IMPL.MemopsRoot.guiTasks>
-    <GUIT.GuiTask _ID="1" _lastId="55" createdBy="user" guid="default_user_2022-04-03-11-03-25-913_00001" name="View">
+    <GUIT.GuiTask _ID="1" _lastId="163" createdBy="user" guid="default_user_2022-04-03-11-03-25-913_00001" name="View">
       <GUIT.GuiTask.nmrProjectName>
         <IMPL.Line>default</IMPL.Line>
       </GUIT.GuiTask.nmrProjectName>
@@ -233,7 +233,7 @@
     </MOLS.MolSystem>
   </IMPL.MemopsRoot.molSystems>
   <IMPL.MemopsRoot.nmrProjects>
-    <NMR.NmrProject _ID="1" _lastId="677" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00001">
+    <NMR.NmrProject _ID="1" _lastId="902" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00001">
       <NMR.NmrProject.name>
         <IMPL.Line>default</IMPL.Line>
       </NMR.NmrProject.name>
