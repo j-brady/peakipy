@@ -18,13 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-from distutils.command.config import config
 import os
 import json
 import shutil
 from pathlib import Path
 from enum import Enum
-from tabnanny import verbose
 from typing import Optional, Tuple, List
 from multiprocessing import Pool
 
@@ -34,14 +32,15 @@ import nmrglue as ng
 import pandas as pd
 
 from rich import print
-from rich.table import Table
 from skimage.filters import threshold_otsu
 
 import matplotlib
+import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.widgets import Button
+import yaml
 
 from peakipy.core import (
     Peaklist,
@@ -56,6 +55,11 @@ from peakipy.core import (
     pv_l,
     gaussian_lorentzian,
     Pseudo3D,
+    df_to_rich_table,
+    StrucEl,
+    PeaklistFormat,
+    Lineshape,
+    OutFmt,
 )
 from .fit import (
     cpu_count,
@@ -64,6 +68,7 @@ from .fit import (
     split_peaklist,
 )
 from .edit import BokehScript
+from .spec import yaml_file
 
 app = typer.Typer()
 tmp_path = Path("tmp")
@@ -84,112 +89,88 @@ bad_color_selection = [
     "green",
     "blue",
     "yellow",
-    "orange",
+    "red",
     "yellow",
-    "orange",
-    "pink",
+    "red",
+    "magenta",
 ]
 
 
-class PeaklistFormat(Enum):
-    a2 = "a2"
-    a3 = "a3"
-    sparky = "sparky"
-    pipe = "pipe"
-    peakipy = "peakipy"
 
 
-class StrucEl(Enum):
-    square = "square"
-    disk = "disk"
-    rectangle = "rectangle"
-
-
-class OutFmt(Enum):
-    csv = "csv"
-    pkl = "pkl"
-
-
-class Lineshape(Enum):
-    PV = "PV"
-    V = "V"
-    G = "G"
-    L = "L"
-    PV_PV = "PV_PV"
-
-
-@app.command()
+@app.command(help="Read NMRPipe/Analysis peaklist into pandas dataframe")
 def read(
     peaklist_path: Path,
     data_path: Path,
     peaklist_format: PeaklistFormat,
     thres: Optional[float] = None,
-    struc_el: StrucEl = "disk",
+    struc_el: StrucEl = StrucEl.disk,
     struc_size: Tuple[int, int] = (3, None),  # Tuple[int, Optional[int]] = (3, None),
     x_radius_ppm: float = 0.04,
     y_radius_ppm: float = 0.4,
     x_ppm_column_name: str = "Position F1",
     y_ppm_column_name: str = "Position F2",
-    dims: Tuple[int, int, int] = (0, 1, 2),
-    outfmt: OutFmt = "csv",
+    dims: List[int] = [0, 1, 2],
+    outfmt: OutFmt = OutFmt.csv,
     show: bool = False,
     fuda: bool = False,
 ):
     """Read NMRPipe/Analysis peaklist into pandas dataframe
 
-    Usage:
-        read <peaklist_path> <data_path> (--a2|--a3|--sparky|--pipe|--peakipy) [options]
 
-    Arguments:
-        <peaklist_path>                Analysis2/CCPNMRv3(assign)/Sparky/NMRPipe peak list (see below)
-        <data_path>                    2D or pseudo3D NMRPipe data
+    Parameters
+    ----------
+    peaklist_path: Path
+        Analysis2/CCPNMRv3(assign)/Sparky/NMRPipe peak list (see below)
+    data_path: Path
+        2D or pseudo3D NMRPipe data
+    peaklist_format: PeaklistFormat
+        a2 - Analysis peaklist as input (tab delimited)
+        a3 - CCPNMR v3 peaklist as input (tab delimited)
+        sparky - Sparky peaklist as input
+        pipe - NMRPipe peaklist as input
+        peakipy - peakipy peaklist.csv or .tab (originally output from peakipy read or edit)
 
-        --a2                      Analysis peaklist as input (tab delimited)
-        --a3                      CCPNMR v3 peaklist as input (tab delimited)
-        --sparky                  Sparky peaklist as input
-        --pipe                    NMRPipe peaklist as input
-        --peakipy                 peakipy peaklist.csv or .tab (originally output from peakipy read or edit)
-
-    Options:
-        -h --help                 Show this screen
-        -v --verb                 Verbose mode
-        --version                 Show version
-
-        --thres=<thres>           Threshold for making binary mask that is used for peak clustering [default: None]
-                                  If set to None then threshold_otsu from scikit-image is used to determine threshold
-
-        --struc_el=<str>          Structuring element for binary_closing [default: disk]
-                                  'square'|'disk'|'rectangle'
-
-        --struc_size=<int,>       Size/dimensions of structuring element [default: 3,]
-                                  For square and disk first element of tuple is used (for disk value corresponds to radius).
-                                  For rectangle, tuple corresponds to (width,height).
-
-        --f1radius=<float>        F1 radius in ppm for fit mask [default: 0.4]
-        --f2radius=<float>        F2 radius in ppm for fit mask [default: 0.04]
-
-        --dims=<planes,F1,F2>     Order of dimensions [default: 0,1,2]
-
-        --posF2=<column_name>     Name of column in Analysis2 peak list containing F2 (i.e. X_PPM)
-                                  peak positions [default: "Position F1"]
-
-        --posF1=<column_name>     Name of column in Analysis2 peak list containing F1 (i.e. Y_PPM)
-                                  peak positions [default: "Position F2"]
-
-        --outfmt=<csv/pkl>        Format of output peaklist [default: csv]
-
-        --show                    Show the clusters on the spectrum color coded using matplotlib
-
-        --fuda                    Create a parameter file for running fuda (params.fuda)
+    thres: Optional[float]
+        Threshold for making binary mask that is used for peak clustering [default: None]
+        If set to None then threshold_otsu from scikit-image is used to determine threshold
+    struc_el: StrucEl
+        Structuring element for binary_closing [default: disk]
+        'square'|'disk'|'rectangle'
+    struc_size: Tuple[int, int]
+        Size/dimensions of structuring element [default: 3, None]
+        For square and disk first element of tuple is used (for disk value corresponds to radius).
+        For rectangle, tuple corresponds to (width,height).
+    x_radius_ppm: float
+        F2 radius in ppm for fit mask [default: 0.04]
+    y_radius_ppm: float
+        F1 radius in ppm for fit mask [default: 0.4]
+    dims: Tuple[int]
+        <planes,y,x>
+        Order of dimensions [default: 0,1,2]
+    posF2: str
+        Name of column in Analysis2 peak list containing F2 (i.e. X_PPM)
+        peak positions [default: "Position F1"]
+    posF1: str
+        Name of column in Analysis2 peak list containing F1 (i.e. Y_PPM)
+        peak positions [default: "Position F2"]
+    outfmt: OutFmt
+        Format of output peaklist [default: csv]
+    show: bool
+        Show the clusters on the spectrum color coded using matplotlib
+    fuda: bool
+        Create a parameter file for running fuda (params.fuda)
 
 
-    Examples:
-        peakipy read test.tab test.ft2 --pipe --dims0,1
-        peakipy read test.a2 test.ft2 --a2 --thres=1e5  --dims=0,2,1
-        peakipy read ccpnTable.tsv test.ft2 --a3 --f1radius=0.3 --f2radius=0.03
-        peakipy read test.csv test.ft2 --peakipy --dims=0,1,2
+    Examples
+    --------
+        peakipy read test.tab test.ft2 pipe --dims 0 --dims 1
+        peakipy read test.a2 test.ft2 a2 --thres 1e5  --dims 0 --dims 2 --dims 1
+        peakipy read ccpnTable.tsv test.ft2 a3 --y_radius 0.3 --x_radius 0.03
+        peakipy read test.csv test.ft2 peakipy --dims 0 1 2
 
-    Description:
+    Description
+    -----------
 
        NMRPipe column headers:
 
@@ -222,15 +203,15 @@ def read(
     outname = peaklist_path.stem
     cluster = True
 
-    match peaklist_format.value:
-        case "a2":
+    match peaklist_format:
+        case peaklist_format.a2:
             # set X and Y ppm column names if not default (i.e. "Position F1" = "X_PPM"
             # "Position F2" = "Y_PPM" ) this is due to Analysis2 often having the
             #  dimension order flipped relative to convention
             peaks = Peaklist(
                 peaklist_path,
                 data_path,
-                fmt="a2",
+                fmt=PeaklistFormat.a2,
                 dims=dims,
                 radii=[x_radius_ppm, y_radius_ppm],
                 posF1=y_ppm_column_name,
@@ -238,37 +219,37 @@ def read(
             )
             # peaks.adaptive_clusters(block_size=151,offset=0)
 
-        case "a3":
+        case peaklist_format.a3:
             peaks = Peaklist(
                 peaklist_path,
                 data_path,
-                fmt="a3",
+                fmt=PeaklistFormat.a3,
                 dims=dims,
                 radii=[x_radius_ppm, y_radius_ppm],
             )
 
-        case "sparky":
+        case peaklist_format.sparky:
 
             peaks = Peaklist(
                 peaklist_path,
                 data_path,
-                fmt="sparky",
+                fmt=PeaklistFormat.sparky,
                 dims=dims,
                 radii=[x_radius_ppm, y_radius_ppm],
             )
 
-        case "pipe":
+        case peaklist_format.pipe:
             peaks = Peaklist(
                 peaklist_path,
                 data_path,
-                fmt="pipe",
+                fmt=PeaklistFormat.pipe,
                 dims=dims,
                 radii=[x_radius_ppm, y_radius_ppm],
             )
 
-        case "peakipy":
+        case peaklist_format.peakipy:
             # read in a peakipy .csv file
-            peaks = LoadData(peaklist_path, data_path, fmt="peakipy", dims=dims)
+            peaks = LoadData(peaklist_path, data_path, fmt=PeaklistFormat.peakipy, dims=dims)
             cluster = False
             # don't overwrite the old .csv file
             outname = outname + "_new"
@@ -356,10 +337,10 @@ def read(
     # Here is where your list of spectra to plot goes
     spectra:
 
-            - fname: {data}
+            - fname: {data_path}
               label: ""
               contour_num: 20
-              linewidths: 0.1
+              linewidths: 0.5
     """
 
     if show:
@@ -370,65 +351,65 @@ def read(
     print(f"[green]Finished! Use {outname} to run peakipy edit or fit.[/green]")
 
 
-@app.command()
+@app.command(help="Fit NMR data to lineshape models and deconvolute overlapping peaks")
 def fit(
     peaklist_path: Path,
     data_path: Path,
     output_path: Path,
-    dims: Tuple[int, int, int] = (0, 1, 2),
     max_cluster_size: int = 999,
-    lineshape: Lineshape = "PV",
+    lineshape: Lineshape = Lineshape.PV,
     fix: List[str] = ["fraction", "sigma", "center"],
     xy_bounds: Tuple[float, float] = (0, 0),
     vclist: Optional[Path] = None,
     plane: Optional[List[int]] = None,
     exclude_plane: Optional[List[int]] = None,
-    nomp: bool = False,
+    mp: bool = True,
     plot: Optional[Path] = None,
     show: bool = False,
     verb: bool = False,
 ):
-    """ Fit NMR data to lineshape models and deconvolute overlapping peaks
+    """Fit NMR data to lineshape models and deconvolute overlapping peaks
 
-    Arguments:
-        <peaklist_path>                                  peaklist output from read_peaklist.py
-        <data_path>                                      2D or pseudo3D NMRPipe data (single file)
-        <output_path>                                    output peaklist "<output>.csv" will output CSV
-                                                    format file, "<output>.tab" will give a tab delimited output
-                                                    while "<output>.pkl" results in Pandas pickle of DataFrame
-
-    Options:
-        -h --help                                   Show this page
-        -v --version                                Show version
-
-        --dims=<ID,F1,F2>                           Dimension order [default: 0,1,2]
-
-        --max_cluster_size=<max_cluster_size>       Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
-
-        --lineshape=<PV/V/G/L/PV_PV>                Lineshape to fit [default: PV]
-
-        --fix=<fraction,sigma,center>               Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
-
-        --xy_bounds=<x_ppm,y_ppm>                   Bound X and Y peak centers during fit [default: None]
-                                                    This can be set like so --xy_bounds=0.1,0.5
-
-        --vclist=<fname>                            Bruker style vclist [default: None]
-
-        --plane=<int>                               Specific plane(s) to fit [default: -1]
-                                                    eg. --plane=1 or --plane=1,4,5
-
-        --exclude_plane=<int>                       Specific plane(s) to fit [default: -1]
-                                                    eg. --plane=1 or --plane=1,4,5
-
-        --nomp                                      Do not use multiprocessing
-
-        --plot=<dir>                                Whether to plot wireframe fits for each peak
-                                                    (saved into <dir>) [default: None]
-
-        --show                                      Whether to show (using plt.show()) wireframe
-                                                    fits for each peak. Only works if --plot is also selected
-
-        --verb                                      Print what's going on
+    Parameters
+    ----------
+    peaklist_path: Path
+        peaklist output from read_peaklist.py
+    data_path: Path
+        2D or pseudo3D NMRPipe data (single file)
+    output_path: Path
+        output peaklist "<output>.csv" will output CSV
+        format file, "<output>.tab" will give a tab delimited output
+        while "<output>.pkl" results in Pandas pickle of DataFrame
+    max_cluster_size: int
+        Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
+    lineshape: Lineshape
+        Lineshape to fit [default: Lineshape.PV]
+    fix: List[str] 
+        <fraction,sigma,center>
+        Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
+    xy_bounds: Tuple[float,float]
+        <x_ppm,y_ppm>
+        Bound X and Y peak centers during fit [default: (0,0) which means no bounding]
+        This can be set like so --xy_bounds=0.1,0.5
+    vclist: Optional[Path]
+        Bruker style vclist [default: None]
+    plane: Optional[List[int]]
+        Specific plane(s) to fit [default: None]
+        eg. [1,4,5] will use only planes 1, 4 and 5
+    exclude_plane: Optional[List[int]]
+        Specific plane(s) to fit [default: None]
+        eg. [1,4,5] will exclude planes 1, 4 and 5
+    mp: bool
+        Use multiprocessing [default: True]
+    plot: Optional[Path]
+        Whether to plot wireframe fits for each peak
+        (saved into Path provided) [default: None]
+    show: bool
+        Whether to show (using plt.show()) wireframe
+        fits for each peak. Only works if Path is provided to the plot
+        argument
+    verb: bool
+        Print what's going on
     """
     # number of CPUs
     n_cpu = cpu_count()
@@ -436,6 +417,8 @@ def fit(
     # read NMR data
     args = {}
     config = {}
+    args, config = read_config(args)
+    dims = config.get("dims", [0, 1, 2])
     peakipy_data = LoadData(peaklist_path, data_path, dims=dims)
 
     # only include peaks with 'include'
@@ -447,14 +430,13 @@ def fit(
 
     if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
         excluded = peakipy_data.df[peakipy_data.df.include != "yes"][column_selection]
-        table = Table("[yellow] Excluded peaks [/yellow]")
-        for i in column_selection:
-            table.add_column(i)
-            for row in excluded[i].values:
-                table.add_row(row)
-
+        table = df_to_rich_table(
+            excluded,
+            title="[yellow] Excluded peaks [/yellow]",
+            columns=excluded.columns,
+            styles=["yellow" for i in excluded.columns],
+        )
         print(table)
-
         peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
 
     # filter list based on cluster size
@@ -478,6 +460,8 @@ def fit(
     args["max_cluster_size"] = max_cluster_size
     args["to_fix"] = fix
     args["verb"] = verb
+    args["show"] = show
+    args["mp"] = mp
 
     # read vclist
     if vclist is None:
@@ -550,7 +534,7 @@ def fit(
     # if noise is None:
     noise = abs(threshold_otsu(peakipy_data.data))
     args["noise"] = noise
-    args["lineshape"] = lineshape.value
+    args["lineshape"] = lineshape
 
     match xy_bounds:
         case (0, 0):
@@ -581,7 +565,7 @@ def fit(
     )
     # start fitting data
     # prepare data for multiprocessing
-    if (peakipy_data.df.CLUSTID.nunique() >= n_cpu) and not nomp:
+    if (peakipy_data.df.CLUSTID.nunique() >= n_cpu) and mp:
         print("[green]Using multiprocessing[/green]")
         # split peak lists
         tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
@@ -615,118 +599,119 @@ def fit(
     output = Path(output_path)
     suffix = output.suffix
     #  convert sigmas to fwhm
-    if args["lineshape"] == "V":
-        # calculate peak height
-        df["height"] = df.apply(
-            lambda x: voigt2d(
-                XY=[0, 0],
-                center_x=0.0,
-                center_y=0.0,
-                sigma_x=x.sigma_x,
-                sigma_y=x.sigma_y,
-                gamma_x=x.gamma_x,
-                gamma_y=x.gamma_y,
-                amplitude=x.amp,
-            ),
-            axis=1,
-        )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
-        df["fwhm_g_x"] = df.sigma_x.apply(
-            lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
-        )  # fwhm of gaussian
-        df["fwhm_g_y"] = df.sigma_y.apply(
-            lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
-        )
-        df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2.0 * x)  # fwhm of lorentzian
-        df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2.0 * x)
-        df["fwhm_x"] = df.apply(
-            lambda x: 0.5346 * x.fwhm_l_x
-            + np.sqrt(0.2166 * x.fwhm_l_x**2.0 + x.fwhm_g_x**2.0),
-            axis=1,
-        )
-        df["fwhm_y"] = df.apply(
-            lambda x: 0.5346 * x.fwhm_l_y
-            + np.sqrt(0.2166 * x.fwhm_l_y**2.0 + x.fwhm_g_y**2.0),
-            axis=1,
-        )
-        # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
-        # df["fwhm_x"] = df.apply(lambda x: x.gamma_x + np.sqrt(x.gamma_x**2.0 + 4 * x.sigma_x**2.0 * 2.0 * np.log(2.)), axis=1)
-        # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
+    match lineshape:
+        case lineshape.V:
+            # calculate peak height
+            df["height"] = df.apply(
+                lambda x: voigt2d(
+                    XY=[0, 0],
+                    center_x=0.0,
+                    center_y=0.0,
+                    sigma_x=x.sigma_x,
+                    sigma_y=x.sigma_y,
+                    gamma_x=x.gamma_x,
+                    gamma_y=x.gamma_y,
+                    amplitude=x.amp,
+                ),
+                axis=1,
+            )
+            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["fwhm_g_x"] = df.sigma_x.apply(
+                lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
+            )  # fwhm of gaussian
+            df["fwhm_g_y"] = df.sigma_y.apply(
+                lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
+            )
+            df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2.0 * x)  # fwhm of lorentzian
+            df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2.0 * x)
+            df["fwhm_x"] = df.apply(
+                lambda x: 0.5346 * x.fwhm_l_x
+                + np.sqrt(0.2166 * x.fwhm_l_x**2.0 + x.fwhm_g_x**2.0),
+                axis=1,
+            )
+            df["fwhm_y"] = df.apply(
+                lambda x: 0.5346 * x.fwhm_l_y
+                + np.sqrt(0.2166 * x.fwhm_l_y**2.0 + x.fwhm_g_y**2.0),
+                axis=1,
+            )
+            # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
+            # df["fwhm_x"] = df.apply(lambda x: x.gamma_x + np.sqrt(x.gamma_x**2.0 + 4 * x.sigma_x**2.0 * 2.0 * np.log(2.)), axis=1)
+            # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
 
-    if args["lineshape"] == "PV":
-        # calculate peak height
-        df["height"] = df.apply(
-            lambda x: pvoigt2d(
-                XY=[0, 0],
-                center_x=0.0,
-                center_y=0.0,
-                sigma_x=x.sigma_x,
-                sigma_y=x.sigma_y,
-                amplitude=x.amp,
-                fraction=x.fraction,
-            ),
-            axis=1,
-        )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
-        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+        case lineshape.PV:
+            # calculate peak height
+            df["height"] = df.apply(
+                lambda x: pvoigt2d(
+                    XY=[0, 0],
+                    center_x=0.0,
+                    center_y=0.0,
+                    sigma_x=x.sigma_x,
+                    sigma_y=x.sigma_y,
+                    amplitude=x.amp,
+                    fraction=x.fraction,
+                ),
+                axis=1,
+            )
+            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
-    elif args["lineshape"] == "G":
-        df["height"] = df.apply(
-            lambda x: pvoigt2d(
-                XY=[0, 0],
-                center_x=0.0,
-                center_y=0.0,
-                sigma_x=x.sigma_x,
-                sigma_y=x.sigma_y,
-                amplitude=x.amp,
-                fraction=0.0,  # gaussian
-            ),
-            axis=1,
-        )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
-        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+        case lineshape.G:
+            df["height"] = df.apply(
+                lambda x: pvoigt2d(
+                    XY=[0, 0],
+                    center_x=0.0,
+                    center_y=0.0,
+                    sigma_x=x.sigma_x,
+                    sigma_y=x.sigma_y,
+                    amplitude=x.amp,
+                    fraction=0.0,  # gaussian
+                ),
+                axis=1,
+            )
+            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
-    elif args["lineshape"] == "L":
-        df["height"] = df.apply(
-            lambda x: pvoigt2d(
-                XY=[0, 0],
-                center_x=0.0,
-                center_y=0.0,
-                sigma_x=x.sigma_x,
-                sigma_y=x.sigma_y,
-                amplitude=x.amp,
-                fraction=1.0,  # lorentzian
-            ),
-            axis=1,
-        )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
-        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+        case lineshape.L:
+            df["height"] = df.apply(
+                lambda x: pvoigt2d(
+                    XY=[0, 0],
+                    center_x=0.0,
+                    center_y=0.0,
+                    sigma_x=x.sigma_x,
+                    sigma_y=x.sigma_y,
+                    amplitude=x.amp,
+                    fraction=1.0,  # lorentzian
+                ),
+                axis=1,
+            )
+            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
-    elif args["lineshape"] == "PV_PV":
-        # calculate peak height
-        df["height"] = df.apply(
-            lambda x: pv_pv(
-                XY=[0, 0],
-                center_x=0.0,
-                center_y=0.0,
-                sigma_x=x.sigma_x,
-                sigma_y=x.sigma_y,
-                amplitude=x.amp,
-                fraction_x=x.fraction_x,
-                fraction_y=x.fraction_y,
-            ),
-            axis=1,
-        )
-        df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
-        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+        case lineshape.PV_PV:
+            # calculate peak height
+            df["height"] = df.apply(
+                lambda x: pv_pv(
+                    XY=[0, 0],
+                    center_x=0.0,
+                    center_y=0.0,
+                    sigma_x=x.sigma_x,
+                    sigma_y=x.sigma_y,
+                    amplitude=x.amp,
+                    fraction_x=x.fraction_x,
+                    fraction_y=x.fraction_y,
+                ),
+                axis=1,
+            )
+            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
-    else:
-        df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-        df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+        case _:
+            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
     #  convert values to ppm
     df["center_x_ppm"] = df.center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
     df["center_y_ppm"] = df.center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
@@ -762,49 +747,13 @@ def fit(
     run_log()
 
 
-def df_to_table(df, title: str, columns: List[str], styles: str):
-    """Print dataframe using rich library
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-    title : str
-        title of table
-    columns : List[str]
-        list of column names (must be in df)
-    styles : List[str]
-        list of styles in same order as columns
-    """
-    table = Table(title=title)
-    for col, style in zip(columns, styles):
-        table.add_column(col, style=style)
-    for ind, row in df.iterrows():
-        row = row[columns].values
-        str_row = []
-        for i in row:
-            match i:
-                case str():
-                    str_row.append(f"{i}")
-                case float() if i > 1e5:
-                    str_row.append(f"{i:.1e}")
-                case float():
-                    str_row.append(f"{i:.3f}")
-                case bool():
-                    str_row.append(f"{i}")
-                case int():
-                    str_row.append(f"{i}")
-        table.add_row(*str_row)
-    return table
-
-
-@app.command()
+@app.command(help="Interactive plots for checking fits")
 def check(
     fits: Path,
     data_path: Path,
-    dims: Tuple[int, int, int] = (0, 1, 2),
     clusters: Optional[List[int]] = None,
     plane: int = 0,
-    outname: Path = "plots.pdf",
+    outname: Path = Path("plots.pdf"),
     first: bool = False,
     show: bool = False,
     label: bool = False,
@@ -857,8 +806,9 @@ def check(
     # get dims from config file
     config_path = Path("peakipy.config")
     args, config = read_config(args, config_path)
+    dims = config.get("dims", (1, 2, 3))
 
-    ccpn_flag = args.get("--ccpn")
+    ccpn_flag = ccpn
     if ccpn_flag:
         from ccpn.ui.gui.widgets.PlotterWidget import PlotterWidget
     else:
@@ -930,23 +880,13 @@ def check(
     with PdfPages(outname) as pdf:
 
         for name, group in groups:
-            table = df_to_table(
+            table = df_to_rich_table(
                 group,
                 title="",
                 columns=columns_to_print,
                 styles=["blue" for _ in columns_to_print],
             )
             print(table)
-            # print(
-            #    Fore.BLE
-            #    + tabulate(
-            #        group[columns_to_print],
-            #        showindex=False,
-            #        tablefmt="fancy_grid",
-            #        headers="keys",
-            #        floatfmt=".3f",
-            #    )
-            # )
 
             mask = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
 
@@ -1074,7 +1014,14 @@ def check(
                         f"[red]Nothing to plot for cluster {int(plane.clustid)}[/red]"
                     )
                     print(f"[red]x={x_plot},y={y_plot}[/red]")
-                    print(print_bad(plane))
+                    print(
+                        df_to_rich_table(
+                            plane,
+                            title="",
+                            columns=bad_column_selection,
+                            styles=bad_color_selection,
+                        )
+                    )
                     plt.close()
                     # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
                 elif masked_data.shape[0] == 0 or masked_data.shape[1] == 0:
@@ -1082,7 +1029,7 @@ def check(
                         f"[red]Nothing to plot for cluster {int(plane.clustid)}[/red]"
                     )
                     print(
-                        df_to_table(
+                        df_to_rich_table(
                             plane,
                             title="Bad plane",
                             columns=bad_column_selection,
@@ -1221,22 +1168,221 @@ def check(
     run_log()
 
 
-@app.command()
+@app.command(help="Interactive Bokeh dashboard for configuring fitting parameters")
 def edit(
     peaklist_path: Path,
     data_path: Path,
-    dims: Tuple[int, int, int] = (0, 1, 2),
 ):
     from bokeh.util.browser import view
     from bokeh.server.server import Server
 
     run_log()
-    bs = BokehScript(peaklist_path=peaklist_path, data_path=data_path, dims=dims)
+    bs = BokehScript(peaklist_path=peaklist_path, data_path=data_path)
     server = Server({"/edit": bs.init})
     server.start()
     print("[green]Opening peakipy: Edit fits on http://localhost:5006/edit[/green]")
     server.io_loop.add_callback(server.show, "/edit")
     server.io_loop.start()
+
+
+def make_yaml_file(name, yaml_file=yaml_file):
+
+    if os.path.exists(name):
+        print(f"Copying {name} to {name}.bak")
+        shutil.copy(name, f"{name}.bak")
+
+    print(f"Making yaml file ... {name}")
+    with open(name, "w") as new_yaml_file:
+        new_yaml_file.write(yaml_file)
+
+
+@app.command(help="Show first plane with clusters")
+def spec(yaml_file: Path, new: bool = False):
+    if new:
+        make_yaml_file(name=yaml_file)
+        exit()
+
+    if yaml_file.exists():
+        params = yaml.load(open(yaml_file, "r"), Loader=yaml.FullLoader)
+    else:
+        print(
+            f"[red]{yaml_file} does not exist. Use 'peakipy spec <yaml_file> --new' to create one[/red]"
+        )
+        exit()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    cs_g = float(params["cs"])
+    spectra = params["spectra"]
+    contour_num_g = params.get("contour_num", 10)
+    contour_factor_g = params.get("contour_factor", 1.2)
+    nspec = len(spectra)
+    notes = []
+    legends = 0
+    for num, spec in enumerate(spectra):
+
+        # unpack spec specific parameters
+        fname = spec["fname"]
+
+        if params.get("colors"):
+            # currently overrides color option
+            color = np.linspace(0, 1, nspec)[num]
+            colors = cm.get_cmap(params.get("colors"))(color)
+            # print("Colors set to cycle though %s from Matplotlib"%params.get("colors"))
+            # print(colors)
+            colors = colors[:-1]
+
+        else:
+            colors = spec["colors"]
+
+        neg_colors = spec.get("neg_colors")
+        label = spec.get("label")
+        cs = float(spec.get("cs", cs_g))
+        contour_num = spec.get("contour_num", contour_num_g)
+        contour_factor = spec.get("contour_factor", contour_factor_g)
+        #  append cs and colors to notes
+        notes.append((cs, colors))
+
+        # read spectra
+        dic, data = ng.pipe.read(fname)
+        udic = ng.pipe.guess_udic(dic, data)
+
+        ndim = udic["ndim"]
+
+        if ndim == 1:
+            uc_f1 = ng.pipe.make_uc(dic, data, dim=0)
+
+        elif ndim == 2:
+            f1, f2 = params.get("dims", [0, 1])
+            uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
+            uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
+
+            ppm_f1 = uc_f1.ppm_scale()
+            ppm_f2 = uc_f2.ppm_scale()
+
+            ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()  # max,min
+            ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()  # max,min
+
+        elif ndim == 3:
+            dims = params.get("dims", [0, 1, 2])
+            f1, f2, f3 = dims
+            uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
+            uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
+            uc_f3 = ng.pipe.make_uc(dic, data, dim=f3)
+            #  need to make more robust
+            ppm_f1 = uc_f2.ppm_scale()
+            ppm_f2 = uc_f3.ppm_scale()
+
+            ppm_f1_0, ppm_f1_1 = uc_f2.ppm_limits()  # max,min
+            ppm_f2_0, ppm_f2_1 = uc_f3.ppm_limits()  # max,min
+
+            # if f1 == 0:
+            #    data = data[f1]
+            if dims != [1, 2, 3]:
+                data = np.transpose(data, dims)
+            data = data[0]
+            # x and y are set to f2 and f1
+            f1, f2 = f2, f3
+            # elif f1 == 1:
+            #    data = data[:,0,:]
+            # else:
+            #    data = data[:,:,0]
+
+        # plot parameters
+        contour_start = cs  # contour level start value
+        contour_num = contour_num  # number of contour levels
+        contour_factor = contour_factor  # scaling factor between contour levels
+
+        # calculate contour levels
+        cl = contour_start * contour_factor ** np.arange(contour_num)
+        if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
+            print(f"Setting contour levels to np.abs({cl})")
+            cl = np.abs(cl)
+
+        ax.contour(
+            data,
+            cl,
+            colors=[colors for _ in cl],
+            linewidths=spec.get("linewidths", 0.5),
+            extent=(ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1),
+        )
+
+        if neg_colors:
+            ax.contour(
+                data * -1,
+                cl,
+                colors=[neg_colors for _ in cl],
+                linewidths=spec.get("linewidths", 0.5),
+                extent=(ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1),
+            )
+
+        else:  # if no neg color given then plot with 0.5 alpha
+            ax.contour(
+                data * -1,
+                cl,
+                colors=[colors for _ in cl],
+                linewidths=spec.get("linewidths", 0.5),
+                extent=(ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1),
+                alpha=0.5,
+            )
+
+        # make legend
+        if label:
+            legends += 1
+            # hack for legend
+            ax.plot([], [], c=colors, label=label)
+
+    # plt.xlim(ppm_f2_0, ppm_f2_1)
+    ax.invert_xaxis()
+    ax.set_xlabel(udic[f2]["label"] + " ppm")
+    if params.get("xlim"):
+        ax.set_xlim(*params.get("xlim"))
+
+    # plt.ylim(ppm_f1_0, ppm_f1_1)
+    ax.invert_yaxis()
+    ax.set_ylabel(udic[f1]["label"] + " ppm")
+
+    if legends > 0:
+        plt.legend(
+            loc="upper center", bbox_to_anchor=(0.5, 1.20), ncol=params.get("ncol", 2)
+        )
+
+    plt.tight_layout()
+
+    #  add a list of outfiles
+    y = 0.025
+    # only write cs levels if show_cs: True in yaml file
+    if params.get("show_cs"):
+        for num, j in enumerate(notes):
+            col = j[1]
+            con_strt = j[0]
+            ax.text(0.025, y, "cs=%.2e" % con_strt, color=col, transform=ax.transAxes)
+            y += 0.05
+
+    if params.get("clusters"):
+
+        peaklist = params.get("clusters")
+        if os.path.splitext(peaklist)[-1] == ".csv":
+            clusters = pd.read_csv(peaklist)
+        else:
+            clusters = pd.read_pickle(peaklist)
+        groups = clusters.groupby("CLUSTID")
+        for ind, group in groups:
+            if len(group) == 1:
+                ax.plot(group.X_PPM, group.Y_PPM, "ko", markersize=1)  # , picker=5)
+            else:
+                ax.plot(group.X_PPM, group.Y_PPM, "o", markersize=1)  # , picker=5)
+
+    if params.get("outname") and (type(params.get("outname")) == list):
+        for i in params.get("outname"):
+            plt.savefig(i, bbox_inches="tight", dpi=300)
+    else:
+        plt.savefig(params.get("outname", "test.pdf"), bbox_inches="tight")
+
+    # fig.canvas.mpl_connect("pick_event", onpick)
+    # line, = ax.plot(np.random.rand(100), 'o', picker=5)  # 5 points tolerance
+    plt.show()
 
 
 if __name__ == "__main__":

@@ -521,17 +521,6 @@ develop = ["cython (>=0.29.26)"]
 docs = ["sphinx", "nbconvert", "jupyter-client", "ipykernel", "matplotlib", "nbformat", "numpydoc", "pandas-datareader"]
 
 [[package]]
-name = "tabulate"
-version = "0.8.10"
-description = "Pretty-print tabular data"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-
-[package.extras]
-widechars = ["wcwidth"]
-
-[[package]]
 name = "tifffile"
 version = "2022.8.3"
 description = "Read and write TIFF files"
@@ -606,7 +595,7 @@ tests = ["nose", "numpy"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "11a4b688e7987ce935fe68bb71082da9314535a0909b99dd1c4f597dda575c30"
+content-hash = "654e4378aaa2a3090ad5c92e1a5cc21cb04ea775e08b3b63983a2960c8caee5c"
 
 [metadata.files]
 algopy = []
@@ -649,7 +638,6 @@ scipy = []
 setuptools-scm = []
 six = []
 statsmodels = []
-tabulate = []
 tifffile = []
 tomli = []
 tornado = []

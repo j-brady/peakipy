@@ -4,9 +4,9 @@ from pathlib import Path
 import pandas as pd
 
 
-import peakipy.commandline.read
-import peakipy.commandline.fit
-import peakipy.commandline.check
+import peakipy.cli.main.read
+import peakipy.cli.main.fit
+import peakipy.cli.main.check
 
 # set temp path
 path = Path(os.getenv("HOME")) / ".peakipy"
@@ -49,18 +49,19 @@ def PeaksToDataFrame(peaks):
 
 
 def peakipy_read(path=path):
-    argv = [f"{path}/test.tsv", f"{current_spectrum_path}", "--a3"]
-    peakipy.commandline.read.main(argv)
+    #argv = [f"{path}/test.tsv", f"{current_spectrum_path}", "--a3"]
+    args = dict(peaklist_path=path/"test.tsv",data_path=current_spectrum_path,peaklist_format="a3")
+    peakipy.cli.main.read(**args)
 
 
 def peakipy_fit():
     out_path = current_spectrum_path.parent
-    argv = [
-        f"{ out_path / 'test.csv'}",
-        f"{current_spectrum_path}",
-        f"{out_path  /  'fits.csv'}",
-    ]
-    peakipy.commandline.fit.main(argv)
+    args = dict(
+        peaklist_path=out_path / 'test.csv',
+        data_path=current_spectrum_path,
+        output_path=out_path  /  'fits.csv',
+    )
+    peakipy.cli.main.fit(**args)
 
 
 def peakipy_check():
@@ -69,10 +70,10 @@ def peakipy_check():
     argv = [
         f"{out_path / 'fits.csv'}",
         f"{current_spectrum_path}",
-        "-s",
+        "--show",
         "--first",
-        "-l",
-        "-i",
+        "--label",
+        "--individual",
         "--ccpn",
     ]
     peakipy.commandline.check.main(argv)

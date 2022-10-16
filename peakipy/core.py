@@ -24,6 +24,8 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import List
+from enum import Enum
 
 import numpy as np
 import nmrglue as ng
@@ -31,11 +33,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import textwrap
 from rich import print
+from rich.table import Table
 from rich.console import Console
-from colorama import Fore, init
 
 from numpy import sqrt, log, pi, exp, finfo
-from tabulate import tabulate
 
 from lmfit import Model
 from lmfit.model import ModelResult
@@ -51,12 +52,40 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, disk, rectangle
 from skimage.filters import threshold_otsu
 
-init(autoreset=True)
 console = Console()
 # constants
 log2 = log(2)
 π = pi
 tiny = finfo(float).eps
+
+class StrucEl(Enum):
+    square = "square"
+    disk = "disk"
+    rectangle = "rectangle"
+    mask_method = "mask_method"
+
+class PeaklistFormat(Enum):
+    a2 = "a2"
+    a3 = "a3"
+    sparky = "sparky"
+    pipe = "pipe"
+    peakipy = "peakipy"
+
+
+class OutFmt(Enum):
+    csv = "csv"
+    pkl = "pkl"
+
+
+class Lineshape(Enum):
+    PV = "PV"
+    V = "V"
+    G = "G"
+    L = "L"
+    PV_PV = "PV_PV"
+    G_L = "G_L"
+    PV_G = "PV_G"
+    PV_L = "PV_L"
 
 
 def gaussian(x, center=0.0, sigma=1.0):
@@ -459,7 +488,7 @@ def get_params(params, name):
     return ps, ps_err, names
 
 
-def make_param_dict(peaks, data, lineshape="PV"):
+def make_param_dict(peaks, data, lineshape: Lineshape=Lineshape.PV):
     """Make dict of parameter names using prefix"""
 
     param_dict = {}
@@ -477,34 +506,34 @@ def make_param_dict(peaks, data, lineshape="PV"):
         ].sum()
 
         param_dict[str_form("amplitude")] = amplitude_est
+        # sigma linewidth esimate
+        param_dict[str_form("sigma_x")] = peak.XW / 2.0
+        param_dict[str_form("sigma_y")] = peak.YW / 2.0
 
-        if lineshape == "V":
-            #  Voigt G sigma from linewidth esimate
-            param_dict[str_form("sigma_x")] = peak.XW / (
-                2.0 * sqrt(2.0 * log2)
-            )  # 3.6013
-            param_dict[str_form("sigma_y")] = peak.YW / (
-                2.0 * sqrt(2.0 * log2)
-            )  # 3.6013
-            #  Voigt L gamma from linewidth esimate
-            param_dict[str_form("gamma_x")] = peak.XW / 2.0
-            param_dict[str_form("gamma_y")] = peak.YW / 2.0
-            # height
-            # add height here
-        else:
-            # sigma linewidth esimate
-            param_dict[str_form("sigma_x")] = peak.XW / 2.0
-            param_dict[str_form("sigma_y")] = peak.YW / 2.0
+        match lineshape:
+            case lineshape.V:
+                #  Voigt G sigma from linewidth esimate
+                param_dict[str_form("sigma_x")] = peak.XW / (
+                    2.0 * sqrt(2.0 * log2)
+                )  # 3.6013
+                param_dict[str_form("sigma_y")] = peak.YW / (
+                    2.0 * sqrt(2.0 * log2)
+                )  # 3.6013
+                #  Voigt L gamma from linewidth esimate
+                param_dict[str_form("gamma_x")] = peak.XW / 2.0
+                param_dict[str_form("gamma_y")] = peak.YW / 2.0
+                # height
+                # add height here
 
-        if lineshape == "G":
-            param_dict[str_form("fraction")] = 0.0
-        elif lineshape == "L":
-            param_dict[str_form("fraction")] = 1.0
-        elif lineshape == "PV_PV":
-            param_dict[str_form("fraction_x")] = 0.5
-            param_dict[str_form("fraction_y")] = 0.5
-        else:
-            param_dict[str_form("fraction")] = 0.5
+            case lineshape.G:
+                param_dict[str_form("fraction")] = 0.0
+            case lineshape.L:
+                param_dict[str_form("fraction")] = 1.0
+            case lineshape.PV_PV:
+                param_dict[str_form("fraction_x")] = 0.5
+                param_dict[str_form("fraction_y")] = 0.5
+            case _:
+                param_dict[str_form("fraction")] = 0.5
 
     return param_dict
 
@@ -546,7 +575,7 @@ def to_prefix(x):
     return prefix + "_"
 
 
-def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
+def make_models(model, peaks, data, lineshape: Lineshape=Lineshape.PV, xy_bounds=None):
     """Make composite models for multiple peaks
 
     :param model: lineshape function
@@ -594,15 +623,15 @@ def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
     return mod, p_guess
 
 
-def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
+def update_params(params, param_dict, lineshape: Lineshape=Lineshape.PV, xy_bounds=None):
     """Update lmfit parameters with values from Peak
 
     :param params: lmfit parameters
     :type params: lmfit.Parameters object
     :param param_dict: parameters corresponding to each peak in fit
     :type param_dict: dict
-    :param lineshape: lineshape (PV, G, L, PV_PV etc.)
-    :type lineshape: str
+    :param lineshape: Lineshape (PV, G, L, PV_PV etc.)
+    :type lineshape: Lineshape
     :param xy_bounds: bounds on xy peak positions
     :type xy_bounds: tuple
 
@@ -654,10 +683,13 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
             params[k].max = 1.0
 
             #  fix fraction of G or L
-            if lineshape == "G":
-                params[k].vary = False
-            elif lineshape == "L":
-                params[k].vary = False
+            match lineshape:
+                case lineshape.G | lineshape.L:
+                    params[k].vary = False
+                case lineshape.PV | lineshape.PV_PV:
+                    params[k].vary = True
+                case _:
+                    pass
 
     # return params
 
@@ -673,11 +705,46 @@ def run_log(log_name="run_log.txt"):
         log.write(f"# Script run on {time_stamp}:\n{run_args}\n")
 
 
+def df_to_rich_table(df, title: str, columns: List[str], styles: str):
+    """Print dataframe using rich library
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    title : str
+        title of table
+    columns : List[str]
+        list of column names (must be in df)
+    styles : List[str]
+        list of styles in same order as columns
+    """
+    table = Table(title=title)
+    for col, style in zip(columns, styles):
+        table.add_column(col, style=style)
+    for ind, row in df.iterrows():
+        row = row[columns].values
+        str_row = []
+        for i in row:
+            match i:
+                case str():
+                    str_row.append(f"{i}")
+                case float() if i > 1e5:
+                    str_row.append(f"{i:.1e}")
+                case float():
+                    str_row.append(f"{i:.3f}")
+                case bool():
+                    str_row.append(f"{i}")
+                case int():
+                    str_row.append(f"{i}")
+        table.add_row(*str_row)
+    return table
+
+
 def fit_first_plane(
     group,
     data,
     uc_dics,
-    lineshape="PV",
+    lineshape: Lineshape.PV,
     xy_bounds=None,
     verbose=False,
     log=None,
@@ -725,39 +792,25 @@ def fit_first_plane(
     """
     shape = data.shape
     mask = np.zeros(shape, dtype=bool)
+    match lineshape:
+        case lineshape.PV | lineshape.G | lineshape.L:
+            lineshape_function = pvoigt2d
+        case lineshape.V:
+            lineshape_function = voigt2d
+        case lineshape.PV_PV:
+            lineshape_function = pv_pv
+        case lineshape.G_L:
+            lineshape_function = gaussian_lorentzian
+        case lineshape.PV_G:
+            lineshape_function = pv_g
+        case lineshape.PV_L:
+            lineshape_function = pv_l
+        case _:
+            raise Exception("No lineshape was selected!")
 
-    if (lineshape == "PV") or (lineshape == "G") or (lineshape == "L"):
-        mod, p_guess = make_models(
-            pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "V":
-        mod, p_guess = make_models(
-            voigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "G_L":
-        mod, p_guess = make_models(
-            gaussian_lorentzian, group, data, lineshape="PV", xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "PV_G":
-        mod, p_guess = make_models(
-            pv_g, group, data, lineshape="PV", xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "PV_L":
-        mod, p_guess = make_models(
-            pv_l, group, data, lineshape="PV", xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "PV_PV":
-        mod, p_guess = make_models(
-            pv_pv, group, data, lineshape="PV_PV", xy_bounds=xy_bounds
-        )
-    else:
-        raise Exception("No lineshape was selected!")
-
+    mod, p_guess = make_models(
+        lineshape_function, group, data, lineshape=lineshape, xy_bounds=xy_bounds
+    )
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
     cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
@@ -808,7 +861,7 @@ def fit_first_plane(
     )
 
     if verbose:
-        console.print(out.fit_report(),style="bold")
+        console.print(out.fit_report(), style="bold")
 
     z_sim = mod.eval(XY=XY, params=out.params)
     z_sim[~mask] = np.nan
@@ -977,7 +1030,7 @@ class FitResult:
         # std =  np.std(amps)
         return JackKnifeResult(mean=mean_amps, std=std_amps)
 
-    def plot(self, plot_path=None, show=False, nomp=True):
+    def plot(self, plot_path=None, show=False, mp=False):
         """Matplotlib interactive plot of the fits"""
 
         if plot_path != None:
@@ -1063,7 +1116,7 @@ class FitResult:
             plt.legend(bbox_to_anchor=(1.2, 1.1))
 
             name = self.group.CLUSTID.iloc[0]
-            if show and nomp:
+            if show and not mp:
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
 
                 def exit_program(event):
@@ -1083,8 +1136,7 @@ class FitResult:
                 plt.show()
             else:
                 print(
-                    Fore.RED
-                    + "Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag."
+                    "[red]Cannot use interactive matplotlib in multiprocess mode. Use --no-mp flag.[/red]"
                 )
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
             #    print(p_guess)
@@ -1119,28 +1171,22 @@ class Pseudo3D:
         self._ndim = self._udic["ndim"]
 
         if self._ndim == 1:
-            err = (
-                Fore.RED
-                + f"""
+            err = f"""[red]
             ##########################################
                 NMR Data should be either 2D or 3D
             ##########################################
-            """
-            )
+            [/red]"""
             # raise TypeError(err)
             sys.exit(err)
 
         # check that spectrum has correct number of dims
         elif self._ndim != len(dims):
-            err = (
-                Fore.RED
-                + f"""
+            err = f"""[red]
             #################################################################
                Your spectrum has {self._ndim} dimensions with shape {data.shape}
                but you have given a dimension order of {dims}...
             #################################################################
-            """
-            )
+            [/red]"""
             # raise ValueError(err)
             sys.exit(err)
 
@@ -1334,6 +1380,8 @@ class Pseudo3D:
     def f1_ppm_1(self):
         return self.f1_ppm_limits[1]
 
+class UnknownFormat(Exception):
+    pass
 
 class Peaklist(Pseudo3D):
     """Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
@@ -1370,7 +1418,7 @@ class Peaklist(Pseudo3D):
         self,
         path,
         data_path,
-        fmt="a2",
+        fmt:PeaklistFormat=PeaklistFormat.a2,
         dims=[0, 1, 2],
         radii=[0.04, 0.4],
         posF1="Position F2",
@@ -1463,21 +1511,21 @@ class Peaklist(Pseudo3D):
         self._df = self.read_peaklist()
 
     def read_peaklist(self):
+        match self.fmt:
+            case self.fmt.a2:
+                self._df = self._read_analysis()
 
-        if self.fmt == "a2":
-            self._df = self._read_analysis()
+            case self.fmt.a3:
+                self._df = self._read_assign()
 
-        elif self.fmt == "a3":
-            self._df = self._read_assign()
+            case self.fmt.sparky:
+                self._df = self._read_sparky()
 
-        elif self.fmt == "sparky":
-            self._df = self._read_sparky()
+            case self.fmt.pipe:
+                self._df = self._read_pipe()
 
-        elif self.fmt == "pipe":
-            self._df = self._read_pipe()
-
-        else:
-            raise (TypeError, "I don't know this format")
+            case _:
+                raise UnknownFormat("I don't know this format: {self.fmt}")
 
         return self._df
 
@@ -1544,7 +1592,7 @@ class Peaklist(Pseudo3D):
         self.df["YW"] = self.df.YW_HZ.apply(lambda x: x * self.pt_per_hz_f1)
         # makes an assignment column from Assign F1 and Assign F2 columns
         # in analysis2.x and ccpnmr v3 assign peak lists
-        if self.fmt in ["a2", "a3"]:
+        if self.fmt in [PeaklistFormat.a2, PeaklistFormat.a3]:
             self.df["ASS"] = self.df.apply(
                 # lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
                 lambda i: f"{i['Assign F1']}_{i['Assign F2']}",
@@ -1649,7 +1697,8 @@ class Peaklist(Pseudo3D):
                     Currently each peak needs a unique assignment. Sorry about that buddy...
                 #############################################################################
                 """
-                ), style="yellow"
+                ),
+                style="yellow",
             )
             self.df.loc[duplicates_bool, "ASS"] = [
                 f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
@@ -1669,6 +1718,7 @@ class Peaklist(Pseudo3D):
             )
 
     def check_peak_bounds(self):
+        columns_to_print = ["INDEX", "ASS", "X_AXIS", "Y_AXIS", "X_PPM", "Y_PPM"]
         # check that peaks are within the bounds of spectrum
         within_x = (self.df.X_PPM < self.f2_ppm_max) & (self.df.X_PPM > self.f2_ppm_min)
         within_y = (self.df.Y_PPM < self.f1_ppm_max) & (self.df.Y_PPM > self.f1_ppm_min)
@@ -1676,29 +1726,28 @@ class Peaklist(Pseudo3D):
         self.df = self.df[within_x & within_y]
         if len(self.excluded) > 0:
             print(
-                Fore.RED
-                + textwrap.dedent(
-                    f"""
+                textwrap.dedent(
+                    f"""[red]
                     #################################################################################
 
                     Excluding the following peaks as they are not within the spectrum which has shape 
 
                     {self.data.shape}
-                """
+                [/red]"""
                 )
             )
-            print(
-                Fore.RED
-                + f"""
-{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS","X_PPM","Y_PPM"]],headers="keys", tablefmt="fancy_grid")}
-                """
+            table_to_print = df_to_rich_table(
+                self.excluded,
+                title="Excluded",
+                columns=columns_to_print,
+                styles=["red" for i in columns_to_print],
             )
+            print(table_to_print)
             print(
-                Fore.RED
-                + "#################################################################################"
+                "[red]#################################################################################[/red]"
             )
 
-    def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
+    def clusters(self, thres=None, struc_el: StrucEl=StrucEl.disk, struc_size=(3,), l_struc=None):
         """Find clusters of peaks
 
         :param thres: threshold for positive signals above which clusters are selected. If None then threshold_otsu is used
@@ -1728,30 +1777,31 @@ class Peaklist(Pseudo3D):
             self.data[0] < (self._thres * -1.0), self.data[0] > self._thres
         )
 
-        if struc_el == "disk":
-            radius = struc_size[0]
-            if self.verbose:
-                print(f"using disk with {radius}")
-            closed_data = binary_closing(thresh_data, disk(int(radius)))
+        match struc_el:
+            case struc_el.disk:
+                radius = struc_size[0]
+                if self.verbose:
+                    print(f"using disk with {radius}")
+                closed_data = binary_closing(thresh_data, disk(int(radius)))
 
-        elif struc_el == "square":
-            width = struc_size[0]
-            if self.verbose:
-                print(f"using square with {width}")
-            closed_data = binary_closing(thresh_data, square(int(width)))
+            case struc_el.square:
+                width = struc_size[0]
+                if self.verbose:
+                    print(f"using square with {width}")
+                closed_data = binary_closing(thresh_data, square(int(width)))
 
-        elif struc_el == "rectangle":
-            width, height = struc_size
-            if self.verbose:
-                print(f"using rectangle with {width} and {height}")
-            closed_data = binary_closing(
-                thresh_data, rectangle(int(width), int(height))
-            )
+            case struc_el.rectangle:
+                width, height = struc_size
+                if self.verbose:
+                    print(f"using rectangle with {width} and {height}")
+                closed_data = binary_closing(
+                    thresh_data, rectangle(int(width), int(height))
+                )
 
-        else:
-            if self.verbose:
-                print(f"Not using any closing function")
-            closed_data = thresh_data
+            case _:
+                if self.verbose:
+                    print(f"Not using any closing function")
+                closed_data = thresh_data
 
         labeled_array, num_features = ndimage.label(closed_data, l_struc)
 
@@ -2031,29 +2081,30 @@ def read_config(args, config_path="peakipy.config"):
     config_path = Path(config_path)
     if config_path.exists():
         try:
-            config = json.load(open(config_path))
-            print(Fore.GREEN + f"Using config file with --dims={config.get('--dims')}")
-            args["--dims"] = config.get("--dims", [0, 1, 2])
-            noise = config.get("noise")
-            if noise:
-                noise = float(noise)
+            with open(config_path) as config_file:
+                config = json.load(config_file)
+                print(
+                    f"[green]Using config file with dims [yellow]{config.get('dims')}[/yellow][/green]"
+                )
+                args["dims"] = config.get("dims", [0, 1, 2])
+                noise = config.get("noise")
+                if noise:
+                    noise = float(noise)
 
-            colors = config.get("--colors", ["#5e3c99", "#e66101"])
+                colors = config.get("colors", ["#5e3c99", "#e66101"])
         except json.decoder.JSONDecodeError:
             print(
-                Fore.RED
-                + "Your peakipy.config file is corrupted - maybe your JSON is not correct..."
+                "[red]Your peakipy.config file is corrupted - maybe your JSON is not correct...[/red]"
             )
-            print(Fore.RED + "Not using")
+            print("[red]Not using[/red]")
             noise = False
-            colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
+            colors = args.get("colors", "#5e3c99,#e66101").strip().split(",")
     else:
         print(
-            Fore.RED
-            + "No peakipy.config found - maybe you need to generate one with peakipy read or see docs"
+            "[red]No peakipy.config found - maybe you need to generate one with peakipy read or see docs[/red]"
         )
         noise = False
-        colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
+        colors = args.get("colors", "#5e3c99,#e66101").strip().split(",")
         config = {}
 
     args["noise"] = noise

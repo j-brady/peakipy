@@ -1,54 +1,21 @@
 #!/usr/bin/env python3
 """ Script for checking fits and editing fit params
-
-    Usage:
-        edit_fits_script.py <peaklist> <data> [options]
-
-    Arguments:
-        <peaklist>  peaklist output from read_peaklist.py (csv, tab or pkl)
-        <data>      NMRPipe data
-
-    Options:
-        --dims=<id,f1,f2>  order of dimensions [default: 0,1,2]
-
-
-    peakipy - deconvolute overlapping NMR peaks
-    Copyright (C) 2019  Jacob Peter Brady
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 """
 import os
 import sys
 import shutil
-import json
 
 from pathlib import Path
 from subprocess import check_output
-from docopt import docopt
-from typing import Tuple
 from pathlib import Path
-from schema import Schema, And, SchemaError
-from colorama import Fore, init
 
-init(autoreset=True)
 
 import nmrglue as ng
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import magma, autumn, viridis
 from skimage.filters import threshold_otsu
+from rich import print
 
 from bokeh.events import ButtonClick, DoubleTap
 from bokeh.layouts import row, column
@@ -72,11 +39,9 @@ from bokeh.models.widgets import (
     Panel,
 )
 from bokeh.plotting import figure
-
-from bokeh.server.server import Server
 from bokeh.palettes import PuBuGn9, Category20
 
-from peakipy.core import run_log, LoadData
+from peakipy.core import LoadData, read_config, StrucEl
 
 log_style = "overflow:scroll;"
 log_div = """<div style=%s>%s</div>"""
@@ -84,14 +49,18 @@ log_div = """<div style=%s>%s</div>"""
 
 class BokehScript:
     def __init__(
-        self, peaklist_path: Path, data_path: Path, dims: Tuple[int, int, int]
+        self, peaklist_path: Path, data_path: Path
     ):
 
         self._path = peaklist_path
         self._data_path = data_path
-        self.read_config()
+        args, config = read_config({})
+        #self.args = args 
+        #self.config = config
+        self._dims = config.get("dims", [0,1,2])
+        self.thres = config.get("thres",1e6)
         self._peakipy_data = LoadData(
-            self._path, self._data_path, dims=self.dims, verbose=True
+            self._path, self._data_path, dims=self._dims, verbose=True
         )
         # check dataframe is usable
         self.peakipy_data.check_data_frame()
@@ -148,32 +117,6 @@ class BokehScript:
         self.source = ColumnDataSource()
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
         return self.source
-
-    def read_config(self):
-        #  read dims from config
-        config_path = Path("peakipy.config")
-        if config_path.exists():
-            try:
-                config = json.load(open(config_path))
-                print(f"Using config file with dims={config.get('dims')}")
-                dims = config.get("dims", (0, 1, 2))
-                self._dims = " ".join(str(i) for i in dims)
-                self.thres = config.get("thres")
-            except json.decoder.JSONDecodeError:
-                print(
-                    Fore.RED
-                    + "Your peakipy.config file is corrupted - maybe your JSON is not correct..."
-                )
-                print(Fore.RED + "Not using it.")
-                self._dims = self.args.get("dims")
-                self.thres = False
-
-        else:
-            # get dim numbers from commandline
-            self._dims = self.args.get("dims")
-            self.thres = False
-        self.dims = dims
-        # self.dims = [int(i) for i in self._dims.split(",")]
 
     def setup_radii_sliders(self):
         # configure sliders for setting radii
@@ -490,8 +433,8 @@ class BokehScript:
         # reclustering tab
         self.struct_el = Select(
             title="Structuring element:",
-            value="disk",
-            options=["square", "disk", "rectangle", "None", "mask_method"],
+            value=StrucEl.disk.value,
+            options=[i.value for i in StrucEl] + ["None"],
             width=100,
         )
         self.struct_el_size = TextInput(
@@ -524,7 +467,6 @@ class BokehScript:
         )
 
     def recluster_peaks(self, event):
-
         if self.struct_el.value == "mask_method":
             self.struc_size = tuple(
                 [float(i) for i in self.struct_el_size.value.split(",")]
@@ -538,7 +480,7 @@ class BokehScript:
             print(self.struc_size)
             self.peakipy_data.clusters(
                 thres=eval(self.contour_start.value),
-                struc_el=self.struct_el.value,
+                struc_el=StrucEl(self.struct_el.value),
                 struc_size=self.struc_size,
             )
         # update data source
@@ -589,18 +531,17 @@ class BokehScript:
         selected_df.to_csv(self.TEMP_INPUT_CSV)
 
         lineshape = self.lineshapes[self.radio_button_group.active]
+        print(f"[yellow]Using LS = {lineshape}[/yellow]")
         if self.checkbox_group.active == []:
-            print(Fore.YELLOW + "Using LS = ", lineshape)
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --dims {self._dims}"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape}"
             plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
         else:
             plane_index = self.select_plane.value
-            print(Fore.YELLOW + "Using LS = ", lineshape)
-            print(Fore.YELLOW + f"Only fitting plane {plane_index}")
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --dims {self._dims} --plane {plane_index}"
+            print(f"[yellow]Only fitting plane {plane_index}[/yellow]")
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --plane {plane_index}"
             plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane {plane_index}"
 
-        print(Fore.BLUE + fit_command)
+        print(f"[blue]{fit_command}[/blue]")
         self.fit_reports += fit_command + "<br>"
 
         stdout = check_output(fit_command.split(" "))
@@ -621,7 +562,7 @@ class BokehScript:
             shutil.copy(f"{to_save}", f"{to_save}.bak")
             print(f"Making backup {to_save}.bak")
 
-        print(Fore.GREEN + f"Saving peaks to {to_save}")
+        print(f"[green]Saving peaks to {to_save}[/green]")
         if to_save.suffix == ".csv":
             self.peakipy_data.df.to_csv(to_save, float_format="%.4f", index=False)
         else:
@@ -661,7 +602,7 @@ class BokehScript:
         height = self.peakipy_data.data[0][int(y_axis), int(x_axis)]
         volume = height
         print(
-            Fore.BLUE + f"""Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}"""
+            f"""[blue]Adding peak at {assignment}: {event.x:.3f},{event.y:.3f}[/blue]"""
         )
 
         new_peak = {
@@ -878,51 +819,3 @@ def get_contour_data(data, levels, **kwargs):
         data={"xs": xs, "ys": ys, "line_color": col, "xt": xt, "yt": yt, "text": text}
     )
     return source
-
-
-def check_input(args):
-    """validate commandline input"""
-    schema = Schema(
-        {
-            "<peaklist>": And(
-                os.path.exists,
-                open,
-                error=Fore.RED
-                + f"{args['<peaklist>']} should exist and be readable .csv file",
-            ),
-            "<data>": And(
-                os.path.exists,
-                ng.pipe.read,
-                error=Fore.RED
-                + f"{args['<data>']} either does not exist or is not an NMRPipe format 2D or 3D",
-            ),
-            "--dims": And(
-                lambda n: [int(i) for i in eval(n)],
-                error=Fore.RED + "--dims should be list of integers e.g. --dims=0,1,2",
-            ),
-        }
-    )
-
-    try:
-        args = schema.validate(args)
-        return args
-    except SchemaError as e:
-        sys.exit(e)
-
-
-def main(args):
-    from bokeh.util.browser import view
-
-    run_log()
-    bs = BokehScript(args)
-    server = Server({"/edit": bs.init})
-    server.start()
-    print(Fore.GREEN + "Opening peakipy: Edit fits on http://localhost:5006/edit")
-    server.io_loop.add_callback(server.show, "/edit")
-    server.io_loop.start()
-
-
-if __name__ == "__main__":
-
-    args = sys.argv[1:]
-    main(args)
