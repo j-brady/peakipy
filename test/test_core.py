@@ -20,6 +20,7 @@ from peakipy.core import (
     Lineshape,
 )
 
+
 class TestCoreFunctions(unittest.TestCase):
     def test_make_mask(self):
         data = np.ones((10, 10))
@@ -170,8 +171,7 @@ class TestCoreFunctions(unittest.TestCase):
 
         data = np.ones((20, 20))
 
-        lineshapes = [Lineshape.PV,
-         Lineshape.L, Lineshape.G, Lineshape.PV_PV]
+        lineshapes = [Lineshape.PV, Lineshape.L, Lineshape.G, Lineshape.PV_PV]
 
         for lineshape in lineshapes:
             match lineshape:
@@ -196,7 +196,6 @@ class TestCoreFunctions(unittest.TestCase):
                     self.assertEqual(p_guess["_one_fraction_x"].value, 0.5)
                     self.assertEqual(p_guess["_one_fraction_y"].vary, True)
                     self.assertEqual(p_guess["_one_fraction_y"].value, 0.5)
-
 
     def test_Pseudo3D(self):
 

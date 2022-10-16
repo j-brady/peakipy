@@ -120,45 +120,45 @@ def read(
 
     Parameters
     ----------
-    peaklist_path: Path
+    peaklist_path : Path
         Analysis2/CCPNMRv3(assign)/Sparky/NMRPipe peak list (see below)
-    data_path: Path
+    data_path : Path
         2D or pseudo3D NMRPipe data
-    peaklist_format: PeaklistFormat
+    peaklist_format : PeaklistFormat
         a2 - Analysis peaklist as input (tab delimited)
         a3 - CCPNMR v3 peaklist as input (tab delimited)
         sparky - Sparky peaklist as input
         pipe - NMRPipe peaklist as input
         peakipy - peakipy peaklist.csv or .tab (originally output from peakipy read or edit)
 
-    thres: Optional[float]
+    thres : Optional[float]
         Threshold for making binary mask that is used for peak clustering [default: None]
         If set to None then threshold_otsu from scikit-image is used to determine threshold
-    struc_el: StrucEl
+    struc_el : StrucEl
         Structuring element for binary_closing [default: disk]
         'square'|'disk'|'rectangle'
-    struc_size: Tuple[int, int]
+    struc_size : Tuple[int, int]
         Size/dimensions of structuring element [default: 3, None]
         For square and disk first element of tuple is used (for disk value corresponds to radius).
         For rectangle, tuple corresponds to (width,height).
-    x_radius_ppm: float
+    x_radius_ppm : float
         F2 radius in ppm for fit mask [default: 0.04]
-    y_radius_ppm: float
+    y_radius_ppm : float
         F1 radius in ppm for fit mask [default: 0.4]
-    dims: Tuple[int]
+    dims : Tuple[int]
         <planes,y,x>
         Order of dimensions [default: 0,1,2]
-    posF2: str
+    posF2 : str
         Name of column in Analysis2 peak list containing F2 (i.e. X_PPM)
         peak positions [default: "Position F1"]
-    posF1: str
+    posF1 : str
         Name of column in Analysis2 peak list containing F1 (i.e. Y_PPM)
         peak positions [default: "Position F2"]
-    outfmt: OutFmt
+    outfmt : OutFmt
         Format of output peaklist [default: csv]
-    show: bool
+    show : bool
         Show the clusters on the spectrum color coded using matplotlib
-    fuda: bool
+    fuda : bool
         Create a parameter file for running fuda (params.fuda)
 
 
@@ -372,43 +372,43 @@ def fit(
 
     Parameters
     ----------
-    peaklist_path: Path
+    peaklist_path : Path
         peaklist output from read_peaklist.py
-    data_path: Path
+    data_path : Path
         2D or pseudo3D NMRPipe data (single file)
-    output_path: Path
+    output_path : Path
         output peaklist "<output>.csv" will output CSV
         format file, "<output>.tab" will give a tab delimited output
         while "<output>.pkl" results in Pandas pickle of DataFrame
-    max_cluster_size: int
+    max_cluster_size : int
         Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
-    lineshape: Lineshape
+    lineshape : Lineshape
         Lineshape to fit [default: Lineshape.PV]
-    fix: List[str] 
+    fix : List[str] 
         <fraction,sigma,center>
         Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
-    xy_bounds: Tuple[float,float]
+    xy_bounds : Tuple[float,float]
         <x_ppm,y_ppm>
         Bound X and Y peak centers during fit [default: (0,0) which means no bounding]
         This can be set like so --xy_bounds=0.1,0.5
-    vclist: Optional[Path]
+    vclist : Optional[Path]
         Bruker style vclist [default: None]
-    plane: Optional[List[int]]
+    plane : Optional[List[int]]
         Specific plane(s) to fit [default: None]
         eg. [1,4,5] will use only planes 1, 4 and 5
-    exclude_plane: Optional[List[int]]
+    exclude_plane : Optional[List[int]]
         Specific plane(s) to fit [default: None]
         eg. [1,4,5] will exclude planes 1, 4 and 5
-    mp: bool
+    mp : bool
         Use multiprocessing [default: True]
-    plot: Optional[Path]
+    plot : Optional[Path]
         Whether to plot wireframe fits for each peak
         (saved into Path provided) [default: None]
-    show: bool
+    show : bool
         Whether to show (using plt.show()) wireframe
         fits for each peak. Only works if Path is provided to the plot
         argument
-    verb: bool
+    verb : bool
         Print what's going on
     """
     # number of CPUs
@@ -764,30 +764,41 @@ def check(
     colors: Tuple[str, str] = ("#5e3c99", "#e66101"),
     verb: bool = False,
 ):
+    """Interactive plots for checking fits
+
+    Parameters
+    ----------
+    fits : Path
+    data_path : Path
+    clusters : Optional[List[int]]
+        <id1,id2,etc> 
+        Plot selected cluster based on clustid [default: None]
+        e.g. clusters=[2,4,6,7] 
+    plane : int
+        Plot selected plane [default: 0]
+        e.g. plane=2 will plot second plane only
+    outname : Path
+        Plot name [default: Path("plots.pdf")]
+    first : bool
+        Only plot first plane (overrides --plane option)
+    show : bool 
+        Invoke plt.show() for interactive plot
+    individual : bool
+        Plot individual fitted peaks as surfaces with different colors
+    label : bool
+        Label individual peaks
+    ccpn : bool
+        for use in ccpnmr
+    rcount : int
+        row count setting for wireplot [default: 50]
+    ccount : int
+        column count setting for wireplot [default: 50]
+    colors : Tuple[str,str]
+        <data,fit> 
+        plot colors [default: #5e3c99,#e66101]
+    verb : bool
+        verbose mode 
     """
-    Usage:
-         check <fits> <nmrdata> [options]
-
-     Options:
-         --dims=<id,f1,f2>         Dimension order [default: 0,1,2]
-
-         --clusters=<id1,id2,etc>  Plot selected cluster based on clustid [default: None]
-                                   e.g. --clusters=1 or --clusters=2,4,6,7
-         --plane=<int>             Plot selected plane [default: 0]
-                                   e.g. --plane=2 will plot second plane only
-
-         --outname=<plotname>      Plot name [default: plots.pdf]
-
-         --first, -f               Only plot first plane (overrides --plane option)
-         --show, -s                Invoke plt.show() for interactive plot
-         --individual, -i          Plot individual fitted peaks as surfaces with different colors
-         --label, -l               Label individual peaks
-         --ccpn
-
-
-         --rcount=<int>            row count setting for wireplot [default: 50]
-         --ccount=<int>            column count setting for wireplot [default: 50]
-         --colors=<data,fit>       plot colors [default: #5e3c99,#e66101]"""
     columns_to_print = [
         "assignment",
         "clustid",

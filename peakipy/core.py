@@ -58,11 +58,13 @@ log2 = log(2)
 π = pi
 tiny = finfo(float).eps
 
+
 class StrucEl(Enum):
     square = "square"
     disk = "disk"
     rectangle = "rectangle"
     mask_method = "mask_method"
+
 
 class PeaklistFormat(Enum):
     a2 = "a2"
@@ -488,7 +490,7 @@ def get_params(params, name):
     return ps, ps_err, names
 
 
-def make_param_dict(peaks, data, lineshape: Lineshape=Lineshape.PV):
+def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):
     """Make dict of parameter names using prefix"""
 
     param_dict = {}
@@ -575,7 +577,9 @@ def to_prefix(x):
     return prefix + "_"
 
 
-def make_models(model, peaks, data, lineshape: Lineshape=Lineshape.PV, xy_bounds=None):
+def make_models(
+    model, peaks, data, lineshape: Lineshape = Lineshape.PV, xy_bounds=None
+):
     """Make composite models for multiple peaks
 
     :param model: lineshape function
@@ -623,7 +627,9 @@ def make_models(model, peaks, data, lineshape: Lineshape=Lineshape.PV, xy_bounds
     return mod, p_guess
 
 
-def update_params(params, param_dict, lineshape: Lineshape=Lineshape.PV, xy_bounds=None):
+def update_params(
+    params, param_dict, lineshape: Lineshape = Lineshape.PV, xy_bounds=None
+):
     """Update lmfit parameters with values from Peak
 
     :param params: lmfit parameters
@@ -1380,8 +1386,10 @@ class Pseudo3D:
     def f1_ppm_1(self):
         return self.f1_ppm_limits[1]
 
+
 class UnknownFormat(Exception):
     pass
+
 
 class Peaklist(Pseudo3D):
     """Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
@@ -1418,7 +1426,7 @@ class Peaklist(Pseudo3D):
         self,
         path,
         data_path,
-        fmt:PeaklistFormat=PeaklistFormat.a2,
+        fmt: PeaklistFormat = PeaklistFormat.a2,
         dims=[0, 1, 2],
         radii=[0.04, 0.4],
         posF1="Position F2",
@@ -1747,7 +1755,13 @@ class Peaklist(Pseudo3D):
                 "[red]#################################################################################[/red]"
             )
 
-    def clusters(self, thres=None, struc_el: StrucEl=StrucEl.disk, struc_size=(3,), l_struc=None):
+    def clusters(
+        self,
+        thres=None,
+        struc_el: StrucEl = StrucEl.disk,
+        struc_size=(3,),
+        l_struc=None,
+    ):
         """Find clusters of peaks
 
         :param thres: threshold for positive signals above which clusters are selected. If None then threshold_otsu is used

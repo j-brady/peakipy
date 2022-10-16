@@ -49,17 +49,21 @@ def PeaksToDataFrame(peaks):
 
 
 def peakipy_read(path=path):
-    #argv = [f"{path}/test.tsv", f"{current_spectrum_path}", "--a3"]
-    args = dict(peaklist_path=path/"test.tsv",data_path=current_spectrum_path,peaklist_format="a3")
+    # argv = [f"{path}/test.tsv", f"{current_spectrum_path}", "--a3"]
+    args = dict(
+        peaklist_path=path / "test.tsv",
+        data_path=current_spectrum_path,
+        peaklist_format="a3",
+    )
     peakipy.cli.main.read(**args)
 
 
 def peakipy_fit():
     out_path = current_spectrum_path.parent
     args = dict(
-        peaklist_path=out_path / 'test.csv',
+        peaklist_path=out_path / "test.csv",
         data_path=current_spectrum_path,
-        output_path=out_path  /  'fits.csv',
+        output_path=out_path / "fits.csv",
     )
     peakipy.cli.main.fit(**args)
 
