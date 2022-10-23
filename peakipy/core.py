@@ -59,14 +59,14 @@ log2 = log(2)
 tiny = finfo(float).eps
 
 
-class StrucEl(Enum):
+class StrucEl(str, Enum):
     square = "square"
     disk = "disk"
     rectangle = "rectangle"
     mask_method = "mask_method"
 
 
-class PeaklistFormat(Enum):
+class PeaklistFormat(str, Enum):
     a2 = "a2"
     a3 = "a3"
     sparky = "sparky"
@@ -74,12 +74,12 @@ class PeaklistFormat(Enum):
     peakipy = "peakipy"
 
 
-class OutFmt(Enum):
+class OutFmt(str, Enum):
     csv = "csv"
     pkl = "pkl"
 
 
-class Lineshape(Enum):
+class Lineshape(str, Enum):
     PV = "PV"
     V = "V"
     G = "G"

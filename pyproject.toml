@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "peakipy"
-version = "0.1.30"
+version = "1.0.0"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 
@@ -12,8 +12,6 @@ classifiers = [
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
@@ -23,7 +21,7 @@ classifiers = [
 
 license="GNU GPLv3"
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.10"
 pandas = "^1.4.3"
 numpy = "^1.23.1"
 matplotlib = "^3.5.2"
@@ -41,6 +39,8 @@ jedi = "0.15.2"
 typer = "^0.6.1"
 statsmodels = "^0.13.2"
 rich = "^12.5.1"
+mkdocs = "^1.4.1"
+mkdocs-material = "^8.5.7"
 
 [tool.poetry.dev-dependencies]
 

@@ -356,7 +356,7 @@ def fit(
     peaklist_path: Path,
     data_path: Path,
     output_path: Path,
-    max_cluster_size: int = 999,
+    max_cluster_size: Optional[int] = None,
     lineshape: Lineshape = Lineshape.PV,
     fix: List[str] = ["fraction", "sigma", "center"],
     xy_bounds: Tuple[float, float] = (0, 0),
@@ -381,7 +381,7 @@ def fit(
         format file, "<output>.tab" will give a tab delimited output
         while "<output>.pkl" results in Pandas pickle of DataFrame
     max_cluster_size : int
-        Maximum size of cluster to fit (i.e exclude large clusters) [default: 999]
+        Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
     lineshape : Lineshape
         Lineshape to fit [default: Lineshape.PV]
     fix : List[str] 
@@ -440,7 +440,7 @@ def fit(
         peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
 
     # filter list based on cluster size
-    if max_cluster_size == 999:
+    if max_cluster_size is None:
         max_cluster_size = peakipy_data.df.MEMCNT.max()
         if peakipy_data.df.MEMCNT.max() > 10:
             print(
@@ -450,7 +450,7 @@ def fit(
                 You may want to consider reducing the size of your clusters as the
                 fits will struggle.
 
-                Otherwise you can use the --max_cluster_size flag to exclude large
+                Otherwise you can use the --max-cluster-size flag to exclude large
                 clusters
                 ##################################################################
             [/red]"""

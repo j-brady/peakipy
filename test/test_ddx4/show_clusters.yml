@@ -14,7 +14,7 @@
 
     outname: ["clusters.pdf","clusters.png"] # either single value or list of output names
     ncol: 1 #  tells matplotlib how many columns to give the figure legend - if not set defaults to 2
-    clusters: cluster.csv
+    clusters: peaks.csv
     dims: [0, 1, 2]
 
     # Here is where your list of spectra to plot goes
@@ -23,5 +23,5 @@
             - fname: test.ft2
               label: ""
               contour_num: 20
-              linewidths: 0.1
+              linewidths: 0.5
     

@@ -17,3 +17,5 @@ scripts/fit_peaks_old
 tmp*
 venv/*
 #doc/build/
+site/
+.vscode/
