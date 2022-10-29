@@ -9,6 +9,7 @@ nav:
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
+  - codehilite
 
 extra_javascript:
   - javascripts/mathjax.js
@@ -17,3 +18,8 @@ extra_javascript:
 
 theme:
     name: readthedocs
+
+extra_css:
+    - css/termynal.css
+extra_js:
+    - js/termynal.css

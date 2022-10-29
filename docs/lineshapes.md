@@ -1,12 +1,16 @@
 Lineshapes
 ==========
 
-Here are the lineshapes used by peakipy. To select a specific lineshape
-to fit you can add `--lineshape` flag when running `peakipy fit`.
+Here are the lineshapes used by peakipy. Use the `--lineshape` option in `peakipy fit` to select a lineshape for fitting.
 
-For example, :
+For example,
 
+<div data-termynal>
+
+```bash
     peakipy fit test.csv test1.ft2 fits.csv --lineshape G
+```
+</div>
 
 Would fit to a Gaussian lineshape in both dimensions. Other options are
 V, L or PV for Voigt Lorentzian or Pseudo-Voigt in both dimensions,

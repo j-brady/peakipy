@@ -1072,7 +1072,8 @@ def check(
                         alpha=0.5,
                         cmap=cm.coolwarm,
                     )
-                    fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+                    cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+                    cbl.ax.set_title("Residual", pad=20)
 
                     if individual:
                         # for making colored masks
@@ -1125,7 +1126,7 @@ def check(
                     title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
                     plt.title(title)
                     print(f"[green]Plotting: {title}[/green]")
-                    out_str = "Volumes (Heights)\n----------------\n"
+                    out_str = "Volumes (Heights)\n===========\n"
                     # chi2s = []
                     for ind, row in plane.iterrows():
 
@@ -1138,16 +1139,18 @@ def check(
                                 row.center_y_ppm,
                                 row.height * 1.2,
                                 row.assignment,
+                                (1,1,1),
                             )
 
                     ax.text2D(
-                        -0.15,
+                        -0.5,
                         1.0,
                         out_str,
                         transform=ax.transAxes,
                         fontsize=10,
+                        fontfamily="sans-serif",
                         va="top",
-                        bbox=dict(boxstyle="round", ec="k", fc="none"),
+                        bbox=dict(boxstyle="round", ec="k", fc="k",alpha=0.5),
                     )
 
                     ax.legend()

@@ -1073,7 +1073,8 @@ class FitResult:
                 alpha=0.5,
                 cmap=cm.coolwarm,
             )
-            fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+            cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+            cbl.ax.set_title("Residual")
             # plot raw data
             ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
 

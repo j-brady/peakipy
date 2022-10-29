@@ -29,27 +29,60 @@ How to install peakipy
 
 I recommend using a virtual environment:
 
-    python3 -m venv peakipy_venv
+<div data-termynal>
+```console
+python3 -m venv peakipy_venv
+```
+</div>
 
 Then activate (bash):
 
-    source peakipy_venv/bin/activate
+<div data-termynal>
+```console
+source peakipy_venv/bin/activate
+```
+</div>
 
 or (csh):
 
-    source peakipy_venv/bin/activate.csh
+<div data-termynal>
+```console
+source peakipy_venv/bin/activate.csh
+```
+</div>
 
 Once activated you can install peakipy in any of the following ways.
 
+
+### With poetry
+
+Clone the [peakipy](https://github.com/j-brady/peakipy) repository from
+github:
+
+<div data-termynal>
+    <span data-ty>git clone https://github.com/j-brady/peakipy.git</span>
+    <span data-ty>cd peakipy; poetry install</span>
+</div>
+
+If you don't have poetry I refer you to the [poetry documentation](https://poetry.eustace.io/docs/) for more details.
+
+At this point the package should be installed and the main scripts
+(`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
+should have been added to your path.
+
 ### With pip
 
-    pip install peakipy
+<div data-termynal>
+```console
+pip install peakipy
+```
+</div>
 
 Below is an example of an installation script and a basic use case :
 
-```bash
+<div data-termynal>
+```console
     #!/bin/bash
-
     ##############################
     # make a virtual environment #
     ##############################
@@ -73,26 +106,12 @@ Below is an example of an installation script and a basic use case :
     # plots all the fits (first plane only)
     peakipy check fits.csv test.ft2 --first --colors purple green --show;
 ```
+</div>
 
 Run this above code by sourcing the file e.g.
 `source file_containing_commands`
 
-### With poetry
-
-Clone the [peakipy](https://github.com/j-brady/peakipy) repository from
-github:
-
-    git clone https://github.com/j-brady/peakipy.git
-    cd peakipy; poetry install
-
-If you don't have poetry I refer you to the [poetry documentation](https://poetry.eustace.io/docs/) for more details.
-
-
-At this point the package should be installed and the main scripts
-(`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
-should have been added to your path.
-
 Requirements
 ------------
 
-The latest version of `peakipy` requires Python 3.10 or above.
+The latest version of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
