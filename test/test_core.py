@@ -18,6 +18,7 @@ from peakipy.core import (
     Pseudo3D,
     Peaklist,
     Lineshape,
+    PeaklistFormat,
 )
 
 
@@ -260,13 +261,13 @@ class TestReadScript(unittest.TestCase):
             "path": "test/test_pipe.tab",
             "data_path": "test/test_pipe.ft2",
             "dims": [0, 1, 2],
-            "fmt": "pipe",
+            "fmt": PeaklistFormat.pipe,
         }
         peaklist = Peaklist(**args)
         self.assertIsNotNone(peaklist)
         self.assertIs(len(peaklist.df), 3)
         # self.assertIs(peaklist.df.X_AXISf.iloc[0], 323.019)
-        self.assertIs(peaklist.fmt, "pipe")
+        self.assertIs(peaklist.fmt.value, "pipe")
         # self.assertEqual(peaklist.df.ASS.iloc[0], "None")
         # self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
 

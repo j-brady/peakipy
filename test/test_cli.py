@@ -1,10 +1,12 @@
 import unittest
 import shutil
+import os
 from pathlib import Path
 
 import peakipy.cli.main
 from peakipy.cli.main import PeaklistFormat, Lineshape
 
+os.chdir("test")
 
 class TestPeakipyCLI(unittest.TestCase):
     def test_read_main_with_default_pipe(self):

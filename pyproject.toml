@@ -42,9 +42,7 @@ rich = "^12.5.1"
 mkdocs-material = "^8.5.7"
 
 [tool.poetry.scripts]
-#peakipy = 'peakipy.__main__:main'
 peakipy = 'peakipy.cli.main:app'
-#peakipy_test = 'peakipy.cli.test:app'
 
 [build-system]
 requires = ["poetry>=0.12"]

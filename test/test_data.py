@@ -4,7 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.mplot3d import Axes3D
-from docopt import docopt
 from lmfit import Model, report_fit
 
 from peakipy.core import (
