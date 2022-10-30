@@ -17,13 +17,9 @@ from peakipy.core import (
     make_models,
     Pseudo3D,
     Peaklist,
+    Lineshape,
+    PeaklistFormat,
 )
-
-import peakipy.commandline.edit
-import peakipy.commandline.check
-import peakipy.commandline.fit
-import peakipy.commandline.read
-import peakipy.commandline.spec
 
 
 class TestCoreFunctions(unittest.TestCase):
@@ -129,7 +125,7 @@ class TestCoreFunctions(unittest.TestCase):
         )
         data = np.ones((20, 20))
 
-        for ls, frac in zip(["PV", "G", "L"], [0.5, 0.0, 1.0]):
+        for ls, frac in zip([Lineshape.PV, Lineshape.G, Lineshape.L], [0.5, 0.0, 1.0]):
 
             params = make_param_dict(peaks, data, ls)
             self.assertEqual(params["_one_fraction"], frac)
@@ -176,31 +172,31 @@ class TestCoreFunctions(unittest.TestCase):
 
         data = np.ones((20, 20))
 
-        lineshapes = ["PV", "L", "G", "PV_PV"]
+        lineshapes = [Lineshape.PV, Lineshape.L, Lineshape.G, Lineshape.PV_PV]
 
         for lineshape in lineshapes:
+            match lineshape:
+                case lineshape.PV:
+                    mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
+                    self.assertEqual(p_guess["_one_fraction"].vary, True)
+                    self.assertEqual(p_guess["_one_fraction"].value, 0.5)
 
-            if lineshape == "PV":
-                mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
-                self.assertEqual(p_guess["_one_fraction"].vary, True)
-                self.assertEqual(p_guess["_one_fraction"].value, 0.5)
+                case lineshape.G:
+                    mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
+                    self.assertEqual(p_guess["_one_fraction"].vary, False)
+                    self.assertEqual(p_guess["_one_fraction"].value, 0.0)
 
-            if lineshape == "G":
-                mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
-                self.assertEqual(p_guess["_one_fraction"].vary, False)
-                self.assertEqual(p_guess["_one_fraction"].value, 0.0)
+                case lineshape.L:
+                    mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
+                    self.assertEqual(p_guess["_one_fraction"].vary, False)
+                    self.assertEqual(p_guess["_one_fraction"].value, 1.0)
 
-            if lineshape == "L":
-                mod, p_guess = make_models(pvoigt2d, peaks, data, lineshape)
-                self.assertEqual(p_guess["_one_fraction"].vary, False)
-                self.assertEqual(p_guess["_one_fraction"].value, 1.0)
-
-            if lineshape == "PV_PV":
-                mod, p_guess = make_models(pv_pv, peaks, data, lineshape)
-                self.assertEqual(p_guess["_one_fraction_x"].vary, True)
-                self.assertEqual(p_guess["_one_fraction_x"].value, 0.5)
-                self.assertEqual(p_guess["_one_fraction_y"].vary, True)
-                self.assertEqual(p_guess["_one_fraction_y"].value, 0.5)
+                case lineshape.PV_PV:
+                    mod, p_guess = make_models(pv_pv, peaks, data, lineshape)
+                    self.assertEqual(p_guess["_one_fraction_x"].vary, True)
+                    self.assertEqual(p_guess["_one_fraction_x"].value, 0.5)
+                    self.assertEqual(p_guess["_one_fraction_y"].vary, True)
+                    self.assertEqual(p_guess["_one_fraction_y"].value, 0.5)
 
     def test_Pseudo3D(self):
 
@@ -230,7 +226,7 @@ class TestCoreFunctions(unittest.TestCase):
 # test for read, edit, fit, check and spec scripts
 # need to actually write proper tests
 class TestBokehScript(unittest.TestCase):
-    @patch("peakipy.commandline.edit.BokehScript")
+    @patch("peakipy.cli.edit.BokehScript")
     def test_BokehScript(self, MockBokehScript):
         args = {"<peaklist>": "hello", "<data>": "data"}
         bokeh_plots = MockBokehScript(args)
@@ -238,7 +234,7 @@ class TestBokehScript(unittest.TestCase):
 
 
 class TestCheckScript(unittest.TestCase):
-    @patch("peakipy.commandline.check")
+    @patch("peakipy.cli.main.check")
     def test_main(self, MockCheck):
         args = {"<peaklist>": "hello", "<data>": "data"}
         check = MockCheck(args)
@@ -246,7 +242,7 @@ class TestCheckScript(unittest.TestCase):
 
 
 class TestFitScript(unittest.TestCase):
-    @patch("peakipy.commandline.fit")
+    @patch("peakipy.cli.main.fit")
     def test_main(self, MockFit):
         args = {"<peaklist>": "hello", "<data>": "data"}
         fit = MockFit(args)
@@ -254,7 +250,7 @@ class TestFitScript(unittest.TestCase):
 
 
 class TestReadScript(unittest.TestCase):
-    @patch("peakipy.commandline.read")
+    @patch("peakipy.cli.main.read")
     def test_main(self, MockRead):
         args = {"<peaklist>": "hello", "<data>": "data"}
         read = MockRead(args)
@@ -265,19 +261,19 @@ class TestReadScript(unittest.TestCase):
             "path": "test/test_pipe.tab",
             "data_path": "test/test_pipe.ft2",
             "dims": [0, 1, 2],
-            "fmt": "pipe",
+            "fmt": PeaklistFormat.pipe,
         }
         peaklist = Peaklist(**args)
         self.assertIsNotNone(peaklist)
         self.assertIs(len(peaklist.df), 3)
         # self.assertIs(peaklist.df.X_AXISf.iloc[0], 323.019)
-        self.assertIs(peaklist.fmt, "pipe")
+        self.assertIs(peaklist.fmt.value, "pipe")
         # self.assertEqual(peaklist.df.ASS.iloc[0], "None")
         # self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
 
 
 class TestSpecScript(unittest.TestCase):
-    @patch("peakipy.commandline.spec")
+    @patch("peakipy.cli.main.spec")
     def test_main(self, MockSpec):
         args = {"<peaklist>": "hello", "<data>": "data"}
         spec = MockSpec(args)

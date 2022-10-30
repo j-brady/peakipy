@@ -1,5 +1,7 @@
 # Peakipy - NMR peak integration/deconvolution using python
 
+![Test](https://github.com/j-brady/peakipy/actions/workflows/ci.yml/badge.svg)
+
 [![Build Status](https://travis-ci.com/j-brady/peakipy.svg?token=wh1qimLa9ucxKasjXFoj&branch=master)](https://travis-ci.com/j-brady/peakipy)
 
 [peakipy documentation](https://j-brady.github.io/peakipy)

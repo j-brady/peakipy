@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<_StorageUnit time="Sun Apr  3 19:48:29 2022" release="3.0.2" packageGuid="www.ccpn.ac.uk_Fogh_2006-08-16-14:22:46_00006" originator="CCPN Python XmlIO">
+
+<NMR.NmrProject _ID="1" _lastId="677" createdBy="user" guid="default_user_2022-04-03-11-03-25-912_00001">
+  <NMR.NmrProject.name>
+    <IMPL.Line>default</IMPL.Line>
+  </NMR.NmrProject.name>
+  <NMR.NmrProject.molSystem>
+    <MOLS.exo-MolSystem>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00004</IMPL.GuidString>
+    </MOLS.exo-MolSystem>
+  </NMR.NmrProject.molSystem>
+  <NMR.NmrProject.sampleStore>
+    <SAM.exo-SampleStore>
+      <IMPL.GuidString>default_user_2022-04-03-11-03-25-912_00002</IMPL.GuidString>
+    </SAM.exo-SampleStore>
+  </NMR.NmrProject.sampleStore>
+  <NMR.NmrProject.experiments>
+    <NMR.Experiment _ID="4" numDim="3" serial="1">
+      <NMR.Experiment.name>
+        <IMPL.Line>test_protein_L</IMPL.Line>
+      </NMR.Experiment.name>
+      <NMR.Experiment.dataSources>
+        <NMR.DataSource _ID="11" negativeContourBase="-6579304.734609237" negativeContourColour="#DA70D6" negativeContourFactor="1.414214" noiseLevel="51400.595556640634" numDim="3" positiveContourBase="6579304.734609237" positiveContourColour="#6B8E23" positiveContourFactor="1.414214" serial="1" sliceColour="#6B8E23">
+          <IMPL.DataObject.ccpnInternalData>
+            <IMPL.Multiple>{
+  "spectrumAxesOrdering": {
+    "spectrumPreferredAxisOrdering": [
+      0,
+      1,
+      2
+    ]
+  },
+  "includePositiveContours": true,
+  "includeNegativeContours": true,
+  "spectrumAliasing": {
+    "displayFoldedContours": true
+  }
+}</IMPL.Multiple>
+          </IMPL.DataObject.ccpnInternalData>
+          <NMR.DataSource.dataType>
+            <NMR.DataSourceDataType>processed</NMR.DataSourceDataType>
+          </NMR.DataSource.dataType>
+          <NMR.DataSource.name>
+            <IMPL.Line>test_protein_L</IMPL.Line>
+          </NMR.DataSource.name>
+          <NMR.DataSource.dataStore>
+            <DLOC.exo-BlockedBinaryMatrix>
+              <IMPL.GuidString>default_user_2022-04-03-11-03-25-911_00001</IMPL.GuidString>
+              <IMPL.Int>1</IMPL.Int>
+            </DLOC.exo-BlockedBinaryMatrix>
+          </NMR.DataSource.dataStore>
+          <NMR.DataSource.dataDims>
+            <NMR.FreqDataDim _ID="12" dim="1" isComplex="false" numPoints="546" numPointsOrig="546" valuePerPoint="5.8687654711824635">
+              <NMR.FreqDataDim.dataDimRefs>
+                <NMR.DataDimRef _ID="14" assignmentTolerance="0.03" refValue="10.505538628546997">
+                </NMR.DataDimRef>
+              </NMR.FreqDataDim.dataDimRefs>
+              <NMR.AbstractDataDim.dimensionScalings>
+                <NMR.DimensionScaling _ID="13">
+                  <NMR.DimensionScaling.scalingFactors> 1.0</NMR.DimensionScaling.scalingFactors>
+                </NMR.DimensionScaling>
+              </NMR.AbstractDataDim.dimensionScalings>
+            </NMR.FreqDataDim>
+            <NMR.FreqDataDim _ID="15" dim="2" isComplex="false" numPoints="256" numPointsOrig="256" valuePerPoint="7.602667808532715">
+              <NMR.FreqDataDim.dataDimRefs>
+                <NMR.DataDimRef _ID="17" assignmentTolerance="0.4" refValue="130.63212701164932">
+                </NMR.DataDimRef>
+              </NMR.FreqDataDim.dataDimRefs>
+              <NMR.AbstractDataDim.dimensionScalings>
+                <NMR.DimensionScaling _ID="16">
+                  <NMR.DimensionScaling.scalingFactors> 1.0</NMR.DimensionScaling.scalingFactors>
+                </NMR.DimensionScaling>
+              </NMR.AbstractDataDim.dimensionScalings>
+            </NMR.FreqDataDim>
+            <NMR.FreqDataDim _ID="18" dim="3" isComplex="false" numPoints="4" numPointsOrig="4" valuePerPoint="1.0">
+              <NMR.FreqDataDim.dataDimRefs>
+                <NMR.DataDimRef _ID="20" assignmentTolerance="1.0" refValue="4.0">
+                </NMR.DataDimRef>
+              </NMR.FreqDataDim.dataDimRefs>
+              <NMR.AbstractDataDim.dimensionScalings>
+                <NMR.DimensionScaling _ID="19">
+                  <NMR.DimensionScaling.scalingFactors> 1.0</NMR.DimensionScaling.scalingFactors>
+                </NMR.DimensionScaling>
+              </NMR.AbstractDataDim.dimensionScalings>
+            </NMR.FreqDataDim>
+          </NMR.DataSource.dataDims>
+          <NMR.DataSource.peakLists>
+            <NMR.PeakList _ID="21" serial="1" symbolColour="#7A7A7A" textColour="#7A7A7A">
+              <IMPL.DataObject.ccpnInternalData>
+                <IMPL.Multiple>{
+  "meritSettings": {
+    "meritEnabled": false
+  }
+}</IMPL.Multiple>
+              </IMPL.DataObject.ccpnInternalData>
+            </NMR.PeakList>
+          </NMR.DataSource.peakLists>
+        </NMR.DataSource>
+      </NMR.Experiment.dataSources>
+      <NMR.Experiment.expDims>
+        <NMR.ExpDim _ID="5" dim="1">
+          <NMR.ExpDim.dataDims> 12</NMR.ExpDim.dataDims>
+          <NMR.ExpDim.expDimRefs>
+            <NMR.ExpDimRef _ID="8" axisCode="H" serial="1" sf="800.3040161132812" unit="ppm">
+              <NMR.ExpDimRef.isotopeCodes> 1H</NMR.ExpDimRef.isotopeCodes>
+              <NMR.ExpDimRef.dataDimRefs> 14</NMR.ExpDimRef.dataDimRefs>
+              <NMR.ExpDimRef.dimensionScalings> 13</NMR.ExpDimRef.dimensionScalings>
+            </NMR.ExpDimRef>
+          </NMR.ExpDim.expDimRefs>
+        </NMR.ExpDim>
+        <NMR.ExpDim _ID="6" dim="2">
+          <NMR.ExpDim.dataDims> 15</NMR.ExpDim.dataDims>
+          <NMR.ExpDim.expDimRefs>
+            <NMR.ExpDimRef _ID="9" axisCode="N" serial="1" sf="81.10299682617188" unit="ppm">
+              <NMR.ExpDimRef.isotopeCodes> 15N</NMR.ExpDimRef.isotopeCodes>
+              <NMR.ExpDimRef.dataDimRefs> 17</NMR.ExpDimRef.dataDimRefs>
+              <NMR.ExpDimRef.dimensionScalings> 16</NMR.ExpDimRef.dimensionScalings>
+            </NMR.ExpDimRef>
+          </NMR.ExpDim.expDimRefs>
+        </NMR.ExpDim>
+        <NMR.ExpDim _ID="7" dim="3">
+          <NMR.ExpDim.dataDims> 18</NMR.ExpDim.dataDims>
+          <NMR.ExpDim.expDimRefs>
+            <NMR.ExpDimRef _ID="10" axisCode="I" serial="1" sf="1.0" unit="ppm">
+              <NMR.ExpDimRef.isotopeCodes> 127I</NMR.ExpDimRef.isotopeCodes>
+              <NMR.ExpDimRef.dataDimRefs> 20</NMR.ExpDimRef.dataDimRefs>
+              <NMR.ExpDimRef.dimensionScalings> 19</NMR.ExpDimRef.dimensionScalings>
+            </NMR.ExpDimRef>
+          </NMR.ExpDim.expDimRefs>
+        </NMR.ExpDim>
+      </NMR.Experiment.expDims>
+    </NMR.Experiment>
+    <NMR.Experiment _ID="23" numDim="2" serial="2">
+      <NMR.Experiment.name>
+        <IMPL.Line>test_protein_L</IMPL.Line>
+      </NMR.Experiment.name>
+      <NMR.Experiment.dataSources>
+        <NMR.DataSource _ID="28" negativeContourBase="-6579304.734609237" negativeContourColour="#DA70D6" negativeContourFactor="1.414214" noiseLevel="51400.595556640634" numDim="2" positiveContourBase="6579304.734609237" positiveContourColour="#6B8E23" positiveContourFactor="1.414214" serial="1" sliceColour="#6B8E23">
+          <IMPL.DataObject.ccpnInternalData>
+            <IMPL.Multiple>{
+  "spectrumAxesOrdering": {
+    "spectrumPreferredAxisOrdering": [
+      0,
+      1
+    ]
+  },
+  "includePositiveContours": true,
+  "includeNegativeContours": true,
+  "AdditionalAttribute": {
+    "negativeNoiseLevel": -51400.595556640634
+  },
+  "spectrumAliasing": {
+    "displayFoldedContours": true
+  }
+}</IMPL.Multiple>
+          </IMPL.DataObject.ccpnInternalData>
+          <NMR.DataSource.dataType>
+            <NMR.DataSourceDataType>processed</NMR.DataSourceDataType>
+          </NMR.DataSource.dataType>
+          <NMR.DataSource.name>
+            <IMPL.Line>test1_projection_H_N</IMPL.Line>
+          </NMR.DataSource.name>
+          <NMR.DataSource.dataStore>
+            <DLOC.exo-BlockedBinaryMatrix>
+              <IMPL.GuidString>default_user_2022-04-03-11-03-25-911_00001</IMPL.GuidString>
+              <IMPL.Int>2</IMPL.Int>
+            </DLOC.exo-BlockedBinaryMatrix>
+          </NMR.DataSource.dataStore>
+          <NMR.DataSource.dataDims>
+            <NMR.FreqDataDim _ID="29" dim="1" isComplex="false" numPoints="546" numPointsOrig="546" valuePerPoint="5.8687654711824635">
+              <NMR.FreqDataDim.dataDimRefs>
+                <NMR.DataDimRef _ID="31" assignmentTolerance="0.03" refValue="10.505538628546997">
+                </NMR.DataDimRef>
+              </NMR.FreqDataDim.dataDimRefs>
+              <NMR.AbstractDataDim.dimensionScalings>
+                <NMR.DimensionScaling _ID="30">
+                  <NMR.DimensionScaling.scalingFactors> 1.0</NMR.DimensionScaling.scalingFactors>
+                </NMR.DimensionScaling>
+              </NMR.AbstractDataDim.dimensionScalings>
+            </NMR.FreqDataDim>
+            <NMR.FreqDataDim _ID="32" dim="2" isComplex="false" numPoints="256" numPointsOrig="256" valuePerPoint="7.602667808532715">
+              <NMR.FreqDataDim.dataDimRefs>
+                <NMR.DataDimRef _ID="34" assignmentTolerance="0.4" refValue="130.63212701164932">
+                </NMR.DataDimRef>
+              </NMR.FreqDataDim.dataDimRefs>
+              <NMR.AbstractDataDim.dimensionScalings>
+                <NMR.DimensionScaling _ID="33">
+                  <NMR.DimensionScaling.scalingFactors> 1.0</NMR.DimensionScaling.scalingFactors>
+                </NMR.DimensionScaling>
+              </NMR.AbstractDataDim.dimensionScalings>
+            </NMR.FreqDataDim>
+          </NMR.DataSource.dataDims>
+          <NMR.DataSource.peakLists>
+            <NMR.PeakList _ID="35" serial="1" symbolColour="#7A7A7A" textColour="#7A7A7A">
+              <IMPL.DataObject.ccpnInternalData>
+                <IMPL.Multiple>{
+  "meritSettings": {
+    "meritEnabled": false
+  }
+}</IMPL.Multiple>
+              </IMPL.DataObject.ccpnInternalData>
+              <NMR.PeakList.peaks>
+                <NMR.Peak _ID="36" height="66224788.0" serial="1">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="37" dim="1" lineWidth="14.179313120050438" position="17.026004314422607">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="38" dim="2" lineWidth="18.675223392932594" position="13.932973861694336">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="39" height="39807284.0" serial="2">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="40" dim="1" lineWidth="14.962974392261438" position="159.50611114501953">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="41" dim="2" lineWidth="18.644570222511447" position="10.229242324829102">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="42" height="56258792.0" serial="3">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="43" dim="1" lineWidth="13.786411378949163" position="180.06684112548828">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="44" dim="2" lineWidth="18.70449353638719" position="20.97902488708496">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="45" height="56908568.0" serial="4">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="46" dim="1" lineWidth="15.275163369709984" position="235.63143157958984">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="47" dim="2" lineWidth="18.94415779001406" position="26.84052276611328">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="48" height="47270948.0" serial="5">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="49" dim="1" lineWidth="15.184162121362393" position="389.3389587402344">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="50" dim="2" lineWidth="19.84194711705527" position="29.351146697998047">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="51" height="30569652.0" serial="6">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="52" dim="1" lineWidth="15.933118472332174" position="158.41638565063477">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="53" dim="2" lineWidth="19.329186697126488" position="30.11189842224121">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="54" height="55752100.0" serial="7">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="55" dim="1" lineWidth="15.011401490763985" position="249.71836853027344">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="56" dim="2" lineWidth="19.264126425946415" position="34.75312805175781">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="57" height="45944264.0" serial="8">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="58" dim="1" lineWidth="15.004359202790472" position="255.3771514892578">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="59" dim="2" lineWidth="20.317054038719107" position="36.53809356689453">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="60" height="47485692.0" serial="9">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="61" dim="1" lineWidth="14.075536968226157" position="168.09942245483398">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="62" dim="2" lineWidth="19.308773001586133" position="47.2459831237793">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="63" height="41996068.0" serial="10">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="64" dim="1" lineWidth="16.237358465481588" position="159.68931579589844">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="65" dim="2" lineWidth="22.533185272902756" position="51.675987243652344">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="66" height="53214244.0" serial="11">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="67" dim="1" lineWidth="15.651978247145156" position="245.2024383544922">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="68" dim="2" lineWidth="18.922928416708373" position="53.97227478027344">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="69" height="40862740.0" serial="12">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="70" dim="1" lineWidth="15.0209287982966" position="179.311279296875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="71" dim="2" lineWidth="19.830009219805333" position="55.62305450439453">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="72" height="56644668.0" serial="13">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="73" dim="1" lineWidth="14.219328091531969" position="231.86762237548828">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="74" dim="2" lineWidth="19.91431042316094" position="57.38710403442383">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="75" height="56311056.0" serial="14">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="76" dim="1" lineWidth="14.27424618425449" position="267.7574920654297">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="77" dim="2" lineWidth="18.95917894921695" position="56.88043212890625">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="78" height="46695648.0" serial="15">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="79" dim="1" lineWidth="14.964222498931889" position="442.6749267578125">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="80" dim="2" lineWidth="19.74847225776557" position="59.665096282958984">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="81" height="66270532.0" serial="16">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="82" dim="1" lineWidth="13.33993759738655" position="159.38216018676758">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="83" dim="2" lineWidth="20.60903586421432" position="60.55279541015625">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="84" height="44233984.0" serial="17">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="85" dim="1" lineWidth="14.18182472484131" position="191.94740295410156">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="86" dim="2" lineWidth="20.382536649719896" position="65.48091125488281">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="87" height="57362084.0" serial="18">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="88" dim="1" lineWidth="14.32325815785597" position="329.91619873046875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="89" dim="2" lineWidth="19.088155730088374" position="72.12181091308594">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="90" height="51762596.0" serial="19">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="91" dim="1" lineWidth="14.697701352772741" position="265.26502990722656">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="92" dim="2" lineWidth="18.935761746882918" position="81.09661102294922">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="93" height="43714944.0" serial="20">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="94" dim="1" lineWidth="16.063503642712448" position="307.4023132324219">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="95" dim="2" lineWidth="19.212345388785934" position="81.18074035644531">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="96" height="78047496.0" serial="21">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="97" dim="1" lineWidth="14.060277045190364" position="281.2458038330078">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="98" dim="2" lineWidth="18.699956555394692" position="83.11190032958984">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="99" height="59529880.0" serial="22">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="100" dim="1" lineWidth="14.72405991046101" position="152.14464569091797">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="101" dim="2" lineWidth="19.956993934312095" position="85.6382827758789">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="102" height="82568336.0" serial="23">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="103" dim="1" lineWidth="14.754786841495854" position="235.74884033203125">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="104" dim="2" lineWidth="19.800994655383874" position="86.34336853027344">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="105" height="42428852.0" serial="24">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="106" dim="1" lineWidth="15.285463048186646" position="204.56504821777344">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="107" dim="2" lineWidth="20.649219776169048" position="87.46076965332031">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="108" height="47685588.0" serial="25">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="109" dim="1" lineWidth="14.74925991173321" position="183.71043395996094">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="110" dim="2" lineWidth="19.019452098223155" position="87.88878631591797">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="111" height="60124684.0" serial="26">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="112" dim="1" lineWidth="14.050170459449713" position="195.97756958007812">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="113" dim="2" lineWidth="18.779903852100688" position="87.9175033569336">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="114" height="72881744.0" serial="27">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="115" dim="1" lineWidth="13.869739289874392" position="208.81947326660156">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="116" dim="2" lineWidth="19.45989996532944" position="88.2645492553711">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="117" height="52207432.0" serial="28">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="118" dim="1" lineWidth="15.418196114299" position="391.1390075683594">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="119" dim="2" lineWidth="19.348278994687007" position="94.18115997314453">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="120" height="43607560.0" serial="29">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="121" dim="1" lineWidth="14.15392142526495" position="219.01107788085938">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="122" dim="2" lineWidth="19.340957833588845" position="95.71211242675781">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="123" height="61903428.0" serial="30">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="124" dim="1" lineWidth="14.345570163424348" position="378.8697509765625">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="125" dim="2" lineWidth="20.37384333735872" position="98.54491424560547">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="126" height="55276368.0" serial="31">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="127" dim="1" lineWidth="15.599906173444715" position="412.46942138671875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="128" dim="2" lineWidth="20.634851159178424" position="100.53062438964844">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="129" height="56632552.0" serial="32">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="130" dim="1" lineWidth="14.111484399246928" position="323.0269012451172">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="131" dim="2" lineWidth="19.349246932301867" position="102.9813232421875">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="132" height="49812584.0" serial="33">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="133" dim="1" lineWidth="15.642790950734646" position="326.57835388183594">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="134" dim="2" lineWidth="18.84972586881304" position="105.11408233642578">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="135" height="56507192.0" serial="34">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="136" dim="1" lineWidth="14.14266467844458" position="326.1961669921875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="137" dim="2" lineWidth="19.04894700621753" position="108.89234161376953">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="138" height="76465528.0" serial="35">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="139" dim="1" lineWidth="14.80199241855972" position="228.2906265258789">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="140" dim="2" lineWidth="19.891908286490434" position="113.37680053710938">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="141" height="47458300.0" serial="36">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="142" dim="1" lineWidth="14.178914341573892" position="195.10416412353516">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="143" dim="2" lineWidth="20.02695552255318" position="117.33363342285156">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="144" height="90425312.0" serial="37">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="145" dim="1" lineWidth="14.192730266757774" position="350.1624450683594">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="146" dim="2" lineWidth="19.01140951545699" position="129.80870056152344">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="147" height="67503632.0" serial="38">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="148" dim="1" lineWidth="14.439631511870902" position="185.05307006835938">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="149" dim="2" lineWidth="19.325976551965596" position="131.15652465820312">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="150" height="51815460.0" serial="39">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="151" dim="1" lineWidth="14.900868492402033" position="179.16024780273438">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="152" dim="2" lineWidth="19.627886082173518" position="136.75973510742188">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="153" height="76394192.0" serial="40">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="154" dim="1" lineWidth="14.645195520027638" position="237.6394500732422">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="155" dim="2" lineWidth="19.83996230115963" position="136.65615844726562">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="156" height="75284880.0" serial="41">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="157" dim="1" lineWidth="14.681196121511949" position="342.67994689941406">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="158" dim="2" lineWidth="18.808463449590818" position="145.09120178222656">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="159" height="88090184.0" serial="42">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="160" dim="1" lineWidth="14.458597975904476" position="391.1925964355469">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="161" dim="2" lineWidth="19.08267800073986" position="148.2106170654297">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="162" height="55637700.0" serial="43">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="163" dim="1" lineWidth="14.245236099502877" position="374.9781188964844">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="164" dim="2" lineWidth="18.821206148902547" position="156.07467651367188">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="165" height="52809900.0" serial="44">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="166" dim="1" lineWidth="15.110718319764585" position="304.6706085205078">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="167" dim="2" lineWidth="19.301870555074174" position="156.78582763671875">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="168" height="46811380.0" serial="45">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="169" dim="1" lineWidth="15.255835906213433" position="424.6768798828125">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="170" dim="2" lineWidth="19.642579157653017" position="156.67750549316406">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="171" height="51710716.0" serial="46">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="172" dim="1" lineWidth="15.41218085580543" position="385.37115478515625">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="173" dim="2" lineWidth="18.810640402915624" position="165.05250549316406">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="174" height="64820744.0" serial="47">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="175" dim="1" lineWidth="15.078161205405808" position="323.3196258544922">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="176" dim="2" lineWidth="19.10994701474351" position="166.9345703125">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="177" height="60093312.0" serial="48">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="178" dim="1" lineWidth="15.214459491020747" position="368.68141174316406">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="179" dim="2" lineWidth="20.216258018331246" position="168.59121704101562">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="180" height="56768524.0" serial="49">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="181" dim="1" lineWidth="14.468010547173666" position="342.1613006591797">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="182" dim="2" lineWidth="20.615035627332645" position="171.43841552734375">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="183" height="52489176.0" serial="50">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="184" dim="1" lineWidth="15.168096246037162" position="416.2992858886719">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="185" dim="2" lineWidth="19.121230557163926" position="173.1645965576172">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="186" height="90860704.0" serial="51">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="187" dim="1" lineWidth="14.19970819048595" position="322.2311248779297">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="188" dim="2" lineWidth="19.093071548087437" position="186.10154724121094">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="189" height="72408904.0" serial="52">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="190" dim="1" lineWidth="14.32088367689212" position="388.0542907714844">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="191" dim="2" lineWidth="19.690945223902645" position="189.3341827392578">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="192" height="59183216.0" serial="53">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="193" dim="1" lineWidth="16.05039712345" position="349.4479064941406">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="194" dim="2" lineWidth="19.240029492141275" position="189.81016540527344">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="195" height="45297416.0" serial="54">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="196" dim="1" lineWidth="15.27750986621934" position="203.9599380493164">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="197" dim="2" lineWidth="19.621935259721113" position="192.18992614746094">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="198" height="66002072.0" serial="55">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="199" dim="1" lineWidth="15.212759435410213" position="325.7009582519531">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="200" dim="2" lineWidth="19.599050966860432" position="192.97799682617188">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="201" height="76638504.0" serial="56">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="202" dim="1" lineWidth="13.944357039338241" position="308.93231201171875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="203" dim="2" lineWidth="18.63302385058887" position="194.01806640625">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="204" height="48065740.0" serial="57">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="205" dim="1" lineWidth="14.930895812074516" position="429.176513671875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="206" dim="2" lineWidth="19.197251724892794" position="195.99977111816406">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="207" height="83829544.0" serial="58">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="208" dim="1" lineWidth="13.816293179458276" position="298.9928283691406">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="209" dim="2" lineWidth="19.1631998971161" position="200.21475219726562">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="210" height="62709664.0" serial="59">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="211" dim="1" lineWidth="14.932143918744966" position="269.3695068359375">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="212" dim="2" lineWidth="18.825079711979242" position="201.13455200195312">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="213" height="6828889.0" serial="60">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="214" dim="1" lineWidth="14.190932265556508" position="408.3121032714844">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="215" dim="2" lineWidth="22.344897842788214" position="217.1348876953125">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="216" height="64893424.0" serial="61">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="217" dim="1" lineWidth="14.826810432028072" position="267.6775817871094">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="218" dim="2" lineWidth="19.632559009460238" position="218.34295654296875">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="219" height="43273176.0" serial="62">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="220" dim="1" lineWidth="15.055460215919958" position="283.7439727783203">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="221" dim="2" lineWidth="19.13658161270746" position="221.80747985839844">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="222" height="65323232.0" serial="63">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="223" dim="1" lineWidth="15.653546775819567" position="298.492919921875">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="224" dim="2" lineWidth="19.20009390875066" position="233.7759552001953">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+                <NMR.Peak _ID="225" height="43005360.0" serial="64">
+                  <NMR.Peak.peakDims>
+                    <NMR.PeakDim _ID="226" dim="1" lineWidth="14.396781715149087" position="161.92224884033203">
+                    </NMR.PeakDim>
+                    <NMR.PeakDim _ID="227" dim="2" lineWidth="19.734257713241732" position="243.33123779296875">
+                    </NMR.PeakDim>
+                  </NMR.Peak.peakDims>
+                </NMR.Peak>
+              </NMR.PeakList.peaks>
+            </NMR.PeakList>
+          </NMR.DataSource.peakLists>
+        </NMR.DataSource>
+      </NMR.Experiment.dataSources>
+      <NMR.Experiment.expDims>
+        <NMR.ExpDim _ID="24" dim="1">
+          <IMPL.DataObject.ccpnInternalData>
+            <IMPL.Multiple>{
+  "expDimToRefExpDim": null
+}</IMPL.Multiple>
+          </IMPL.DataObject.ccpnInternalData>
+          <NMR.ExpDim.dataDims> 29</NMR.ExpDim.dataDims>
+          <NMR.ExpDim.expDimRefs>
+            <NMR.ExpDimRef _ID="26" axisCode="H" maxAliasedFreq="10.498205458460355" minAliasedFreq="6.494294591153077" serial="1" sf="800.3040161132812" unit="ppm">
+              <NMR.ExpDimRef.isotopeCodes> 1H</NMR.ExpDimRef.isotopeCodes>
+              <NMR.ExpDimRef.dataDimRefs> 31</NMR.ExpDimRef.dataDimRefs>
+              <NMR.ExpDimRef.dimensionScalings> 30</NMR.ExpDimRef.dimensionScalings>
+            </NMR.ExpDimRef>
+          </NMR.ExpDim.expDimRefs>
+        </NMR.ExpDim>
+        <NMR.ExpDim _ID="25" dim="2">
+          <IMPL.DataObject.ccpnInternalData>
+            <IMPL.Multiple>{
+  "expDimToRefExpDim": null
+}</IMPL.Multiple>
+          </IMPL.DataObject.ccpnInternalData>
+          <NMR.ExpDim.dataDims> 32</NMR.ExpDim.dataDims>
+          <NMR.ExpDim.expDimRefs>
+            <NMR.ExpDimRef _ID="27" axisCode="N" maxAliasedFreq="130.5383861129643" minAliasedFreq="106.54071604960222" serial="1" sf="81.10299682617188" unit="ppm">
+              <NMR.ExpDimRef.isotopeCodes> 15N</NMR.ExpDimRef.isotopeCodes>
+              <NMR.ExpDimRef.dataDimRefs> 34</NMR.ExpDimRef.dataDimRefs>
+              <NMR.ExpDimRef.dimensionScalings> 33</NMR.ExpDimRef.dimensionScalings>
+            </NMR.ExpDimRef>
+          </NMR.ExpDim.expDimRefs>
+        </NMR.ExpDim>
+      </NMR.Experiment.expDims>
+    </NMR.Experiment>
+  </NMR.NmrProject.experiments>
+  <NMR.NmrProject.measurementLists>
+    <NMR.ShiftList _ID="3" serial="1">
+      <NMR.AbstractMeasurementList.name>
+        <IMPL.Line>default</IMPL.Line>
+      </NMR.AbstractMeasurementList.name>
+      <NMR.ShiftList.experiments> 4 23</NMR.ShiftList.experiments>
+    </NMR.ShiftList>
+  </NMR.NmrProject.measurementLists>
+  <NMR.NmrProject.nmrChains>
+    <NMR.NmrChain _ID="2" implCode="@-" label="@-" serial="1">
+      <NMR.NmrChain.details>
+        <IMPL.Page>Cannot be deleted or renamed.</IMPL.Page>
+      </NMR.NmrChain.details>
+    </NMR.NmrChain>
+  </NMR.NmrProject.nmrChains>
+</NMR.NmrProject>
+
+</_StorageUnit>
+<!--End of Memops Data-->

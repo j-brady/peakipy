@@ -24,16 +24,19 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import List
+from enum import Enum
 
 import numpy as np
 import nmrglue as ng
 import matplotlib.pyplot as plt
 import pandas as pd
 import textwrap
-from colorama import Fore, init
+from rich import print
+from rich.table import Table
+from rich.console import Console
 
 from numpy import sqrt, log, pi, exp, finfo
-from tabulate import tabulate
 
 from lmfit import Model
 from lmfit.model import ModelResult
@@ -49,54 +52,85 @@ from scipy import ndimage
 from skimage.morphology import square, binary_closing, disk, rectangle
 from skimage.filters import threshold_otsu
 
-init(autoreset=True)
+console = Console()
 # constants
 log2 = log(2)
 π = pi
 tiny = finfo(float).eps
 
 
+class StrucEl(str, Enum):
+    square = "square"
+    disk = "disk"
+    rectangle = "rectangle"
+    mask_method = "mask_method"
+
+
+class PeaklistFormat(str, Enum):
+    a2 = "a2"
+    a3 = "a3"
+    sparky = "sparky"
+    pipe = "pipe"
+    peakipy = "peakipy"
+
+
+class OutFmt(str, Enum):
+    csv = "csv"
+    pkl = "pkl"
+
+
+class Lineshape(str, Enum):
+    PV = "PV"
+    V = "V"
+    G = "G"
+    L = "L"
+    PV_PV = "PV_PV"
+    G_L = "G_L"
+    PV_G = "PV_G"
+    PV_L = "PV_L"
+
+
 def gaussian(x, center=0.0, sigma=1.0):
-    """ 1-dimensional Gaussian function.
+    """1-dimensional Gaussian function.
 
-        gaussian(x, center, sigma) = 
-            (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
-        
-        :math:`\\frac{1}{ \sqrt{2\pi} } exp \left( \\frac{-(x-center)^2}{2 \sigma^2} \\right)`
-        
-        :param x: x
-        :param center: center
-        :param sigma: sigma
-        :type x: numpy.array
-        :type center: float
-        :type sigma: float
+    gaussian(x, center, sigma) =
+        (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
 
-        :return: 1-dimensional Gaussian
-        :rtype: numpy.array
+    :math:`\\frac{1}{ \sqrt{2\pi} } exp \left( \\frac{-(x-center)^2}{2 \sigma^2} \\right)`
+
+    :param x: x
+    :param center: center
+    :param sigma: sigma
+    :type x: numpy.array
+    :type center: float
+    :type sigma: float
+
+    :return: 1-dimensional Gaussian
+    :rtype: numpy.array
 
     """
     return (1.0 / max(tiny, (sqrt(2 * π) * sigma))) * exp(
-        -((1.0 * x - center) ** 2) / max(tiny, (2 * sigma ** 2))
+        -((1.0 * x - center) ** 2) / max(tiny, (2 * sigma**2))
     )
 
 
 def lorentzian(x, center=0.0, sigma=1.0):
-    """ 1-dimensional Lorentzian function.
+    """1-dimensional Lorentzian function.
 
-        lorentzian(x, center, sigma) =
-            (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
+    lorentzian(x, center, sigma) =
+        (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
 
-        :math:`\\frac{1}{ 1+ \left( \\frac{x-center}{\sigma}\\right)^2} / (\pi\sigma)`
+    :math:`\\frac{1}{ 1+ \left( \\frac{x-center}{\sigma}\\right)^2} / (\pi\sigma)`
 
-        :param x: x
-        :param center: center
-        :param sigma: sigma
-        :type x: numpy.array
-        :type center: float
-        :type sigma: float
+    :param x: x
+    :param center: center
+    :param sigma: sigma
+    :type x: numpy.array
+    :type center: float
+    :type sigma: float
 
-        :return: 1-dimensional Lorenztian 
-        :rtype: numpy.array
+    :return: 1-dimensional Lorenztian
+    :rtype: numpy.array
 
     """
     return (1.0 / (1 + ((1.0 * x - center) / max(tiny, sigma)) ** 2)) / max(
@@ -140,26 +174,26 @@ def voigt(x, center=0.0, sigma=1.0, gamma=None):
 
 
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
-    """ 1-dimensional Pseudo-voigt function
-    
-        Superposition of Gaussian and Lorentzian function
+    """1-dimensional Pseudo-voigt function
 
-        :math:`(1-\phi) G(x,center,\sigma_g) + \phi L(x, center, \sigma)`
+    Superposition of Gaussian and Lorentzian function
 
-        Where :math:`\phi` is the fraction of Lorentzian lineshape and :math:`G` and :math:`L` are Gaussian and
-        Lorentzian functions, respectively.
+    :math:`(1-\phi) G(x,center,\sigma_g) + \phi L(x, center, \sigma)`
 
-        :param x: data
-        :type x: numpy.array
-        :param center: center of peak
-        :type center: float
-        :param sigma: sigma of lineshape
-        :type sigma: float
-        :param fraction: fraction of lorentzian lineshape (between 0 and 1)
-        :type fraction: float
+    Where :math:`\phi` is the fraction of Lorentzian lineshape and :math:`G` and :math:`L` are Gaussian and
+    Lorentzian functions, respectively.
 
-        :return: pseudo-voigt function
-        :rtype: numpy.array
+    :param x: data
+    :type x: numpy.array
+    :param center: center of peak
+    :type center: float
+    :param sigma: sigma of lineshape
+    :type sigma: float
+    :param fraction: fraction of lorentzian lineshape (between 0 and 1)
+    :type fraction: float
+
+    :return: pseudo-voigt function
+    :rtype: numpy.array
 
     """
     sigma_g = sigma / sqrt(2 * log2)
@@ -178,33 +212,33 @@ def pvoigt2d(
     sigma_y=1.0,
     fraction=0.5,
 ):
-    """ 2D pseudo-voigt model
+    """2D pseudo-voigt model
 
-        :math:`(1-fraction) G(x,center,\sigma_{gx}) + (fraction) L(x, center, \sigma_x) * (1-fraction) G(y,center,\sigma_{gy}) + (fraction) L(y, center, \sigma_y)`
+    :math:`(1-fraction) G(x,center,\sigma_{gx}) + (fraction) L(x, center, \sigma_x) * (1-fraction) G(y,center,\sigma_{gy}) + (fraction) L(y, center, \sigma_y)`
 
-        :param XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-        :type XY: numpy.array
+    :param XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+    :type XY: numpy.array
 
-        :param amplitude: amplitude of peak
-        :type amplitude: float
+    :param amplitude: amplitude of peak
+    :type amplitude: float
 
-        :param center_x: center of peak in x
-        :type center_x: float
+    :param center_x: center of peak in x
+    :type center_x: float
 
-        :param center_y: center of peak in x
-        :type center_y: float
+    :param center_y: center of peak in x
+    :type center_y: float
 
-        :param sigma_x: sigma of lineshape in x
-        :type sigma_x: float
+    :param sigma_x: sigma of lineshape in x
+    :type sigma_x: float
 
-        :param sigma_y: sigma of lineshape in y
-        :type sigma_y: float
+    :param sigma_y: sigma of lineshape in y
+    :type sigma_y: float
 
-        :param fraction: fraction of lorentzian lineshape (between 0 and 1)
-        :type fraction: float
+    :param fraction: fraction of lorentzian lineshape (between 0 and 1)
+    :type fraction: float
 
-        :return: flattened array of Z values (use Z.reshape(X.shape) for recovery)
-        :rtype: numpy.array
+    :return: flattened array of Z values (use Z.reshape(X.shape) for recovery)
+    :rtype: numpy.array
 
     """
 
@@ -234,23 +268,23 @@ def pv_l(
     sigma_y=1.0,
     fraction=0.5,
 ):
-    """ 2D lineshape model with pseudo-voigt in x and lorentzian in y
+    """2D lineshape model with pseudo-voigt in x and lorentzian in y
 
-        Arguments
-        =========
+    Arguments
+    =========
 
-            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-            -- amplitude: peak amplitude (gaussian and lorentzian)
-            -- center_x: position of peak in x
-            -- center_y: position of peak in y
-            -- sigma_x: linewidth in x
-            -- sigma_y: linewidth in y
-            -- fraction: fraction of lorentzian in fit
+        -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+        -- amplitude: peak amplitude (gaussian and lorentzian)
+        -- center_x: position of peak in x
+        -- center_y: position of peak in y
+        -- sigma_x: linewidth in x
+        -- sigma_y: linewidth in y
+        -- fraction: fraction of lorentzian in fit
 
-        Returns
-        =======
+    Returns
+    =======
 
-            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+        -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
 
@@ -269,23 +303,23 @@ def pv_g(
     sigma_y=1.0,
     fraction=0.5,
 ):
-    """ 2D lineshape model with pseudo-voigt in x and gaussian in y
+    """2D lineshape model with pseudo-voigt in x and gaussian in y
 
-        Arguments
-        ---------
+    Arguments
+    ---------
 
-            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-            -- amplitude: peak amplitude (gaussian and lorentzian)
-            -- center_x: position of peak in x
-            -- center_y: position of peak in y
-            -- sigma_x: linewidth in x
-            -- sigma_y: linewidth in y
-            -- fraction: fraction of lorentzian in fit
+        -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+        -- amplitude: peak amplitude (gaussian and lorentzian)
+        -- center_x: position of peak in x
+        -- center_y: position of peak in y
+        -- sigma_x: linewidth in x
+        -- sigma_y: linewidth in y
+        -- fraction: fraction of lorentzian in fit
 
-        Returns
-        -------
+    Returns
+    -------
 
-            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+        -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
     x, y = XY
@@ -304,25 +338,25 @@ def pv_pv(
     fraction_x=0.5,
     fraction_y=0.5,
 ):
-    """ 2D lineshape model with pseudo-voigt in x and pseudo-voigt in y
-        i.e. fraction_x and fraction_y params
+    """2D lineshape model with pseudo-voigt in x and pseudo-voigt in y
+    i.e. fraction_x and fraction_y params
 
-        Arguments
-        =========
+    Arguments
+    =========
 
-            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-            -- amplitude: peak amplitude (gaussian and lorentzian)
-            -- center_x: position of peak in x
-            -- center_y: position of peak in y
-            -- sigma_x: linewidth in x
-            -- sigma_y: linewidth in y
-            -- fraction_x: fraction of lorentzian in x
-            -- fraction_y: fraction of lorentzian in y
+        -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+        -- amplitude: peak amplitude (gaussian and lorentzian)
+        -- center_x: position of peak in x
+        -- center_y: position of peak in y
+        -- sigma_x: linewidth in x
+        -- sigma_y: linewidth in y
+        -- fraction_x: fraction of lorentzian in x
+        -- fraction_y: fraction of lorentzian in y
 
-        Returns
-        =======
+    Returns
+    =======
 
-            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+        -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
 
@@ -341,23 +375,23 @@ def gaussian_lorentzian(
     sigma_y=1.0,
     fraction=0.5,
 ):
-    """ 2D lineshape model with gaussian in x and lorentzian in y
+    """2D lineshape model with gaussian in x and lorentzian in y
 
-        Arguments
-        =========
+    Arguments
+    =========
 
-            -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
-            -- amplitude: peak amplitude (gaussian and lorentzian)
-            -- center_x: position of peak in x
-            -- center_y: position of peak in y
-            -- sigma_x: linewidth in x
-            -- sigma_y: linewidth in y
-            -- fraction: fraction of lorentzian in fit
+        -- XY: meshgrid of X and Y coordinates [X,Y] each with shape Z
+        -- amplitude: peak amplitude (gaussian and lorentzian)
+        -- center_x: position of peak in x
+        -- center_y: position of peak in y
+        -- sigma_x: linewidth in x
+        -- sigma_y: linewidth in y
+        -- fraction: fraction of lorentzian in fit
 
-        Returns
-        =======
+    Returns
+    =======
 
-            -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
+        -- flattened array of Z values (use Z.reshape(X.shape) for recovery)
 
     """
     x, y = XY
@@ -387,53 +421,53 @@ def voigt2d(
 
 
 def make_mask(data, c_x, c_y, r_x, r_y):
-    """ Create and elliptical mask
+    """Create and elliptical mask
 
-        Generate an elliptical boolean mask with center c_x/c_y in points
-        with radii r_x and r_y. Used to generate fit mask
+    Generate an elliptical boolean mask with center c_x/c_y in points
+    with radii r_x and r_y. Used to generate fit mask
 
-        :param data: 2D array
-        :type data: np.array
+    :param data: 2D array
+    :type data: np.array
 
-        :param c_x: x center
-        :type c_x: float
+    :param c_x: x center
+    :type c_x: float
 
-        :param c_y: y center
-        :type c_y: float
+    :param c_y: y center
+    :type c_y: float
 
-        :param r_x: radius in x
-        :type r_x: float
+    :param r_x: radius in x
+    :type r_x: float
 
-        :param r_y: radius in y
-        :type r_y: float
+    :param r_y: radius in y
+    :type r_y: float
 
-        :return: boolean mask of data.shape
-        :rtype: numpy.array
+    :return: boolean mask of data.shape
+    :rtype: numpy.array
 
     """
     a, b = c_y, c_x
     n_y, n_x = data.shape
     y, x = np.ogrid[-a : n_y - a, -b : n_x - b]
-    mask = x ** 2.0 / r_x ** 2.0 + y ** 2.0 / r_y ** 2.0 <= 1.0
+    mask = x**2.0 / r_x**2.0 + y**2.0 / r_y**2.0 <= 1.0
     return mask
 
 
 def rmsd(residuals):
-    return np.sqrt(np.sum(residuals ** 2.0) / len(residuals))
+    return np.sqrt(np.sum(residuals**2.0) / len(residuals))
 
 
 def fix_params(params, to_fix):
-    """ Set parameters to fix
+    """Set parameters to fix
 
-         
-        :param params: lmfit parameters
-        :type params: lmfit.Parameters
 
-        :param to_fix: list of parameter name to fix
-        :type to_fix: list
+    :param params: lmfit parameters
+    :type params: lmfit.Parameters
 
-        :return: updated parameter object
-        :rtype: lmfit.Parameters
+    :param to_fix: list of parameter name to fix
+    :type to_fix: list
+
+    :return: updated parameter object
+    :rtype: lmfit.Parameters
 
     """
     for k in params:
@@ -456,8 +490,8 @@ def get_params(params, name):
     return ps, ps_err, names
 
 
-def make_param_dict(peaks, data, lineshape="PV"):
-    """ Make dict of parameter names using prefix """
+def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):
+    """Make dict of parameter names using prefix"""
 
     param_dict = {}
 
@@ -474,34 +508,34 @@ def make_param_dict(peaks, data, lineshape="PV"):
         ].sum()
 
         param_dict[str_form("amplitude")] = amplitude_est
+        # sigma linewidth esimate
+        param_dict[str_form("sigma_x")] = peak.XW / 2.0
+        param_dict[str_form("sigma_y")] = peak.YW / 2.0
 
-        if lineshape == "V":
-            #  Voigt G sigma from linewidth esimate
-            param_dict[str_form("sigma_x")] = peak.XW / (
-                2.0 * sqrt(2.0 * log2)
-            )  # 3.6013
-            param_dict[str_form("sigma_y")] = peak.YW / (
-                2.0 * sqrt(2.0 * log2)
-            )  # 3.6013
-            #  Voigt L gamma from linewidth esimate
-            param_dict[str_form("gamma_x")] = peak.XW / 2.0
-            param_dict[str_form("gamma_y")] = peak.YW / 2.0
-            # height
-            # add height here
-        else:
-            # sigma linewidth esimate
-            param_dict[str_form("sigma_x")] = peak.XW / 2.0
-            param_dict[str_form("sigma_y")] = peak.YW / 2.0
+        match lineshape:
+            case lineshape.V:
+                #  Voigt G sigma from linewidth esimate
+                param_dict[str_form("sigma_x")] = peak.XW / (
+                    2.0 * sqrt(2.0 * log2)
+                )  # 3.6013
+                param_dict[str_form("sigma_y")] = peak.YW / (
+                    2.0 * sqrt(2.0 * log2)
+                )  # 3.6013
+                #  Voigt L gamma from linewidth esimate
+                param_dict[str_form("gamma_x")] = peak.XW / 2.0
+                param_dict[str_form("gamma_y")] = peak.YW / 2.0
+                # height
+                # add height here
 
-        if lineshape == "G":
-            param_dict[str_form("fraction")] = 0.0
-        elif lineshape == "L":
-            param_dict[str_form("fraction")] = 1.0
-        elif lineshape == "PV_PV":
-            param_dict[str_form("fraction_x")] = 0.5
-            param_dict[str_form("fraction_y")] = 0.5
-        else:
-            param_dict[str_form("fraction")] = 0.5
+            case lineshape.G:
+                param_dict[str_form("fraction")] = 0.0
+            case lineshape.L:
+                param_dict[str_form("fraction")] = 1.0
+            case lineshape.PV_PV:
+                param_dict[str_form("fraction_x")] = 0.5
+                param_dict[str_form("fraction_y")] = 0.5
+            case _:
+                param_dict[str_form("fraction")] = 0.5
 
     return param_dict
 
@@ -536,35 +570,38 @@ def to_prefix(x):
         ["\\", ""],
         ["(", "_"],
         [")", "_"],
+        ["@", "_at_"],
     ]
     for p in to_replace:
         prefix = prefix.replace(*p)
     return prefix + "_"
 
 
-def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
-    """ Make composite models for multiple peaks
+def make_models(
+    model, peaks, data, lineshape: Lineshape = Lineshape.PV, xy_bounds=None
+):
+    """Make composite models for multiple peaks
 
-        :param model: lineshape function
-        :type model: function
+    :param model: lineshape function
+    :type model: function
 
-        :param peaks: instance of pandas.df.groupby("CLUSTID")
-        :type peaks: pandas.df.groupby("CLUSTID")
+    :param peaks: instance of pandas.df.groupby("CLUSTID")
+    :type peaks: pandas.df.groupby("CLUSTID")
 
-        :param data: NMR data
-        :type data: numpy.array
+    :param data: NMR data
+    :type data: numpy.array
 
-        :param lineshape: lineshape to use for fit (PV/G/L/PV_PV)
-        :type lineshape: str
+    :param lineshape: lineshape to use for fit (PV/G/L/PV_PV)
+    :type lineshape: str
 
-        :param xy_bounds: bounds for peak centers (+/-x, +/-y)
-        :type xy_bounds: tuple
+    :param xy_bounds: bounds for peak centers (+/-x, +/-y)
+    :type xy_bounds: tuple
 
-        :return mod: Composite lmfit model containing all peaks
-        :rtype mod: lmfit.CompositeModel
+    :return mod: Composite lmfit model containing all peaks
+    :rtype mod: lmfit.CompositeModel
 
-        :return p_guess: params for composite model with starting values
-        :rtype p_guess: lmfit.Parameters
+    :return p_guess: params for composite model with starting values
+    :rtype p_guess: lmfit.Parameters
 
     """
     if len(peaks) == 1:
@@ -590,24 +627,26 @@ def make_models(model, peaks, data, lineshape="PV", xy_bounds=None):
     return mod, p_guess
 
 
-def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
-    """ Update lmfit parameters with values from Peak
+def update_params(
+    params, param_dict, lineshape: Lineshape = Lineshape.PV, xy_bounds=None
+):
+    """Update lmfit parameters with values from Peak
 
-        :param params: lmfit parameters 
-        :type params: lmfit.Parameters object
-        :param param_dict: parameters corresponding to each peak in fit
-        :type param_dict: dict
-        :param lineshape: lineshape (PV, G, L, PV_PV etc.)
-        :type lineshape: str
-        :param xy_bounds: bounds on xy peak positions
-        :type xy_bounds: tuple
+    :param params: lmfit parameters
+    :type params: lmfit.Parameters object
+    :param param_dict: parameters corresponding to each peak in fit
+    :type param_dict: dict
+    :param lineshape: Lineshape (PV, G, L, PV_PV etc.)
+    :type lineshape: Lineshape
+    :param xy_bounds: bounds on xy peak positions
+    :type xy_bounds: tuple
 
-        :returns: None
-        :rtype: None
+    :returns: None
+    :rtype: None
 
-        ToDo
-          -- deal with boundaries
-          -- currently positions in points
+    ToDo
+      -- deal with boundaries
+      -- currently positions in points
 
     """
     for k, v in param_dict.items():
@@ -650,16 +689,19 @@ def update_params(params, param_dict, lineshape="PV", xy_bounds=None):
             params[k].max = 1.0
 
             #  fix fraction of G or L
-            if lineshape == "G":
-                params[k].vary = False
-            elif lineshape == "L":
-                params[k].vary = False
+            match lineshape:
+                case lineshape.G | lineshape.L:
+                    params[k].vary = False
+                case lineshape.PV | lineshape.PV_PV:
+                    params[k].vary = True
+                case _:
+                    pass
 
     # return params
 
 
 def run_log(log_name="run_log.txt"):
-    """ Write log file containing time script was run and with which arguments"""
+    """Write log file containing time script was run and with which arguments"""
     with open(log_name, "a") as log:
         sys_argv = sys.argv
         sys_argv[0] = Path(sys_argv[0]).name
@@ -669,89 +711,112 @@ def run_log(log_name="run_log.txt"):
         log.write(f"# Script run on {time_stamp}:\n{run_args}\n")
 
 
+def df_to_rich_table(df, title: str, columns: List[str], styles: str):
+    """Print dataframe using rich library
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    title : str
+        title of table
+    columns : List[str]
+        list of column names (must be in df)
+    styles : List[str]
+        list of styles in same order as columns
+    """
+    table = Table(title=title)
+    for col, style in zip(columns, styles):
+        table.add_column(col, style=style)
+    for ind, row in df.iterrows():
+        row = row[columns].values
+        str_row = []
+        for i in row:
+            match i:
+                case str():
+                    str_row.append(f"{i}")
+                case float() if i > 1e5:
+                    str_row.append(f"{i:.1e}")
+                case float():
+                    str_row.append(f"{i:.3f}")
+                case bool():
+                    str_row.append(f"{i}")
+                case int():
+                    str_row.append(f"{i}")
+        table.add_row(*str_row)
+    return table
+
+
 def fit_first_plane(
     group,
     data,
     uc_dics,
-    lineshape="PV",
+    lineshape: Lineshape.PV,
     xy_bounds=None,
     verbose=False,
     log=None,
     noise=1.0,
     fit_method="leastsq",
 ):
-    """ Deconvolute group of peaks
+    """Deconvolute group of peaks
 
-        :param group: pandas data from containing group of peaks using groupby("CLUSTID")
-        :type group: pandas.core.groupby.generic.DataFrameGroupBy
+    :param group: pandas data from containing group of peaks using groupby("CLUSTID")
+    :type group: pandas.core.groupby.generic.DataFrameGroupBy
 
-        :param data: NMR data
-        :type data: numpy.array
+    :param data: NMR data
+    :type data: numpy.array
 
-        :param uc_dics: nmrglue unit conversion dics {"f1":uc_f1,"f2":uc_f2}
-        :type uc_dics: dict
-        
-        :param lineshape: lineshape to fit (PV, G, L, V, G_L, PV_L, PV_G or PV_PV)
-        :type lineshape: str
+    :param uc_dics: nmrglue unit conversion dics {"f1":uc_f1,"f2":uc_f2}
+    :type uc_dics: dict
 
-        :param xy_bounds: set bounds on x y positions. None or (x_bound, y_bound)
-        :type xy_bounds: tuple
+    :param lineshape: lineshape to fit (PV, G, L, V, G_L, PV_L, PV_G or PV_PV)
+    :type lineshape: str
 
-        :param plot: dir to save wireframe plots
-        :type plot: str
+    :param xy_bounds: set bounds on x y positions. None or (x_bound, y_bound)
+    :type xy_bounds: tuple
 
-        :param show: interactive matplotlib plot
-        :type show: bool
+    :param plot: dir to save wireframe plots
+    :type plot: str
 
-        :param verbose: print what is happening to terminal
-        :type verbose: bool
+    :param show: interactive matplotlib plot
+    :type show: bool
 
-        :param log: file
-        :type log: str
+    :param verbose: print what is happening to terminal
+    :type verbose: bool
 
-        :param noise: estimate of spectral noise for calculation of :math:`\chi^2` and :math:`\chi^2_{red}`
-        :type noise: float
+    :param log: file
+    :type log: str
 
-        :param fit_method: method used by lmfit
-        :type fit_method: str
+    :param noise: estimate of spectral noise for calculation of :math:`\chi^2` and :math:`\chi^2_{red}`
+    :type noise: float
 
-        :return: FitResult
-        :rtype: FitResult
+    :param fit_method: method used by lmfit
+    :type fit_method: str
+
+    :return: FitResult
+    :rtype: FitResult
 
     """
     shape = data.shape
     mask = np.zeros(shape, dtype=bool)
+    match lineshape:
+        case lineshape.PV | lineshape.G | lineshape.L:
+            lineshape_function = pvoigt2d
+        case lineshape.V:
+            lineshape_function = voigt2d
+        case lineshape.PV_PV:
+            lineshape_function = pv_pv
+        case lineshape.G_L:
+            lineshape_function = gaussian_lorentzian
+        case lineshape.PV_G:
+            lineshape_function = pv_g
+        case lineshape.PV_L:
+            lineshape_function = pv_l
+        case _:
+            raise Exception("No lineshape was selected!")
 
-    if (lineshape == "PV") or (lineshape == "G") or (lineshape == "L"):
-        mod, p_guess = make_models(
-            pvoigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "V":
-        mod, p_guess = make_models(
-            voigt2d, group, data, lineshape=lineshape, xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "G_L":
-        mod, p_guess = make_models(
-            gaussian_lorentzian, group, data, lineshape="PV", xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "PV_G":
-        mod, p_guess = make_models(
-            pv_g, group, data, lineshape="PV", xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "PV_L":
-        mod, p_guess = make_models(
-            pv_l, group, data, lineshape="PV", xy_bounds=xy_bounds
-        )
-
-    elif lineshape == "PV_PV":
-        mod, p_guess = make_models(
-            pv_pv, group, data, lineshape="PV_PV", xy_bounds=xy_bounds
-        )
-
+    mod, p_guess = make_models(
+        lineshape_function, group, data, lineshape=lineshape, xy_bounds=xy_bounds
+    )
     # get initial peak centers
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
     cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
@@ -794,6 +859,7 @@ def fit_first_plane(
     X, Y = XY
 
     XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
+    # print("XY_slices", XY_slices)
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
 
     out = mod.fit(
@@ -801,7 +867,7 @@ def fit_first_plane(
     )
 
     if verbose:
-        print(out.fit_report())
+        console.print(out.fit_report(), style="bold")
 
     z_sim = mod.eval(XY=XY, params=out.params)
     z_sim[~mask] = np.nan
@@ -833,9 +899,9 @@ def fit_first_plane(
         fit_str += """
         🧐 NEEDS CHECKING 🧐
         """
-        print(fit_str)
+        console.print(fit_str, style="bold yellow")
     else:
-        print(fit_str)
+        console.print(fit_str, style="green")
 
     if log is not None:
         log.write("".join("#" for _ in range(60)) + "\n\n")
@@ -867,7 +933,7 @@ def fit_first_plane(
 
 
 class FitResult:
-    """ Data structure for storing fit results """
+    """Data structure for storing fit results"""
 
     def __init__(
         self,
@@ -890,7 +956,7 @@ class FitResult:
         weights: np.array,
         mod: Model,
     ):
-        """ Store output of fit_first_plane function """
+        """Store output of fit_first_plane function"""
         self.out = out
         self.mask = mask
         self.fit_str = fit_str
@@ -911,17 +977,15 @@ class FitResult:
         self.mod = mod
 
     def check_shifts(self):
-        """ Calculate difference between initial peak positions 
-            and check whether they moved too much from original
-            position
-            
+        """Calculate difference between initial peak positions
+        and check whether they moved too much from original
+        position
+
         """
         pass
 
     def jackknife(self):
-        """ perform jackknife sampling to estimate fitting errors
-
-        """
+        """perform jackknife sampling to estimate fitting errors"""
         jk_results = []
         for i in range(len(self.peak_slices)):
             peak_slices = np.delete(self.peak_slices, i, None)
@@ -972,8 +1036,8 @@ class FitResult:
         # std =  np.std(amps)
         return JackKnifeResult(mean=mean_amps, std=std_amps)
 
-    def plot(self, plot_path=None, show=False, nomp=True):
-        """ Matplotlib interactive plot of the fits """
+    def plot(self, plot_path=None, show=False, mp=False):
+        """Matplotlib interactive plot of the fits"""
 
         if plot_path != None:
             plot_path = Path(plot_path)
@@ -1009,7 +1073,8 @@ class FitResult:
                 alpha=0.5,
                 cmap=cm.coolwarm,
             )
-            fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+            cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+            cbl.ax.set_title("Residual")
             # plot raw data
             ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
 
@@ -1058,7 +1123,7 @@ class FitResult:
             plt.legend(bbox_to_anchor=(1.2, 1.1))
 
             name = self.group.CLUSTID.iloc[0]
-            if show and nomp:
+            if show and not mp:
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
 
                 def exit_program(event):
@@ -1078,8 +1143,7 @@ class FitResult:
                 plt.show()
             else:
                 print(
-                    Fore.RED
-                    + "Cannot use interactive matplotlib in multiprocess mode. Use --nomp flag."
+                    "[red]Cannot use interactive matplotlib in multiprocess mode. Use --no-mp flag.[/red]"
                 )
                 plt.savefig(plot_path / f"{name}.png", dpi=300)
             #    print(p_guess)
@@ -1098,15 +1162,15 @@ class JackKnifeResult:
 class Pseudo3D:
     """Read dic, data from NMRGlue and dims from input to create a Pseudo3D dataset
 
-       :param dic: from nmrglue.pipe.read
-       :type dic: dict
+    :param dic: from nmrglue.pipe.read
+    :type dic: dict
 
-       :param data: data from nmrglue.pipe.read
-       :type data: numpy.array
+    :param data: data from nmrglue.pipe.read
+    :type data: numpy.array
 
-       :param dims: dimension order i.e [0,1,2] where 0 = planes, 1 = f1, 2 = f2
-       :type dims: list
-       """
+    :param dims: dimension order i.e [0,1,2] where 0 = planes, 1 = f1, 2 = f2
+    :type dims: list
+    """
 
     def __init__(self, dic, data, dims):
         # check dimensions
@@ -1114,28 +1178,22 @@ class Pseudo3D:
         self._ndim = self._udic["ndim"]
 
         if self._ndim == 1:
-            err = (
-                Fore.RED
-                + f"""
+            err = f"""[red]
             ##########################################
                 NMR Data should be either 2D or 3D
             ##########################################
-            """
-            )
+            [/red]"""
             # raise TypeError(err)
             sys.exit(err)
 
         # check that spectrum has correct number of dims
         elif self._ndim != len(dims):
-            err = (
-                Fore.RED
-                + f"""
+            err = f"""[red]
             #################################################################
                Your spectrum has {self._ndim} dimensions with shape {data.shape}
                but you have given a dimension order of {dims}...
             #################################################################
-            """
-            )
+            [/red]"""
             # raise ValueError(err)
             sys.exit(err)
 
@@ -1169,22 +1227,22 @@ class Pseudo3D:
 
     @property
     def uc_f1(self):
-        """ Return unit conversion dict for F1"""
+        """Return unit conversion dict for F1"""
         return self._uc_f1
 
     @property
     def uc_f2(self):
-        """ Return unit conversion dict for F2"""
+        """Return unit conversion dict for F2"""
         return self._uc_f2
 
     @property
     def dims(self):
-        """ Return dimension order """
+        """Return dimension order"""
         return self._dims
 
     @property
     def data(self):
-        """ Return array containing data """
+        """Return array containing data"""
         return self._data
 
     @data.setter
@@ -1232,12 +1290,12 @@ class Pseudo3D:
     # size of f1 and f2 in points
     @property
     def f2_size(self):
-        """ Return size of f2 dimension in points """
+        """Return size of f2 dimension in points"""
         return self._udic[self._f2_dim]["size"]
 
     @property
     def f1_size(self):
-        """ Return size of f1 dimension in points """
+        """Return size of f1 dimension in points"""
         return self._udic[self._f1_dim]["size"]
 
     # points per ppm
@@ -1330,8 +1388,12 @@ class Pseudo3D:
         return self.f1_ppm_limits[1]
 
 
+class UnknownFormat(Exception):
+    pass
+
+
 class Peaklist(Pseudo3D):
-    """ Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
+    """Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
 
     Parameters
     ----------
@@ -1339,10 +1401,12 @@ class Peaklist(Pseudo3D):
         path to peaklist
     data_path : ndarray
         NMRPipe format data
-    fmt : a2|sparky|pipe
-    dims: [planes,y,x]
-    radii: [x,y]
-        Mask radii in ppm
+    fmt : str
+        a2|a3|sparky|pipe
+    dims: list
+        [planes,y,x]
+    radii: list
+        [x,y] Mask radii in ppm
 
 
     Methods
@@ -1363,7 +1427,7 @@ class Peaklist(Pseudo3D):
         self,
         path,
         data_path,
-        fmt="a2",
+        fmt: PeaklistFormat = PeaklistFormat.a2,
         dims=[0, 1, 2],
         radii=[0.04, 0.4],
         posF1="Position F2",
@@ -1412,6 +1476,15 @@ class Peaklist(Pseudo3D):
             # "": "CLUSTID",
             # "": "MEMCNT"
         }
+        self._assign_to_pipe_dic = {
+            "#": "INDEX",
+            "Pos F1": "X_PPM",
+            "Pos F2": "Y_PPM",
+            "LW F1 (Hz)": "XW_HZ",
+            "LW F2 (Hz)": "YW_HZ",
+            "Height": "HEIGHT",
+            "Volume": "VOL",
+        }
 
         self._sparky_to_pipe_dic = {
             "index": "INDEX",
@@ -1447,18 +1520,21 @@ class Peaklist(Pseudo3D):
         self._df = self.read_peaklist()
 
     def read_peaklist(self):
+        match self.fmt:
+            case self.fmt.a2:
+                self._df = self._read_analysis()
 
-        if self.fmt == "a2":
-            self._df = self._read_analysis()
+            case self.fmt.a3:
+                self._df = self._read_assign()
 
-        elif self.fmt == "sparky":
-            self._df = self._read_sparky()
+            case self.fmt.sparky:
+                self._df = self._read_sparky()
 
-        elif self.fmt == "pipe":
-            self._df = self._read_pipe()
+            case self.fmt.pipe:
+                self._df = self._read_pipe()
 
-        else:
-            raise (TypeError, "I don't know this format")
+            case _:
+                raise UnknownFormat("I don't know this format: {self.fmt}")
 
         return self._df
 
@@ -1477,17 +1553,21 @@ class Peaklist(Pseudo3D):
 
     @property
     def f2_radius(self):
-        """ radius for fitting mask in f2 """
+        """radius for fitting mask in f2"""
         return self.radii[0]
 
     @property
     def f1_radius(self):
-        """ radius for fitting mask in f1 """
+        """radius for fitting mask in f1"""
         return self.radii[1]
 
     @property
     def analysis_to_pipe_dic(self):
         return self._analysis_to_pipe_dic
+
+    @property
+    def assign_to_pipe_dic(self):
+        return self._assign_to_pipe_dic
 
     @property
     def sparky_to_pipe_dic(self):
@@ -1519,10 +1599,13 @@ class Peaklist(Pseudo3D):
         # convert Hz lw to points
         self.df["XW"] = self.df.XW_HZ.apply(lambda x: x * self.pt_per_hz_f2)
         self.df["YW"] = self.df.YW_HZ.apply(lambda x: x * self.pt_per_hz_f1)
-        # makes an assignment column
-        if self.fmt == "a2":
+        # makes an assignment column from Assign F1 and Assign F2 columns
+        # in analysis2.x and ccpnmr v3 assign peak lists
+        if self.fmt in [PeaklistFormat.a2, PeaklistFormat.a3]:
             self.df["ASS"] = self.df.apply(
-                lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
+                # lambda i: "".join([i["Assign F1"], i["Assign F2"]]), axis=1
+                lambda i: f"{i['Assign F1']}_{i['Assign F2']}",
+                axis=1,
             )
 
         # make default values for X and Y radii for fit masks
@@ -1546,28 +1629,37 @@ class Peaklist(Pseudo3D):
         self.check_peak_bounds()
 
     def add_fix_bound_columns(self):
-        """ add columns containing parameter bounds (param_upper/param_lower)
-            and whether or not parameter should be fixed (yes/no)
+        """add columns containing parameter bounds (param_upper/param_lower)
+        and whether or not parameter should be fixed (yes/no)
 
-            For parameter bounding:
+        For parameter bounding:
 
-                Column names are <param_name>_upper and <param_name>_lower for upper and lower bounds respectively.
-                Values are given as floating point. Value of 0.0 indicates that parameter is unbounded
-                X/Y positions are given in ppm
-                Linewidths are given in Hz
+            Column names are <param_name>_upper and <param_name>_lower for upper and lower bounds respectively.
+            Values are given as floating point. Value of 0.0 indicates that parameter is unbounded
+            X/Y positions are given in ppm
+            Linewidths are given in Hz
 
-            For parameter fixing:
+        For parameter fixing:
 
-                Column names are <param_name>_fix.
-                Values are given as a string 'yes' or 'no'
+            Column names are <param_name>_fix.
+            Values are given as a string 'yes' or 'no'
 
-            """
+        """
         pass
 
     def _read_analysis(self):
 
         df = pd.read_csv(self.peaklist_path, delimiter="\t")
         new_columns = [self.analysis_to_pipe_dic.get(i, i) for i in df.columns]
+        pipe_columns = dict(zip(df.columns, new_columns))
+        df = df.rename(index=str, columns=pipe_columns)
+
+        return df
+
+    def _read_assign(self):
+
+        df = pd.read_csv(self.peaklist_path, delimiter="\t")
+        new_columns = [self.assign_to_pipe_dic.get(i, i) for i in df.columns]
         pipe_columns = dict(zip(df.columns, new_columns))
         df = df.rename(index=str, columns=pipe_columns)
 
@@ -1606,7 +1698,7 @@ class Peaklist(Pseudo3D):
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]
         if len(duplicates) > 0:
-            print(
+            console.print(
                 textwrap.dedent(
                     """
                 #############################################################################
@@ -1614,7 +1706,8 @@ class Peaklist(Pseudo3D):
                     Currently each peak needs a unique assignment. Sorry about that buddy...
                 #############################################################################
                 """
-                )
+                ),
+                style="yellow",
             )
             self.df.loc[duplicates_bool, "ASS"] = [
                 f"{i}_dummy_{num+1}" for num, i in enumerate(duplicates)
@@ -1634,6 +1727,7 @@ class Peaklist(Pseudo3D):
             )
 
     def check_peak_bounds(self):
+        columns_to_print = ["INDEX", "ASS", "X_AXIS", "Y_AXIS", "X_PPM", "Y_PPM"]
         # check that peaks are within the bounds of spectrum
         within_x = (self.df.X_PPM < self.f2_ppm_max) & (self.df.X_PPM > self.f2_ppm_min)
         within_y = (self.df.Y_PPM < self.f1_ppm_max) & (self.df.Y_PPM > self.f1_ppm_min)
@@ -1641,30 +1735,35 @@ class Peaklist(Pseudo3D):
         self.df = self.df[within_x & within_y]
         if len(self.excluded) > 0:
             print(
-                Fore.RED
-                + textwrap.dedent(
-                    f"""
+                textwrap.dedent(
+                    f"""[red]
                     #################################################################################
 
                     Excluding the following peaks as they are not within the spectrum which has shape 
 
                     {self.data.shape}
-                """
+                [/red]"""
                 )
             )
-            print(
-                Fore.RED
-                + f"""
-{tabulate(self.excluded[["INDEX","ASS","X_AXIS","Y_AXIS","X_PPM","Y_PPM"]],headers="keys", tablefmt="fancy_grid")}
-                """
+            table_to_print = df_to_rich_table(
+                self.excluded,
+                title="Excluded",
+                columns=columns_to_print,
+                styles=["red" for i in columns_to_print],
             )
+            print(table_to_print)
             print(
-                Fore.RED
-                + "#################################################################################"
+                "[red]#################################################################################[/red]"
             )
 
-    def clusters(self, thres=None, struc_el="disk", struc_size=(3,), l_struc=None):
-        """ Find clusters of peaks
+    def clusters(
+        self,
+        thres=None,
+        struc_el: StrucEl = StrucEl.disk,
+        struc_size=(3,),
+        l_struc=None,
+    ):
+        """Find clusters of peaks
 
         :param thres: threshold for positive signals above which clusters are selected. If None then threshold_otsu is used
         :type thres: float
@@ -1693,30 +1792,31 @@ class Peaklist(Pseudo3D):
             self.data[0] < (self._thres * -1.0), self.data[0] > self._thres
         )
 
-        if struc_el == "disk":
-            radius = struc_size[0]
-            if self.verbose:
-                print(f"using disk with {radius}")
-            closed_data = binary_closing(thresh_data, disk(int(radius)))
+        match struc_el:
+            case struc_el.disk:
+                radius = struc_size[0]
+                if self.verbose:
+                    print(f"using disk with {radius}")
+                closed_data = binary_closing(thresh_data, disk(int(radius)))
 
-        elif struc_el == "square":
-            width = struc_size[0]
-            if self.verbose:
-                print(f"using square with {width}")
-            closed_data = binary_closing(thresh_data, square(int(width)))
+            case struc_el.square:
+                width = struc_size[0]
+                if self.verbose:
+                    print(f"using square with {width}")
+                closed_data = binary_closing(thresh_data, square(int(width)))
 
-        elif struc_el == "rectangle":
-            width, height = struc_size
-            if self.verbose:
-                print(f"using rectangle with {width} and {height}")
-            closed_data = binary_closing(
-                thresh_data, rectangle(int(width), int(height))
-            )
+            case struc_el.rectangle:
+                width, height = struc_size
+                if self.verbose:
+                    print(f"using rectangle with {width} and {height}")
+                closed_data = binary_closing(
+                    thresh_data, rectangle(int(width), int(height))
+                )
 
-        else:
-            if self.verbose:
-                print(f"Not using any closing function")
-            closed_data = thresh_data
+            case _:
+                if self.verbose:
+                    print(f"Not using any closing function")
+                closed_data = thresh_data
 
         labeled_array, num_features = ndimage.label(closed_data, l_struc)
 
@@ -1762,13 +1862,13 @@ class Peaklist(Pseudo3D):
     #     )
 
     def mask_method(self, overlap=1.0, l_struc=None):
-        """ connect clusters based on overlap of fitting masks
+        """connect clusters based on overlap of fitting masks
 
-            :param overlap: fraction of mask for which overlaps are calculated
-            :type overlap: float
+        :param overlap: fraction of mask for which overlaps are calculated
+        :type overlap: float
 
-            :returns ClusterResult: Instance of ClusterResult
-            :rtype: ClustersResult
+        :returns ClusterResult: Instance of ClusterResult
+        :rtype: ClustersResult
         """
         # overlap is positive
         overlap = abs(overlap)
@@ -1852,7 +1952,7 @@ SHAPE=GLORE
 
 
 class ClustersResult:
-    """ Class to store results of clusters function """
+    """Class to store results of clusters function"""
 
     def __init__(self, labeled_array, num_features, closed_data, peaks):
         self._labeled_array = labeled_array
@@ -1878,11 +1978,11 @@ class ClustersResult:
 
 
 class LoadData(Peaklist):
-    """ Load peaklist data from peakipy .csv file output from either peakipy read or edit
+    """Load peaklist data from peakipy .csv file output from either peakipy read or edit
 
-        read_peaklist is redefined to just read a .csv file
+    read_peaklist is redefined to just read a .csv file
 
-        check_data_frame makes sure data frame is in good shape for setting up fits
+    check_data_frame makes sure data frame is in good shape for setting up fits
 
     """
 
@@ -1933,7 +2033,7 @@ class LoadData(Peaklist):
         self.df = self.df.drop(columns=unnamed_cols)
 
     def update_df(self):
-        """ Slightly modified to retain previous configurations """
+        """Slightly modified to retain previous configurations"""
         # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: self.uc_f2(x, "ppm"))
         self.df["Y_AXIS"] = self.df.Y_PPM.apply(lambda x: self.uc_f1(x, "ppm"))
@@ -1979,46 +2079,47 @@ class LoadData(Peaklist):
 
 
 def read_config(args, config_path="peakipy.config"):
-    """ read a peakipy config file, extract params and update args dict
+    """read a peakipy config file, extract params and update args dict
 
-        :param args: dict containing params extracted from docopt command line
-        :type args: dict
-        :param config_path: path to peakipy config file [default: peakipy.config]
-        :type config_path: str
+    :param args: dict containing params extracted from docopt command line
+    :type args: dict
+    :param config_path: path to peakipy config file [default: peakipy.config]
+    :type config_path: str
 
-        :returns args: updated args dict
-        :rtype args: dict
-        :returns config: dict that resulted from reading config file
-        :rtype config: dict
+    :returns args: updated args dict
+    :rtype args: dict
+    :returns config: dict that resulted from reading config file
+    :rtype config: dict
 
     """
     # update args with values from peakipy.config file
     config_path = Path(config_path)
     if config_path.exists():
         try:
-            config = json.load(open(config_path))
-            print(Fore.GREEN + f"Using config file with --dims={config.get('--dims')}")
-            args["--dims"] = config.get("--dims", [0, 1, 2])
-            noise = config.get("noise")
-            if noise:
-                noise = float(noise)
+            with open(config_path) as config_file:
+                config = json.load(config_file)
+                print(
+                    f"[green]Using config file with dims [yellow]{config.get('dims')}[/yellow][/green]"
+                )
+                args["dims"] = config.get("dims", [0, 1, 2])
+                noise = config.get("noise")
+                if noise:
+                    noise = float(noise)
 
-            colors = config.get("--colors", ["#5e3c99", "#e66101"])
+                colors = config.get("colors", ["#5e3c99", "#e66101"])
         except json.decoder.JSONDecodeError:
             print(
-                Fore.RED
-                + "Your peakipy.config file is corrupted - maybe your JSON is not correct..."
+                "[red]Your peakipy.config file is corrupted - maybe your JSON is not correct...[/red]"
             )
-            print(Fore.RED + "Not using")
+            print("[red]Not using[/red]")
             noise = False
-            colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
+            colors = args.get("colors", "#5e3c99,#e66101").strip().split(",")
     else:
         print(
-            Fore.RED
-            + "No peakipy.config found - maybe you need to generate one with peakipy read or see docs"
+            "[red]No peakipy.config found - maybe you need to generate one with peakipy read or see docs[/red]"
         )
         noise = False
-        colors = args.get("--colors", "#5e3c99,#e66101").strip().split(",")
+        colors = args.get("colors", "#5e3c99,#e66101").strip().split(",")
         config = {}
 
     args["noise"] = noise

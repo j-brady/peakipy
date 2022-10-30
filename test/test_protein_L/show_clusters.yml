@@ -23,5 +23,5 @@
             - fname: test1.ft2
               label: ""
               contour_num: 20
-              linewidths: 0.1
+              linewidths: 0.5
     

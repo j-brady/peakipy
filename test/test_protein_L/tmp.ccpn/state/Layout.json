@@ -1,0 +1,185 @@
+{
+    "Title": "LayoutFile",
+    "warning": "Warning. Any changes in this file will be overwritten when saving a new layout.",
+    "general": {
+        "applicationName": "AnalysisAssign",
+        "applicationVersion": "3.0.4",
+        "LayoutVersion": "b.6"
+    },
+    "SpectrumDisplays": [
+        {
+            "longPid": "SpectrumDisplay:HNI",
+            "axisOrder": [
+                "H",
+                "N",
+                "I"
+            ],
+            "title": "HNI",
+            "positions": [
+                8.376413212077725,
+                122.11528563258616,
+                2.0
+            ],
+            "widths": [
+                4.324223736692035,
+                22.220064873483935,
+                1.0
+            ],
+            "units": [
+                "ppm",
+                "ppm",
+                "ppm"
+            ],
+            "is1D": false,
+            "stripDirection": "Y",
+            "displayAxisCodes": [
+                "H",
+                "N",
+                "I"
+            ],
+            "spectra": [
+                "SP:test1_projection_H_N"
+            ],
+            "stripsZoomStates": [
+                [
+                    10.538525080423742,
+                    6.214301343731708,
+                    133.22531806932813,
+                    111.0052531958442
+                ]
+            ]
+        }
+    ],
+    "guiModules": [
+        [
+            "Macro Editor:1",
+            "MacroEditor"
+        ],
+        [
+            "SpectrumDisplay:HNI",
+            "SpectrumDisplay"
+        ],
+        [
+            "Python Console:1",
+            "PythonConsoleModule"
+        ]
+    ],
+    "fileNames": [
+        "PythonConsoleModule",
+        "MacroEditor"
+    ],
+    "layoutState": {
+        "main": [
+            "area",
+            [
+                "vertical",
+                [
+                    [
+                        "horizontal",
+                        [
+                            [
+                                "vertical",
+                                [
+                                    [
+                                        "dock",
+                                        "Macro Editor:1",
+                                        {
+                                            "__LineEdit0": "",
+                                            "_filenameLineEdit": "/home/j-brady/.ccpn/macros/selected_to_peakipy.py",
+                                            "autoOpenPythonConsoleCB": false
+                                        }
+                                    ],
+                                    [
+                                        "dock",
+                                        "SpectrumDisplay:HNI",
+                                        {
+                                            "__PF_direction": "horizontal",
+                                            "__PF_ph0coarse": 0,
+                                            "__PF_ph0fine": 0.0,
+                                            "__PF_ph1coarse": 0,
+                                            "__PF_ph1fine": 0.0,
+                                            "__PF_pivot": 0.0,
+                                            "__PlaneSelectorWidget_planeCount": 1,
+                                            "__PlaneSelectorWidget_planeDepth": 2.0,
+                                            "__SDS_contour": 1,
+                                            "__SDS_symbolSize": 9,
+                                            "__SDS_symbolThickness": 2,
+                                            "__annSDS": "Full",
+                                            "__annSDS_Annotation": false,
+                                            "__annSDS_Full": true,
+                                            "__annSDS_Id": false,
+                                            "__annSDS_Minimal": false,
+                                            "__annSDS_Pid": false,
+                                            "__annSDS_Short": false,
+                                            "__armSDS": "Free",
+                                            "__armSDS_Fixed": false,
+                                            "__armSDS_Free": true,
+                                            "__armSDS_Locked": false,
+                                            "__aspectSDS_C": 16.0,
+                                            "__aspectSDS_H": 1.0,
+                                            "__aspectSDS_N": 4.0,
+                                            "__aspectSDS_intensity": 10000000.0,
+                                            "__stripSDS": "    ",
+                                            "__stripSDS_Column": false,
+                                            "__stripSDS_Row": true,
+                                            "__stripSDS_Tile": false,
+                                            "__symSDS": "Cross",
+                                            "__symSDS_Cross": true,
+                                            "__symSDS_Filled lineWidths": false,
+                                            "__symSDS_Plus": false,
+                                            "__symSDS_lineWidths": false,
+                                            "__xUnitsSDS": "ppm",
+                                            "__xUnitsSDS_Hz": false,
+                                            "__xUnitsSDS_points": false,
+                                            "__xUnitsSDS_ppm": true,
+                                            "__yUnitsSDS": "ppm",
+                                            "__yUnitsSDS_Hz": false,
+                                            "__yUnitsSDS_points": false,
+                                            "__yUnitsSDS_ppm": true,
+                                            "__zPlaneSDS": "Per Spectrum Display",
+                                            "__zPlaneSDS_instrip": false,
+                                            "__zPlaneSDS_spectrumdisplay": true,
+                                            "__zPlaneSDS_strip": false
+                                        }
+                                    ]
+                                ],
+                                {
+                                    "sizes": [
+                                        374,
+                                        567
+                                    ]
+                                }
+                            ],
+                            [
+                                "dock",
+                                "Python Console:1",
+                                {
+                                    "__TextEditor0": "application.showPeakAssigner(position='bottom', relativeTo=None)                              \nget('SP:test1_projection_H_N').negativeNoiseLevel = -51400.595556640634                       \n",
+                                    "settingsEditorCheckBox": true,
+                                    "settingsLoggingCheckBox": true
+                                }
+                            ]
+                        ],
+                        {
+                            "sizes": [
+                                904,
+                                609
+                            ]
+                        }
+                    ]
+                ],
+                {
+                    "sizes": [
+                        946
+                    ]
+                }
+            ],
+            {
+                "id": 140492679251712
+            }
+        ],
+        "floats": [],
+        "version": "3.1",
+        "inMemory": false
+    }
+}
