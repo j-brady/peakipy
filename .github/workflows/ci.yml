@@ -13,10 +13,10 @@ jobs:
           with:
               python-version: ${{ matrix.python-version }}
         - name: Install
-           run: |
+          run: |
                python -m pip install --upgrade pip
                pip install .
         - name: Run tests
-           run: |
+          run: |
                python test/test_core.py
                python test/test_cli.py
