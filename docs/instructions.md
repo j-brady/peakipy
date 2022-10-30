@@ -110,7 +110,7 @@ below). If you want to edit this plot after running `peakipy read` then
 you can edit `show_clusters.yml` and re-plot using
 `spec show_clusters.yml`. Below is an example of a clustered peak list.
 
-![image](../../../images/clusters.png)
+![image](./static/clusters.png)
 
 The threshold level can be adjusted with the `--thres` option like so:
 
