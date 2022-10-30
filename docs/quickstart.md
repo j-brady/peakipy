@@ -114,4 +114,22 @@ Run this above code by sourcing the file e.g.
 Requirements
 ------------
 
-The latest version of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
+The latest version (1.0.0) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
+
+`peakipy` version 0.2.0 which runs on Python 3.8 can be installed in the following ways:
+
+<div data-termynal>
+```console
+git clone --branch v0.2 https://github.com/j-brady/peakipy.git
+cd peakipy
+poetry install
+```
+</div>
+
+Or
+
+<div data-termynal>
+```console
+pip install peakipy==0.2.0
+```
+</div>

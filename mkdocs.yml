@@ -12,7 +12,7 @@ markdown_extensions:
   - codehilite
 
 extra_javascript:
-  - javascripts/mathjax.js
+  - js/mathjax.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
@@ -22,4 +22,4 @@ theme:
 extra_css:
     - css/termynal.css
 extra_javascript:
-    - js/termynal.css
+    - js/termynal.js
