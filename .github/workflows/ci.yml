@@ -1,4 +1,4 @@
-name: peakipy-tests
+name: Test
 on: [push]
 jobs:
     build:
