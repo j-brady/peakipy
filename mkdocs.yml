@@ -1,7 +1,9 @@
 site_name: peakipy
+repo_url: https://github.com/j-brady/peakipy
+
 nav:
   - Home: index.md
-  - "Quick Start": quickstart.md
+  - Quick Start: quickstart.md
   - Instructions: instructions.md
   - Examples: examples.md
   - Lineshapes: lineshapes.md
@@ -19,6 +21,9 @@ extra_javascript:
 
 theme:
     name: material
+    palette:
+        primary: green
+        accent: green
 
 extra_css:
     - css/termynal.css
