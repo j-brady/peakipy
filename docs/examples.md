@@ -6,11 +6,7 @@ Protein L
 
 Having processed a spectrum and picked peaks in NMRPipe :
 
-<div data-termynal>
-```console
-peakipy read test.tab test1.ft2 pipe --y-radius-ppm 0.35 --x-radius-ppm 0.035 --show --struc-el disk --outfmt csv
-```
-</div>
+    peakipy read test.tab test1.ft2 pipe --y-radius-ppm 0.35 --x-radius-ppm 0.035 --show --struc-el disk --outfmt csv
 
 Since the dimensions are in order ID,F1,F2 (Z,Y,X) there is no need to use the
 `--dims` argument.
@@ -22,30 +18,17 @@ same name as your original peak list (i.e `test.csv`).
 
 To fit the peaks simply run :
 
-<div data-termynal>
-```console
-peakipy fit test.csv test1.ft2 fits.csv --lineshape G
-```
-</div>
+    peakipy fit test.csv test1.ft2 fits.csv --lineshape G
 
-This will output `fits.csv` containing the fitted intensities. In this case
 the `--lineshape G` option is used to fit the peaks to a Gaussian lineshape (in both dimensions).
 
 If you have a `vclist` (or equivalent) then you can add this to your output data so that the planes can be sorted based on the vclist column.
     
-<div data-termynal>
-```console
-peakipy fit test.csv test1.ft2 fits.csv --lineshape G --vclist vclist
-```
-</div>
+    peakipy fit test.csv test1.ft2 fits.csv --lineshape G --vclist vclist
     
 For interactive inspection of fits, run `peakipy check`:
 
-<div data-termynal>
-```console
-peakipy check fits.csv test1.ft2 --outname plots.pdf --clusters 30 --clusters 32 --show --first
-```
-</div>
+    peakipy check fits.csv test1.ft2 --outname plots.pdf --clusters 30 --clusters 32 --show --first
 
 ![image](./static/cluster32_3D.png)
 
@@ -59,11 +42,7 @@ If you would like to plot the fits for all peaks then omit the `--clusters` flag
 
 If you find that you need to adjust the parameters of specific fits you can run :
 
-<div data-termynal>
-```console
-peakipy edit test.csv test1.ft2 
-```
-</div>
+    peakipy edit test.csv test1.ft2 
 
 Which will open a `Bokeh` server in which you can adjust individual
 parameters on each peak.
@@ -73,11 +52,7 @@ parameters on each peak.
 To save your edited peak list just click `Save`. You can open it again
 later :
 
-<div data-termynal>
-```console
-peakipy edit edited_peaks.csv test1.ft2 
-```
-</div>
+    peakipy edit edited_peaks.csv test1.ft2 
 
 Your fitted intensities can be accessed conveniently through the
 `fits.csv` output file using `pandas` or a spreadsheet.

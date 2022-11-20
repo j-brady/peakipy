@@ -27,109 +27,84 @@ command line (e.g `peakipy read --help`).
 How to install peakipy
 ----------------------
 
-I recommend using a virtual environment:
+=== "poetry"
+    !!! note ""
+        Clone the [peakipy](https://github.com/j-brady/peakipy) repository from
+        github:
 
-<div data-termynal>
-```console
-python3 -m venv peakipy_venv
-```
-</div>
+            git clone https://github.com/j-brady/peakipy.git
+            cd peakipy; poetry install
 
-Then activate (bash):
+        If you don't have poetry I refer you to the [poetry documentation](https://poetry.eustace.io/docs/) for more details.
 
-<div data-termynal>
-```console
-source peakipy_venv/bin/activate
-```
-</div>
+        At this point the package should be installed and the main scripts
+        (`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
+        should have been added to your path.
 
-or (csh):
+=== "pip"
 
-<div data-termynal>
-```console
-source peakipy_venv/bin/activate.csh
-```
-</div>
+    !!! note ""
+            pip install peakipy
 
-Once activated you can install peakipy in any of the following ways.
+        Below is an example of an installation script and a basic use case :
 
+            #!/bin/bash
+            ##############################
+            # make a virtual environment #
+            ##############################
+            python3.10 -m venv peakipy_env;
+            source peakipy_env/bin/activate;
 
-### With poetry
+            ##############################
+            # install peakipy            #
+            ##############################
+            pip install --upgrade pip;
+            pip install peakipy;
 
-Clone the [peakipy](https://github.com/j-brady/peakipy) repository from
-github:
+            ##############################
+            #  process some data!        #
+            ##############################
+            peakipy read peaks.a2 test.ft2 a2 --y-radius-ppm 0.213 --show;
+            peakipy edit peaks.csv test.ft2; # adjust fitting parameters
+            peakipy fit peaks.csv test.ft2 fits.csv --vclist vclist --max-cluster-size 15; # assuming you saved edited peaklist as peaks.csv
+            # interactive checking
+            peakipy check fits.csv test.ft2 --clusters 1 --clusters 2 --clusters 3 --colors purple green --show --outname tmp.pdf;
+            # plots all the fits (first plane only)
+            peakipy check fits.csv test.ft2 --first --colors purple green --show;
 
-<div data-termynal>
-    <span data-ty>git clone https://github.com/j-brady/peakipy.git</span>
-    <span data-ty>cd peakipy; poetry install</span>
-</div>
+        Run this above code by sourcing the file e.g.
+        `source file_containing_commands`
 
-If you don't have poetry I refer you to the [poetry documentation](https://poetry.eustace.io/docs/) for more details.
+!!! note
+    I recommend using a virtual environment:
 
-At this point the package should be installed and the main scripts
-(`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
-should have been added to your path.
+        python3 -m venv peakipy_venv
 
-### With pip
+    Then activate (bash):
 
-<div data-termynal>
-```console
-pip install peakipy
-```
-</div>
+        source peakipy_venv/bin/activate
 
-Below is an example of an installation script and a basic use case :
+    or (csh):
 
-<div data-termynal>
-```console
-    #!/bin/bash
-    ##############################
-    # make a virtual environment #
-    ##############################
-    python3.10 -m venv peakipy_env;
-    source peakipy_env/bin/activate;
+        source peakipy_venv/bin/activate.csh
 
-    ##############################
-    # install peakipy            #
-    ##############################
-    pip install --upgrade pip;
-    pip install peakipy;
-
-    ##############################
-    #  process some data!        #
-    ##############################
-    peakipy read peaks.a2 test.ft2 a2 --y-radius-ppm 0.213 --show;
-    peakipy edit peaks.csv test.ft2; # adjust fitting parameters
-    peakipy fit peaks.csv test.ft2 fits.csv --vclist vclist --max-cluster-size 15; # assuming you saved edited peaklist as peaks.csv
-    # interactive checking
-    peakipy check fits.csv test.ft2 --clusters 1 --clusters 2 --clusters 3 --colors purple green --show --outname tmp.pdf;
-    # plots all the fits (first plane only)
-    peakipy check fits.csv test.ft2 --first --colors purple green --show;
-```
-</div>
-
-Run this above code by sourcing the file e.g.
-`source file_containing_commands`
+    Once activated you can install peakipy in any of the following ways.
 
 Requirements
 ------------
 
-The latest version (1.0.0) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
+=== "Latest"
 
-`peakipy` version 0.2.0 which runs on Python 3.8 can be installed in the following ways:
+    The latest version (1.0.0) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
 
-<div data-termynal>
-```console
-git clone --branch v0.2 https://github.com/j-brady/peakipy.git
-cd peakipy
-poetry install
-```
-</div>
+=== "0.2.0"
 
-Or
+    `peakipy` version 0.2.0 which runs on Python 3.8 can be installed in the following ways:
 
-<div data-termynal>
-```console
-pip install peakipy==0.2.0
-```
-</div>
+        git clone --branch v0.2 https://github.com/j-brady/peakipy.git
+        cd peakipy
+        poetry install
+
+    or:
+
+        pip install peakipy==0.2.0

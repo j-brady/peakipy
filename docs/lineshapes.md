@@ -5,12 +5,7 @@ Here are the lineshapes used by peakipy. Use the `--lineshape` option in `peakip
 
 For example,
 
-<div data-termynal>
-
-```bash
     peakipy fit test.csv test1.ft2 fits.csv --lineshape G
-```
-</div>
 
 Would fit to a Gaussian lineshape in both dimensions. Other options are
 V, L or PV for Voigt Lorentzian or Pseudo-Voigt in both dimensions,
