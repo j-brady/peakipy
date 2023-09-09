@@ -2,8 +2,6 @@
 
 ![Test](https://github.com/j-brady/peakipy/actions/workflows/ci.yml/badge.svg)
 
-[![Build Status](https://travis-ci.com/j-brady/peakipy.svg?token=wh1qimLa9ucxKasjXFoj&branch=master)](https://travis-ci.com/j-brady/peakipy)
-
 [peakipy documentation](https://j-brady.github.io/peakipy)
 
 ## Description
@@ -16,22 +14,12 @@ Simple deconvolution of NMR peaks for extraction of intensities. Provided an NMR
 
 The easiest way to install peakipy is with poetry...
 
-```bash
+``` bash
+git clone https://github.com/j-brady/peakipy.git
 cd peakipy; poetry install
 ```
 
-If you don't have poetry you can install it with the following command
-
-```bash
-curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-```
-Otherwise refer to the [poetry documentation](https://poetry.eustace.io/docs/) for more details
-
-You can also install peakipy with `setup.py`. You will need python3.6 or greater installed.
-
-```bash
-cd peakipy; python setup.py install
-```
+If you don't have poetry please refer to the [poetry documentation](https://poetry.eustace.io/docs/) for more details
 
 At this point the package should be installed and the main scripts (`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
 should have been added to your path.

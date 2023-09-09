@@ -4,77 +4,75 @@ Instructions
 First you need a peak list in either Sparky, Analysis2, CCPNMRv3
 (assign) or NMRPipe format.
 
-CCPNMRv3 (assign) peak list
----------------------------
+=== "CCPNMRv3 (assign)"
 
-Example of a tab delimited peak table exported directly from CCPNMRv3
-assign:
+    Example of a tab delimited peak table exported directly from CCPNMRv3
+    assign:
 
-    #   Pid Spectrum    PeakList    Id  Assign F1   Assign F2   Pos F1  Pos F2  LW F1 (Hz)  LW F2 (Hz)  Height  HeightError Volume  VolumeError Merit   Annotation  Comment
-    0   1   PK:test1_projection_H_N.1.1 test1_projection_H_N    1   1           10.380684043013412  129.32603752049937  14.179313120050438  18.675223392932594  66224788.0      None        1.0     
-    1   2   PK:test1_projection_H_N.1.2 test1_projection_H_N    1   2           9.335853185661527   129.6732286432531   14.962974392261438  18.644570222511447  39807284.0      None        1.0     
-    2   3   PK:test1_projection_H_N.1.3 test1_projection_H_N    1   3           9.185077855609203   128.66553436519882  13.786411378949163  18.70449353638719   56258792.0      None        1.0     
+        #   Pid Spectrum    PeakList    Id  Assign F1   Assign F2   Pos F1  Pos F2  LW F1 (Hz)  LW F2 (Hz)  Height  HeightError Volume  VolumeError Merit   Annotation  Comment
+        0   1   PK:test1_projection_H_N.1.1 test1_projection_H_N    1   1           10.380684043013412  129.32603752049937  14.179313120050438  18.675223392932594  66224788.0      None        1.0     
+        1   2   PK:test1_projection_H_N.1.2 test1_projection_H_N    1   2           9.335853185661527   129.6732286432531   14.962974392261438  18.644570222511447  39807284.0      None        1.0     
+        2   3   PK:test1_projection_H_N.1.3 test1_projection_H_N    1   3           9.185077855609203   128.66553436519882  13.786411378949163  18.70449353638719   56258792.0      None        1.0     
 
-Note that empty `Assign F1` and `Assign F2` column rows will be replaced
-with dummy labels. Duplicated assignments will also be appended with
-dummy labels. This table can be exported from CCPNMRv3 assign by opening
-your peak list of interest as a module with the following steps:
+    !!! note 
+        Empty `Assign F1` and `Assign F2` column rows will be replaced
+        with dummy labels. Duplicated assignments will also be appended with
+        dummy labels. This table can be exported from CCPNMRv3 assign by opening
+        your peak list of interest as a module with the following steps:
 
--   select peaks (Ctrl/Cmd + a)
--   right click and select `Export All Columns`
--   Save in `.tsv` format (tab separated) by using the
-    dropdown for `Files of type`.
+        -   select peaks (Ctrl/Cmd + a)
+        -   right click and select `Export All Columns`
+        -   Save in `.tsv` format (tab separated) by using the
+            dropdown for `Files of type`.
 
-Analysis2 peak list
--------------------
+=== "Analysis2"
 
-Example of tab delimited peak list exported directly from Analysis2:
+    Example of tab delimited peak list exported directly from Analysis2:
 
-    Number  #       Position F1     Position F2     Sampled None    Assign F1       Assign F2       Assign F3       Height  Volume  Line Width F1 (Hz)  Line Width F2 (Hz)      Line Width F3 (Hz)      Merit   Details Fit Method      Vol. Method
-    1       1       9.33585 129.67323       2.00000  {23}H[45]       {23}N[46]       2.0    3.91116e+07     2.14891e+08     15.34578        19.24590    None    1.00000 None    parabolic       box sum
-    2       2       10.38068        129.32604       2.00000  {9}H[17]        {9}N[18]        2.0    6.61262e+07     3.58137e+08     15.20785        19.76284        None    1.00000 None    parabolic       box sum
+        Number  #       Position F1     Position F2     Sampled None    Assign F1       Assign F2       Assign F3       Height  Volume  Line Width F1 (Hz)  Line Width F2 (Hz)      Line Width F3 (Hz)      Merit   Details Fit Method      Vol. Method
+        1       1       9.33585 129.67323       2.00000  {23}H[45]       {23}N[46]       2.0    3.91116e+07     2.14891e+08     15.34578        19.24590    None    1.00000 None    parabolic       box sum
+        2       2       10.38068        129.32604       2.00000  {9}H[17]        {9}N[18]        2.0    6.61262e+07     3.58137e+08     15.20785        19.76284        None    1.00000 None    parabolic       box sum
 
-Note that the Position F1 and Position F2 are actually the wrong way
-round (i.e. F1=x and F2=y). I think this happens by default with
-Analysis2, however, you can chastise me for being an idiot if I'm
-wrong. `peakipy read` will flip them around, so beware. If you have
-"correctly" labelled columns then you can use `--posF1 <column_name>`
-and `--posF2 <column_name>` to define which column names map to `Y_PPM`
-and `X_PPM`, respectively.
+    !!! note  
+        `Position F1` and `Position F2` are often flipped 
+        (i.e. F1=x and F2=y). I think this happens by default with
+        Analysis2, however, you can chastise me for being an idiot if I'm
+        wrong. `peakipy read` will flip them automatically, so beware. If you have
+        "correctly" labelled columns then you can use `--posF1 <column_name>`
+        and `--posF2 <column_name>` to define which column names map to `Y_PPM`
+        and `X_PPM`, respectively.
 
-Sparky peak list
-----------------
+=== "Sparky"
 
-Minimum:
+    Minimum:
 
-    Assignment  w1  w2
-    PeakOne 118 7.5
-    PeakTwo 119 7.4
-    etc...
-
-Also accepted:
-
-    Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
-        ALA8N-H    123.410      7.967   2.25e+08      15517405       15.8       20.5
-       PHE12N-H    120.353      8.712   3.20e+08      44377264        9.3       16.6
-       etc...
-
-NMRPipe peak list
------------------
-
-Default peak list generated by NMRDraw (e.g. test.tab):
-
-    VARS   INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT
-    FORMAT %5d %9.3f %9.3f %6.3f %6.3f %8.3f %8.3f %9.3f %9.3f %7.3f %7.3f %8.3f %8.3f %4d %4d %4d %4d %+e %+e %+e %.5f %d %s %4d %4d
-
-    NULLVALUE -666
-    NULLSTRING *
-
-        1   159.453    10.230  0.006  0.004    9.336  129.673  7471.831 10516.882   2.886   2.666   16.937   20.268  159  160    9   11 +2.564241e+07 +2.505288e+04 +1.122633e+08 0.00000 1 None    1    1
-        2    17.020    13.935  0.002  0.002   10.381  129.326  8307.740 10488.713   2.671   2.730   15.678   20.752   16   18   13   15 +4.326169e+07 +2.389882e+04 +2.338556e+08 0.00000 1 None    2    1
+        Assignment  w1  w2
+        PeakOne 118 7.5
+        PeakTwo 119 7.4
         etc...
 
-NMRPipe Data
+    Also accepted:
+
+        Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
+            ALA8N-H    123.410      7.967   2.25e+08      15517405       15.8       20.5
+        PHE12N-H    120.353      8.712   3.20e+08      44377264        9.3       16.6
+        etc...
+
+=== "NMRPipe"
+
+    Default peak list generated by NMRDraw (e.g. test.tab):
+
+        VARS   INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT
+        FORMAT %5d %9.3f %9.3f %6.3f %6.3f %8.3f %8.3f %9.3f %9.3f %7.3f %7.3f %8.3f %8.3f %4d %4d %4d %4d %+e %+e %+e %.5f %d %s %4d %4d
+
+        NULLVALUE -666
+        NULLSTRING *
+
+            1   159.453    10.230  0.006  0.004    9.336  129.673  7471.831 10516.882   2.886   2.666   16.937   20.268  159  160    9   11 +2.564241e+07 +2.505288e+04 +1.122633e+08 0.00000 1 None    1    1
+            2    17.020    13.935  0.002  0.002   10.381  129.326  8307.740 10488.713   2.671   2.730   15.678   20.752   16   18   13   15 +4.326169e+07 +2.389882e+04 +2.338556e+08 0.00000 1 None    2    1
+            etc...
+
+NMRPipe data
 ------------
 
 The input data should be either an NMRPipe 2D or 3D cube. The dimension
@@ -90,11 +88,8 @@ peakipy read
 
 Here is an example of how to read a Sparky peaklist:
 
-<div data-termynal>
-```console
     peakipy read peaks.sparky test.ft2 sparky --show
-```
-</div>
+
 
 This will convert your peak list into a `pandas DataFrame` and use
 `threshold_otsu` from `scikit-image` to determine a cutoff for selecting
@@ -114,22 +109,14 @@ you can edit `show_clusters.yml` and re-plot using
 
 The threshold level can be adjusted with the `--thres` option like so:
 
-<div data-termynal>
-```console
     peakipy read peaks.sparky test.ft2 sparky --show --thres 1e6
-```
-</div>
 
 This will exclude signals below 1e6.
 
 It is also possible to adjust the clustering behaviour by changing the
 structuring element used for binary closing.
 
-<div data-termynal>
-```console
     peakipy read peaks.sparky test.ft2 --dims 0 --dims 1 --dims 2 --struc-el disk --struc-size 4 0 --show
-```
-</div>
 
 The above would use a disk shaped structuring element with a radius of 4
 points (see the
@@ -140,18 +127,13 @@ The radii used for masking the data to be fitted can be adjusted by
 setting the `--x-radius-ppm` and `--y-radius-ppm` flags like so (values given in
 ppm)... :
 
-<div data-termynal>
-```console
     peakipy read peaks.sparky test.ft2 sparky --dims 0 --dims 1 --dims 2 --y-radius-ppm 0.2 --x-radius-ppm 0.04
-```
-</div>
 
 Note: `peakipy read` will generate a `peakipy.config` which is
 subsequently read by `edit`, `fit` and `check` so that the `--dims`
 option is not required after running `peakipy read`. :
 
-<div data-termynal>
-```json
+``` json
     {
         "dims": [
             0,
@@ -160,7 +142,6 @@ option is not required after running `peakipy read`. :
         ],
     }
 ```
-</div>
 
 peakipy edit
 ------------
@@ -168,12 +149,7 @@ peakipy edit
 If the automatic clustering is not satisfactory you can manually adjust
 clusters and fitting start parameters using `peakipy edit`. :
 
-
-<div data-termynal>
-```console
     peakipy edit <peaklist> <nmrdata>
-```
-</div>
 
 This command will start a `bokeh` server and cause a tab to open in your
 internet browser in which you can interactively edit peak fitting
@@ -204,27 +180,21 @@ interactive matplotlib my first suggestion is to check that you have a
 `~/.matplotlib/matplotlibrc` with the backend option set to either
 `TkAgg` or `Agg`. These usually work... :
 
-<div data-termynal>
-```yaml
+``` yaml
     backend: TkAgg
 ```
-</div>
 
 or :
 
-<div data-termynal>
-```yaml
+``` yaml
     backend: Agg
 ```
-</div>
 
 or for Mac users :
 
-<div data-termynal>
-```yaml
+``` yaml
     backend: macosx
 ```
-</div>
 
 for example.
 
@@ -254,22 +224,16 @@ run using the peak list generated by `peakipy read` or `edit_peaks`
 
 For example... 
 
-<div data-termynal>
-```console
-peakipy fit edited_peaks.csv test.ft2 fits.csv --dims 0 --dims 1 --dims 2 --lineshape PV
-```
-</div>
+    peakipy fit edited_peaks.csv test.ft2 fits.csv --dims 0 --dims 1 --dims 2 --lineshape PV
+
+
 
 Fits that are likely to need checking are flagged in the `log.txt` file.
 
 If you have a `vclist` style file containing your delay values then you
 can run `peakipy fit` with the `--vclist` option:
 
-<div data-termynal>
-```console
-peakipy fit edited_peaks.csv test.ft2 fits.csv --lineshape PV --vclist vclist
-```
-</div>
+    peakipy fit edited_peaks.csv test.ft2 fits.csv --lineshape PV --vclist vclist
 
 This will result in an extra column being added to your `fits.csv` file
 called `vclist` containing the corresponding delay values.
@@ -280,11 +244,7 @@ Checking fits
 To plot fits for all planes or interactively check them you can run
 `peakipy check`:
 
-<div data-termynal>
-```console
-peakipy check fits.csv test.ft2 --clusters 1 --clusters 10 --clusters 20 --show --outname plot.pdf
-```
-</div>
+    peakipy check fits.csv test.ft2 --clusters 1 --clusters 10 --clusters 20 --show --outname plot.pdf
 
 Will plot clusters 1,10 and 20 showing each plane in an interactive
 matplotlib window and save the plots to a multipage pdf called plot.pdf.
@@ -292,11 +252,7 @@ Calling `peakipy check` with the `--first` flag results in only the
 first plane of each fit being plotted. The colour or output plots can be
 changed using the `--colors` like so:
 
-<div data-termynal>
-```console
-peakipy check fits.csv test1.ft2 --colors green purple --clusters 30 --show --outname plot.pdf --first
-```
-</div>
+    peakipy check fits.csv test1.ft2 --colors green purple --clusters 30 --show --outname plot.pdf --first
 
 ![Custom colouring](./static/colors.png)
 
@@ -343,9 +299,6 @@ Outputs
 
 You can explore the output data conveniently with `pandas`. :
 
-<div data-termynal>
-
-```console
     In [1]: import pandas as pd
 
     In [2]: import matplotlib.pyplot as plt
@@ -358,5 +311,3 @@ You can explore the output data conveniently with `pandas`. :
        ...:     plt.errorbar(group.vclist,group.amp,yerr=group.amp_err,fmt="o",label=group.assignment.iloc[0])
        ...:     plt.legend()
        ...:     plt.show()
-```       
-</div>
