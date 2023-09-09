@@ -899,9 +899,10 @@ def fit_first_plane(
         fit_str += """
         🧐 NEEDS CHECKING 🧐
         """
-        console.print(fit_str, style="bold yellow")
+        # console.print(fit_str, style="bold yellow")
     else:
-        console.print(fit_str, style="green")
+        # console.print(fit_str, style="green")
+        pass
 
     if log is not None:
         log.write("".join("#" for _ in range(60)) + "\n\n")

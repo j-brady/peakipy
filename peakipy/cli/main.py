@@ -23,7 +23,7 @@ import json
 import shutil
 from pathlib import Path
 from enum import Enum
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Annotated
 from multiprocessing import Pool
 
 import typer
@@ -31,6 +31,7 @@ import numpy as np
 import nmrglue as ng
 import pandas as pd
 
+from tqdm import tqdm
 from rich import print
 from skimage.filters import threshold_otsu
 
@@ -65,7 +66,6 @@ from .fit import (
     cpu_count,
     fit_peaks,
     FitPeaksInput,
-    split_peaklist,
 )
 from .edit import BokehScript
 from .spec import yaml_file
@@ -94,23 +94,27 @@ bad_color_selection = [
     "red",
     "magenta",
 ]
-
-
-
+peaklist_path_help = "Path to peaklist"
+data_path_help = "Path to 2D or pseudo3D processed NMRPipe data (e.g. .ft2 or .ft3)"
+peaklist_format_help = "The format of your peaklist. This can be a2 for CCPN Analysis version 2 style, a3 for CCPN Analysis version 3, sparky, pipe for NMRPipe, or peakipy if you want to use a previously .csv peaklist from peakipy"
+thres_help = "Threshold for making binary mask that is used for peak clustering. If set to None then threshold_otsu from scikit-image is used to determine threshold"
+x_radius_ppm_help = "X radius in ppm of the elliptical fitting mask for each peak"
+y_radius_ppm_help = "Y radius in ppm of the elliptical fitting mask for each peak"
+dims_help = "Dimension order of your data"
 
 @app.command(help="Read NMRPipe/Analysis peaklist into pandas dataframe")
 def read(
-    peaklist_path: Path,
-    data_path: Path,
-    peaklist_format: PeaklistFormat,
-    thres: Optional[float] = None,
+    peaklist_path: Annotated[Path, typer.Argument(help=peaklist_path_help)],
+    data_path: Annotated[Path, typer.Argument(help=data_path_help)],
+    peaklist_format: Annotated[PeaklistFormat, typer.Argument(help=peaklist_format_help)],
+    thres: Annotated[Optional[float],typer.Option(help=thres_help)] = None,
     struc_el: StrucEl = StrucEl.disk,
     struc_size: Tuple[int, int] = (3, None),  # Tuple[int, Optional[int]] = (3, None),
-    x_radius_ppm: float = 0.04,
-    y_radius_ppm: float = 0.4,
+    x_radius_ppm: Annotated[float,typer.Option(help=x_radius_ppm_help)] = 0.04,
+    y_radius_ppm: Annotated[float, typer.Option(help=y_radius_ppm_help)] = 0.4,
     x_ppm_column_name: str = "Position F1",
     y_ppm_column_name: str = "Position F2",
-    dims: List[int] = [0, 1, 2],
+    dims: Annotated[List[int], typer.Option(help=dims_help)] = [0, 1, 2],
     outfmt: OutFmt = OutFmt.csv,
     show: bool = False,
     fuda: bool = False,
@@ -229,7 +233,6 @@ def read(
             )
 
         case peaklist_format.sparky:
-
             peaks = Peaklist(
                 peaklist_path,
                 data_path,
@@ -249,7 +252,9 @@ def read(
 
         case peaklist_format.peakipy:
             # read in a peakipy .csv file
-            peaks = LoadData(peaklist_path, data_path, fmt=PeaklistFormat.peakipy, dims=dims)
+            peaks = LoadData(
+                peaklist_path, data_path, fmt=PeaklistFormat.peakipy, dims=dims
+            )
             cluster = False
             # don't overwrite the old .csv file
             outname = outname + "_new"
@@ -300,7 +305,6 @@ def read(
             config_dic = dict(config_kvs)
 
     except json.decoder.JSONDecodeError:
-
         print(
             f"Your {config_path} may be corrupted. Making new one (old one moved to {config_path}.bak)"
         )
@@ -309,7 +313,7 @@ def read(
 
     with open(config_path, "w") as config:
         # write json
-        print(config_dic)
+        # print(config_dic)
         config.write(json.dumps(config_dic, sort_keys=True, indent=4))
         # json.dump(config_dic, fp=config, sort_keys=True, indent=4)
 
@@ -348,7 +352,13 @@ def read(
             out.write(yaml)
         os.system("peakipy spec show_clusters.yml")
 
-    print(f"[green]Finished! Use {outname} to run peakipy edit or fit.[/green]")
+    print(f"""[green]
+          
+          ✨✨ Finished reading and clustering peaks! ✨✨
+          
+             Use {outname} to run peakipy edit or fit.[/green]
+          
+          """)
 
 
 @app.command(help="Fit NMR data to lineshape models and deconvolute overlapping peaks")
@@ -384,7 +394,7 @@ def fit(
         Maximum size of cluster to fit (i.e exclude large clusters) [default: None]
     lineshape : Lineshape
         Lineshape to fit [default: Lineshape.PV]
-    fix : List[str] 
+    fix : List[str]
         <fraction,sigma,center>
         Parameters to fix after initial fit on summed planes [default: fraction,sigma,center]
     xy_bounds : Tuple[float,float]
@@ -565,23 +575,32 @@ def fit(
     )
     # start fitting data
     # prepare data for multiprocessing
-    if (peakipy_data.df.CLUSTID.nunique() >= n_cpu) and mp:
-        print("[green]Using multiprocessing[/green]")
+    nclusters = peakipy_data.df.CLUSTID.nunique()
+    npeaks = peakipy_data.df.shape[0]
+    if (nclusters >= n_cpu) and mp:
+        print(f"[green]Using multiprocessing to fit {npeaks} peaks in {nclusters} clusters [/green]"+"\n")
         # split peak lists
-        tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
-        peaklists = [
-            pd.read_csv(tmp_dir / Path(f"peaks_{i}.csv")) for i in range(n_cpu)
-        ]
-        args_list = [
-            FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
-            for _ in range(n_cpu)
-        ]
-        with Pool(processes=n_cpu) as pool:
+        # tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
+        fit_peaks_args = FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
+        with Pool(processes=n_cpu) as pool, tqdm(
+            total=len(peakipy_data.df.CLUSTID.unique()), ascii="▱▰",colour="green",
+        ) as pbar:
             # result = pool.map(fit_peaks, peaklists)
-            result = pool.starmap(fit_peaks, zip(peaklists, args_list))
+            # result = pool.starmap(fit_peaks, zip(peaklists, args_list))
+            result = [
+                pool.apply_async(
+                    fit_peaks,
+                    args=(
+                        peaklist,
+                        fit_peaks_args,
+                    ),
+                    callback=lambda _: pbar.update(1),
+                ).get()
+                for _, peaklist in peakipy_data.df.groupby("CLUSTID")
+            ]
             df = pd.concat([i.df for i in result], ignore_index=True)
             for num, i in enumerate(result):
-                i.df.to_csv(tmp_dir / Path(f"peaks_{num}_fit.csv"), index=False)
+                # i.df.to_csv(tmp_dir / Path(f"peaks_{num}_fit.csv"), index=False)
                 log_file.write(i.log + "\n")
     else:
         print("[green]Not using multiprocessing[green]")
@@ -615,7 +634,9 @@ def fit(
                 ),
                 axis=1,
             )
-            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["height_err"] = df.apply(
+                lambda x: x.amp_err * (x.height / x.amp), axis=1
+            )
             df["fwhm_g_x"] = df.sigma_x.apply(
                 lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
             )  # fwhm of gaussian
@@ -652,7 +673,9 @@ def fit(
                 ),
                 axis=1,
             )
-            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["height_err"] = df.apply(
+                lambda x: x.amp_err * (x.height / x.amp), axis=1
+            )
             df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
             df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -669,7 +692,9 @@ def fit(
                 ),
                 axis=1,
             )
-            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["height_err"] = df.apply(
+                lambda x: x.amp_err * (x.height / x.amp), axis=1
+            )
             df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
             df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -686,7 +711,9 @@ def fit(
                 ),
                 axis=1,
             )
-            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["height_err"] = df.apply(
+                lambda x: x.amp_err * (x.height / x.amp), axis=1
+            )
             df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
             df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -705,7 +732,9 @@ def fit(
                 ),
                 axis=1,
             )
-            df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+            df["height_err"] = df.apply(
+                lambda x: x.amp_err * (x.height / x.amp), axis=1
+            )
             df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
             df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
 
@@ -771,9 +800,9 @@ def check(
     fits : Path
     data_path : Path
     clusters : Optional[List[int]]
-        <id1,id2,etc> 
+        <id1,id2,etc>
         Plot selected cluster based on clustid [default: None]
-        e.g. clusters=[2,4,6,7] 
+        e.g. clusters=[2,4,6,7]
     plane : int
         Plot selected plane [default: 0]
         e.g. plane=2 will plot second plane only
@@ -781,7 +810,7 @@ def check(
         Plot name [default: Path("plots.pdf")]
     first : bool
         Only plot first plane (overrides --plane option)
-    show : bool 
+    show : bool
         Invoke plt.show() for interactive plot
     individual : bool
         Plot individual fitted peaks as surfaces with different colors
@@ -794,10 +823,10 @@ def check(
     ccount : int
         column count setting for wireplot [default: 50]
     colors : Tuple[str,str]
-        <data,fit> 
+        <data,fit>
         plot colors [default: #5e3c99,#e66101]
     verb : bool
-        verbose mode 
+        verbose mode
     """
     columns_to_print = [
         "assignment",
@@ -889,7 +918,6 @@ def check(
     X, Y = XY
 
     with PdfPages(outname) as pdf:
-
         for name, group in groups:
             table = df_to_rich_table(
                 group,
@@ -936,7 +964,6 @@ def check(
                 first_plane.y_radius,
                 first_plane.assignment,
             ):
-
                 tmp_mask = make_mask(mask, cx, cy, rx, ry)
                 mask += tmp_mask
                 masks.append(tmp_mask)
@@ -957,7 +984,6 @@ def check(
                         plane.fraction_y,
                         plane.lineshape,
                     ):
-
                         sim_data_i = pv_pv(
                             XY, amp, c_x, c_y, s_x, s_y, frac_x, frac_y
                         ).reshape(shape)
@@ -1061,7 +1087,6 @@ def check(
                     )
                     plt.close()
                 else:
-
                     residual = masked_data - sim_plot
                     cset = ax.contourf(
                         x_plot,
@@ -1129,7 +1154,6 @@ def check(
                     out_str = "Volumes (Heights)\n===========\n"
                     # chi2s = []
                     for ind, row in plane.iterrows():
-
                         out_str += (
                             f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
                         )
@@ -1139,7 +1163,7 @@ def check(
                                 row.center_y_ppm,
                                 row.height * 1.2,
                                 row.assignment,
-                                (1,1,1),
+                                (1, 1, 1),
                             )
 
                     ax.text2D(
@@ -1150,7 +1174,7 @@ def check(
                         fontsize=10,
                         fontfamily="sans-serif",
                         va="top",
-                        bbox=dict(boxstyle="round", ec="k", fc="k",alpha=0.5),
+                        bbox=dict(boxstyle="round", ec="k", fc="k", alpha=0.5),
                     )
 
                     ax.legend()
@@ -1200,7 +1224,6 @@ def edit(
 
 
 def make_yaml_file(name, yaml_file=yaml_file):
-
     if os.path.exists(name):
         print(f"Copying {name} to {name}.bak")
         shutil.copy(name, f"{name}.bak")
@@ -1235,7 +1258,6 @@ def spec(yaml_file: Path, new: bool = False):
     notes = []
     legends = 0
     for num, spec in enumerate(spectra):
-
         # unpack spec specific parameters
         fname = spec["fname"]
 
@@ -1375,7 +1397,6 @@ def spec(yaml_file: Path, new: bool = False):
             y += 0.05
 
     if params.get("clusters"):
-
         peaklist = params.get("clusters")
         if os.path.splitext(peaklist)[-1] == ".csv":
             clusters = pd.read_csv(peaklist)

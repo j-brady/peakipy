@@ -1,7 +1,7 @@
 .PHONY: ccpnmrv3 a2 pipe sparky
 
 a2:
-	poetry run peakipy read peaks.a2 test1.ft2 --a2
+	poetry run peakipy read peaks.a2 test1.ft2 a2
 	poetry run peakipy fit peaks.csv test1.ft2 fits_a2.csv
 
 pipe:
