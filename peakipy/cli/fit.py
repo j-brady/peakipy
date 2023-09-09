@@ -148,7 +148,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     groups = peaks.groupby("CLUSTID")
     # setup arguments
     to_fix = fit_input.args.get("to_fix")
-    console.print(to_fix, style="red bold")
+    # console.print(to_fix, style="red bold")
     noise = fit_input.args.get("noise")
     verb = fit_input.args.get("verb")
     lineshape = fit_input.args.get("lineshape")

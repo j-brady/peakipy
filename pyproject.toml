@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "peakipy"
-version = "1.0.0"
+version = "1.1.0"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 
@@ -34,15 +34,19 @@ bokeh = "^2.4.3"
 numdifftools = "^0.9.39"
 Jinja2 = "^3.1.2"
 jedi = "0.15.2"
-typer = "^0.6.1"
+typer = "^0.9.0"
 statsmodels = "^0.13.2"
 rich = "^12.5.1"
+tqdm = "^4.65.0"
 
 [tool.poetry.dev-dependencies]
 mkdocs-material = "^8.5.7"
 
 [tool.poetry.scripts]
 peakipy = 'peakipy.cli.main:app'
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
