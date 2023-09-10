@@ -124,11 +124,11 @@ class TestPeakipyCLI(unittest.TestCase):
     #     peakipy.cli.main.edit(**args)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    unittest.TestLoader.sortTestMethodsUsing = None
-    unittest.main(verbosity=2)
-    to_clean = ["test.csv", "peakipy.config", "run_log.txt", "fits.csv"]
-    for i in to_clean:
-        print(f"Deleting: {i}")
-        shutil.rmtree(i)
+#     unittest.TestLoader.sortTestMethodsUsing = None
+#     unittest.main(verbosity=2)
+#     to_clean = ["test.csv", "peakipy.config", "run_log.txt", "fits.csv"]
+#     for i in to_clean:
+#         print(f"Deleting: {i}")
+#         shutil.rmtree(i)

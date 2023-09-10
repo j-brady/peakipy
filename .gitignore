@@ -20,6 +20,9 @@ venv/*
 site/
 .vscode/
 *.csv
+## png files
 *.png
 !docs/static/*.png
 !docs/static/**/*.png
+## pdf files
+*.pdf
