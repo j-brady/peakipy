@@ -13,11 +13,12 @@ from peakipy.core import (
     make_mask,
     # fit_first_plane,
     make_models,
+    Lineshape
 )
 
 
 def fit_first_plane(
-    group, data, x_radius, y_radius, noise=None, lineshape="PV", plot=None, show=True
+    group, data, x_radius, y_radius, noise=None, lineshape=Lineshape.PV, plot=None, show=True
 ):
 
     mask = np.zeros(data.shape, dtype=bool)
@@ -187,7 +188,7 @@ for name, group in peaks:
         data,
         x_radius,
         x_radius,
-        lineshape="PV",
+        lineshape=Lineshape.PV,
         plot="test_out",
         show=True,
     )

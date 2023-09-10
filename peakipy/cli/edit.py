@@ -19,7 +19,7 @@ from rich import print
 
 from bokeh.events import ButtonClick, DoubleTap
 from bokeh.layouts import row, column
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Tabs, TabPanel
 from bokeh.models.tools import HoverTool
 from bokeh.models.widgets import (
     Slider,
@@ -35,8 +35,6 @@ from bokeh.models.widgets import (
     RadioButtonGroup,
     CheckboxGroup,
     Div,
-    Tabs,
-    Panel,
 )
 from bokeh.plotting import figure
 from bokeh.palettes import PuBuGn9, Category20
@@ -457,10 +455,10 @@ class BokehScript:
         )
         save_layout = column(self.savefilename, self.button, self.exit_button)
 
-        fitting_tab = Panel(child=fitting_layout, title="Peak fitting")
-        log_tab = Panel(child=log_layout, title="Log")
-        recluster_tab = Panel(child=recluster_layout, title="Re-cluster peaks")
-        save_tab = Panel(child=save_layout, title="Save edited peaklist")
+        fitting_tab = TabPanel(child=fitting_layout, title="Peak fitting")
+        log_tab = TabPanel(child=log_layout, title="Log")
+        recluster_tab = TabPanel(child=recluster_layout, title="Re-cluster peaks")
+        save_tab = TabPanel(child=save_layout, title="Save edited peaklist")
         self.tabs = Tabs(
             tabs=[fitting_tab, log_tab, recluster_tab, save_tab],
             sizing_mode="scale_both",
