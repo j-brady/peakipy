@@ -13,14 +13,20 @@ from peakipy.core import (
     make_mask,
     # fit_first_plane,
     make_models,
-    Lineshape
+    Lineshape,
 )
 
 
 def fit_first_plane(
-    group, data, x_radius, y_radius, noise=None, lineshape=Lineshape.PV, plot=None, show=True
+    group,
+    data,
+    x_radius,
+    y_radius,
+    noise=None,
+    lineshape=Lineshape.PV,
+    plot=None,
+    show=True,
 ):
-
     mask = np.zeros(data.shape, dtype=bool)
     mod, p_guess = make_models(pvoigt2d, group, data, lineshape=lineshape)
     # print(p_guess)

@@ -82,7 +82,6 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(test.sum(), 0)
 
     def test_fix_params(self):
-
         mod = Model(pvoigt2d)
         pars = mod.make_params()
         to_fix = ["center", "sigma", "fraction"]
@@ -95,7 +94,6 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(pars["fraction"].vary, False)
 
     def test_get_params(self):
-
         mod = Model(pvoigt2d)
         pars = mod.make_params(center_x=20.0, center_y=30.0)
         pars["center_x"].stderr = 1.0
@@ -111,7 +109,6 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(ps_err[cen_y], 2.0)
 
     def test_make_param_dict(self):
-
         peaks = pd.DataFrame(
             {
                 "ASS": ["one", "two", "three"],
@@ -126,7 +123,6 @@ class TestCoreFunctions(unittest.TestCase):
         data = np.ones((20, 20))
 
         for ls, frac in zip([Lineshape.PV, Lineshape.G, Lineshape.L], [0.5, 0.0, 1.0]):
-
             params = make_param_dict(peaks, data, ls)
             self.assertEqual(params["_one_fraction"], frac)
             self.assertEqual(params["_two_fraction"], frac)
@@ -138,7 +134,6 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(params["_two_sigma_y"], 1.25)
 
     def test_to_prefix(self):
-
         names = [
             (1, "_1_"),
             (1.0, "_1_0_"),
@@ -148,13 +143,11 @@ class TestCoreFunctions(unittest.TestCase):
             (" [{one?two\}][", "___onemaybetwo____"),
         ]
         for test, expect in names:
-
             prefix = to_prefix(test)
             # print(prefix)
             self.assertEqual(prefix, expect)
 
     def test_make_models(self):
-
         peaks = pd.DataFrame(
             {
                 "ASS": ["one", "two", "three"],
@@ -199,7 +192,6 @@ class TestCoreFunctions(unittest.TestCase):
                     self.assertEqual(p_guess["_one_fraction_y"].value, 0.5)
 
     def test_Pseudo3D(self):
-
         datasets = [
             ("test/test_protein_L/test1.ft2", [0, 1, 2]),
             ("test/test_protein_L/test_tp.ft2", [2, 1, 0]),
