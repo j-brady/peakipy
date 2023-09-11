@@ -26,3 +26,5 @@ site/
 !docs/static/**/*.png
 ## pdf files
 *.pdf
+## pytest
+.pytest_cache
