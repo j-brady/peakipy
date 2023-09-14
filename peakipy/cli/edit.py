@@ -329,7 +329,7 @@ class BokehScript:
             text="<h3><a href='https://j-brady.github.io/peakipy/build/usage/instructions.html', target='_blank'> ℹ️ click here for documentation</a></h3>"
         )
         self.fit_reports = ""
-        self.fit_reports_div = Div(text="", height=400, style={"overflow": "scroll"})
+        self.fit_reports_div = Div(text="", height=400, styles={"overflow": "scroll"})
         # Plane selection
         self.select_planes_list = [
             f"{i}"
@@ -425,7 +425,7 @@ class BokehScript:
             row(
                 column(column(self.ls_div), column(self.radio_button_group)),
                 column(column(self.select_plane), column(self.checkbox_group)),
-            ),
+            ), max_width=400,
         )
 
         # reclustering tab
@@ -447,13 +447,13 @@ class BokehScript:
         # edit_fits tabs
         fitting_layout = fitting_controls
         log_layout = self.fit_reports_div
-        recluster_layout = row(
-            self.clust_div,
-            column(
+        recluster_layout = column(
+            row(self.clust_div,),
+            row(column(
                 self.contour_start, self.struct_el, self.struct_el_size, self.recluster
-            ),
+            )), max_width=400,
         )
-        save_layout = column(self.savefilename, self.button, self.exit_button)
+        save_layout = column(self.savefilename, self.button, self.exit_button, max_width=400)
 
         fitting_tab = TabPanel(child=fitting_layout, title="Peak fitting")
         log_tab = TabPanel(child=log_layout, title="Log")
