@@ -1210,17 +1210,19 @@ def check(
 def edit(
     peaklist_path: Path,
     data_path: Path,
+    test: bool = False,
 ):
     from bokeh.util.browser import view
     from bokeh.server.server import Server
 
     run_log()
     bs = BokehScript(peaklist_path=peaklist_path, data_path=data_path)
-    server = Server({"/edit": bs.init})
-    server.start()
-    print("[green]Opening peakipy: Edit fits on http://localhost:5006/edit[/green]")
-    server.io_loop.add_callback(server.show, "/edit")
-    server.io_loop.start()
+    if not test:
+        server = Server({"/edit": bs.init})
+        server.start()
+        print("[green]Opening peakipy: Edit fits on http://localhost:5006/edit[/green]")
+        server.io_loop.add_callback(server.show, "/edit")
+        server.io_loop.start()
 
 
 def make_yaml_file(name, yaml_file=yaml_file):
