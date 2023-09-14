@@ -95,7 +95,7 @@ Requirements
 
 === "Latest"
 
-    The latest version (1.1.0) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
+    The latest version (1.1.1) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
 
 === "0.2.0"
 
