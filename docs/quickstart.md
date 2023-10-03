@@ -88,14 +88,14 @@ How to install peakipy
 
         source peakipy_venv/bin/activate.csh
 
-    Once activated you can install peakipy in any of the following ways.
+    Once activated you can install peakipy with pip or poetry.
 
 Requirements
 ------------
 
 === "Latest"
 
-    The latest version (1.1.0) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
+    The latest version (1.1.2) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
 
 === "0.2.0"
 

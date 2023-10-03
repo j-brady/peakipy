@@ -26,5 +26,7 @@ site/
 !docs/static/**/*.png
 ## pdf files
 *.pdf
+# Tests
+test/test_protein_L/tmp/
 ## pytest
 .pytest_cache

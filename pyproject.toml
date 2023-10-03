@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "peakipy"
-version = "1.1.0"
+version = "1.1.2"
 description = "Deconvolute overlapping NMR peaks"
 authors = ["Jacob Brady <jacob.brady0449@gmail.com>"]
 
@@ -25,7 +25,7 @@ python = ">=3.10,<3.13"
 pandas = "^2.1.0"
 numpy = "^1.25.2"
 matplotlib = "^3.7.2"
-PyYAML = "5.3.1"
+PyYAML = "^6.0.1"
 nmrglue = "^0.9"
 scipy = "^1.11.2"
 lmfit = "^1.2.2"

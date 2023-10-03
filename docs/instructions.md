@@ -1,7 +1,7 @@
 Instructions
 ============
 
-First you need a peak list in either Sparky, Analysis2, CCPNMRv3
+First you need a peak list in either Sparky, CCPNMRv2 (Analysis2), CCPNMRv3
 (assign) or NMRPipe format.
 
 === "CCPNMRv3 (assign)"
@@ -25,7 +25,7 @@ First you need a peak list in either Sparky, Analysis2, CCPNMRv3
         -   Save in `.tsv` format (tab separated) by using the
             dropdown for `Files of type`.
 
-=== "Analysis2"
+=== "CCPNMRv2 (Analysis2)"
 
     Example of tab delimited peak list exported directly from Analysis2:
 
@@ -272,7 +272,7 @@ Protocol
 
 Initial parameters for FWHM, peak centers and fraction are fitted from
 the sum of all planes in your spectrum (for best signal to noise).
-Following this, the default method is to fix center, linewidth and
+Following this, the default method is to fix the center, linewidth and
 fraction parameters only fitting the amplitudes for each plane. If you
 want to float all parameters, this can be done with `--fix None` or you
 could just float the linewidths and amplitudes with
