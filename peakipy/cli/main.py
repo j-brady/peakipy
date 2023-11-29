@@ -400,7 +400,7 @@ def fit(
     xy_bounds : Tuple[float,float]
         <x_ppm,y_ppm>
         Bound X and Y peak centers during fit [default: (0,0) which means no bounding]
-        This can be set like so --xy_bounds=0.1,0.5
+        This can be set like so --xy-bounds 0.1 0.5
     vclist : Optional[Path]
         Bruker style vclist [default: None]
     plane : Optional[List[int]]
@@ -551,6 +551,7 @@ def fit(
             xy_bounds = None
         case (x, y):
             # convert ppm to points
+            xy_bounds = list(xy_bounds)
             xy_bounds[0] = xy_bounds[0] * peakipy_data.pt_per_ppm_f2
             xy_bounds[1] = xy_bounds[1] * peakipy_data.pt_per_ppm_f1
 
