@@ -668,10 +668,10 @@ def update_params(
                     params[k].min = v - y_bound
                     params[k].max = v + y_bound
                 # pass
-                print(
-                    "setting limit of %s, min = %.3e, max = %.3e"
-                    % (k, params[k].min, params[k].max)
-                )
+                #print(
+                #    "setting limit of %s, min = %.3e, max = %.3e"
+                #    % (k, params[k].min, params[k].max)
+                #)
         elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
