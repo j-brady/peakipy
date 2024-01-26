@@ -24,7 +24,7 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from enum import Enum
 
 import numpy as np
@@ -496,7 +496,6 @@ def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):
     param_dict = {}
 
     for index, peak in peaks.iterrows():
-
         str_form = lambda x: "%s%s" % (to_prefix(peak.ASS), x)
         # using exact value of points (i.e decimal)
         param_dict[str_form("center_x")] = peak.X_AXISf
@@ -668,10 +667,10 @@ def update_params(
                     params[k].min = v - y_bound
                     params[k].max = v + y_bound
                 # pass
-                #print(
+                # print(
                 #    "setting limit of %s, min = %.3e, max = %.3e"
                 #    % (k, params[k].min, params[k].max)
-                #)
+                # )
         elif "sigma" in k:
             params[k].min = 0.0
             params[k].max = 1e4
@@ -746,6 +745,23 @@ def df_to_rich_table(df, title: str, columns: List[str], styles: str):
     return table
 
 
+def make_mask_from_peak_cluster(group, data):
+    mask = np.zeros(data.shape, dtype=bool)
+    for index, peak in group.iterrows():
+        mask += make_mask(
+            data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
+        )
+    return mask, peak
+
+
+def select_planes_above_threshold_from_masked_data(data, threshold=None):
+    if threshold == None:
+        data = data
+    else:
+        data = data[data.max(axis=1) > threshold]
+    return data
+
+
 def fit_first_plane(
     group,
     data,
@@ -756,6 +772,7 @@ def fit_first_plane(
     log=None,
     noise=1.0,
     fit_method="leastsq",
+    threshold: Optional[float] = None,
 ):
     """Deconvolute group of peaks
 
@@ -796,8 +813,6 @@ def fit_first_plane(
     :rtype: FitResult
 
     """
-    shape = data.shape
-    mask = np.zeros(shape, dtype=bool)
     match lineshape:
         case lineshape.PV | lineshape.G | lineshape.L:
             lineshape_function = pvoigt2d
@@ -821,10 +836,8 @@ def fit_first_plane(
     cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
     cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
 
-    for index, peak in group.iterrows():
-        mask += make_mask(
-            data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
-        )
+    first_plane_data = data[0]
+    mask, peak = make_mask_from_peak_cluster(group, first_plane_data)
 
     x_radius = group.X_RADIUS.max()
     y_radius = group.Y_RADIUS.max()
@@ -839,6 +852,7 @@ def fit_first_plane(
     )
 
     #  deal with peaks on the edge of spectrum
+    shape = data.shape
     if min_y < 0:
         min_y = 0
 
@@ -851,7 +865,14 @@ def fit_first_plane(
     if max_x > shape[-1]:
         max_x = shape[-1]
 
-    peak_slices = data.copy()[mask]
+    # print("DATA",data.shape, mask.shape)
+    peak_slices = np.array([d[mask] for d in data])
+    # print("Peak slices", peak_slices.shape)
+    peak_slices = select_planes_above_threshold_from_masked_data(peak_slices, threshold)
+    # print(peak_slices.shape)
+    peak_slices = peak_slices.sum(axis=0)
+    # print(peak_slices.shape)
+
     # must be a better way to make the meshgrid
     x = np.arange(shape[-1])
     y = np.arange(shape[-2])
@@ -871,7 +892,7 @@ def fit_first_plane(
 
     z_sim = mod.eval(XY=XY, params=out.params)
     z_sim[~mask] = np.nan
-    z_plot = data.copy()
+    z_plot = first_plane_data.copy()
     z_plot[~mask] = np.nan
     #  also if peak position changed significantly from start then add warning
 
@@ -1435,7 +1456,6 @@ class Peaklist(Pseudo3D):
         posF2="Position F1",
         verbose=False,
     ):
-
         dic, data = ng.pipe.read(data_path)
         Pseudo3D.__init__(self, dic, data, dims)
         self.fmt = fmt
@@ -1649,7 +1669,6 @@ class Peaklist(Pseudo3D):
         pass
 
     def _read_analysis(self):
-
         df = pd.read_csv(self.peaklist_path, delimiter="\t")
         new_columns = [self.analysis_to_pipe_dic.get(i, i) for i in df.columns]
         pipe_columns = dict(zip(df.columns, new_columns))
@@ -1658,7 +1677,6 @@ class Peaklist(Pseudo3D):
         return df
 
     def _read_assign(self):
-
         df = pd.read_csv(self.peaklist_path, delimiter="\t")
         new_columns = [self.assign_to_pipe_dic.get(i, i) for i in df.columns]
         pipe_columns = dict(zip(df.columns, new_columns))
@@ -1667,7 +1685,6 @@ class Peaklist(Pseudo3D):
         return df
 
     def _read_sparky(self):
-
         df = pd.read_csv(
             self.peaklist_path,
             skiprows=1,
@@ -1988,7 +2005,6 @@ class LoadData(Peaklist):
     """
 
     def read_peaklist(self):
-
         if self.peaklist_path.suffix == ".csv":
             self.df = pd.read_csv(self.peaklist_path)  # , comment="#")
 
@@ -2003,7 +2019,6 @@ class LoadData(Peaklist):
         return self.df
 
     def check_data_frame(self):
-
         # make diameter columns
         if "X_DIAMETER_PPM" in self.df.columns:
             pass

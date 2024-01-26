@@ -373,6 +373,7 @@ def fit(
     vclist: Optional[Path] = None,
     plane: Optional[List[int]] = None,
     exclude_plane: Optional[List[int]] = None,
+    initial_fit_threshold: Optional[float] = None,
     mp: bool = True,
     plot: Optional[Path] = None,
     show: bool = False,
@@ -409,6 +410,9 @@ def fit(
     exclude_plane : Optional[List[int]]
         Specific plane(s) to fit [default: None]
         eg. [1,4,5] will exclude planes 1, 4 and 5
+    initial_fit_threshold: Optional[float]
+        threshold used to select planes for fitting of initial lineshape parameters. Only planes with
+        intensities above this threshold will be included in the intial fit of summed planes.
     mp : bool
         Use multiprocessing [default: True]
     plot : Optional[Path]
@@ -472,6 +476,7 @@ def fit(
     args["verb"] = verb
     args["show"] = show
     args["mp"] = mp
+    args["initial_fit_threshold"] = initial_fit_threshold
 
     # read vclist
     if vclist is None:

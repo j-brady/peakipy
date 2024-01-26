@@ -2,6 +2,7 @@
 """Fit and deconvolute NMR peaks: Functions used for running peakipy fit
 """
 from pathlib import Path
+from typing import Optional, List
 from multiprocessing import cpu_count, Pool
 
 import numpy as np
@@ -88,12 +89,55 @@ def split_peaklist(peaklist, n_cpu, tmp_path=tmp_path):
 class FitPeaksInput:
     """input data for the fit_peaks function"""
 
-    def __init__(self, args: dict, data: np.array, config: dict, plane_numbers: list):
-
+    def __init__(
+        self,
+        args: dict,
+        data: np.array,
+        config: dict,
+        plane_numbers: list,
+        planes_for_initial_fit: Optional[List[int]] = None,
+        use_only_planes_above_threshold: Optional[float] = None,
+    ):
         self._data = data
         self._args = args
         self._config = config
         self._plane_numbers = plane_numbers
+        self._planes_for_initial_fit = planes_for_initial_fit
+        self._use_only_planes_above_threshold = use_only_planes_above_threshold
+
+    def check_integer_list(self):
+        if hasattr(self._planes_for_initial_fit, "append"):
+            pass
+        else:
+            return False
+        if all([(type(i) == int) for i in self._planes_for_initial_fit]):
+            pass
+        else:
+            return False
+        if all([((i - 1) > self._data.shape[0]) for i in self._planes_for_initial_fit]):
+            return True
+        else:
+            return False
+
+    def sum_planes_for_initial_fit(self):
+        if (
+            self._planes_for_initial_fit
+            == self._use_only_planes_above_threshold
+            == None
+        ):
+            return self._data.sum(axis=0)
+
+        elif self.check_integer_list():
+            return self._data[self._planes_for_initial_fit].sum(axis=0)
+
+        elif type(self._use_only_planes_above_threshold) == float:
+            # very crude at the moment
+            return self._data[
+                self._data.max(axis=1).max(axis=1)
+                > self._use_only_planes_above_threshold
+            ]
+        else:
+            return self._data.sum(axis=0)
 
     @property
     def data(self):
@@ -111,12 +155,15 @@ class FitPeaksInput:
     def plane_numbers(self):
         return self._plane_numbers
 
+    @property
+    def summed_planes_for_initial_fit(self):
+        return self.sum_planes_for_initial_fit()
+
 
 class FitPeaksResult:
     """Result of fitting a set of peaks"""
 
     def __init__(self, df: pd.DataFrame, log: str):
-
         self._df = df
         self._log = log
 
@@ -151,6 +198,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     # console.print(to_fix, style="red bold")
     noise = fit_input.args.get("noise")
     verb = fit_input.args.get("verb")
+    initial_fit_threshold = fit_input.args.get("initial_fit_threshold")
     lineshape = fit_input.args.get("lineshape")
     xy_bounds = fit_input.args.get("xy_bounds")
     vclist = fit_input.args.get("vclist")
@@ -225,7 +273,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
             # fits sum of all planes first
             fit_result = fit_first_plane(
                 group,
-                summed_planes,
+                fit_input.data,
                 # norm(summed_planes),
                 uc_dics,
                 lineshape=lineshape,
@@ -233,6 +281,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
                 verbose=verb,
                 noise=noise,
                 fit_method=fit_input.config.get("fit_method", "leastsq"),
+                threshold=initial_fit_threshold,
             )
             fit_result.plot(
                 plot_path=fit_input.args.get("plot"),
@@ -304,8 +353,12 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
                 # deal with lineshape specific parameters
                 match lineshape:
                     case lineshape.PV_PV:
-                        frac_x, frac_err_x, name = get_params(first.params, "fraction_x")
-                        frac_y, frac_err_y, name = get_params(first.params, "fraction_y")
+                        frac_x, frac_err_x, name = get_params(
+                            first.params, "fraction_x"
+                        )
+                        frac_y, frac_err_y, name = get_params(
+                            first.params, "fraction_y"
+                        )
                         fractions_x.extend(frac_x)
                         fractions_y.extend(frac_y)
                     case lineshape.V:
