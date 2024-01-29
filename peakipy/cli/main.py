@@ -37,7 +37,7 @@ from skimage.filters import threshold_otsu
 
 import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.widgets import Button
@@ -1044,8 +1044,8 @@ def check(
                     plt = matplotlib.pyplot
 
                 fig = plt.figure(figsize=(10, 6))
-                ax = fig.add_subplot(111, projection="3d")
-                # slice out plot area
+                ax = fig.add_subplot(projection="3d")
+                ## slice out plot area
                 x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
                 y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
                 masked_data = masked_data[min_y:max_y, min_x:max_x]
@@ -1066,7 +1066,8 @@ def check(
                         )
                     )
                     plt.close()
-                    # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
+                
+                    #print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
                 elif masked_data.shape[0] == 0 or masked_data.shape[1] == 0:
                     print(
                         f"[red]Nothing to plot for cluster {int(plane.clustid)}[/red]"
@@ -1125,7 +1126,6 @@ def check(
                             )
                             for c, z_single in zip(single_colors, sim_data_singles)
                         ]
-
                     ax.plot_wireframe(
                         x_plot,
                         y_plot,
@@ -1184,10 +1184,8 @@ def check(
                     )
 
                     ax.legend()
-                    pdf.savefig()
 
                     if show:
-
                         def exit_program(event):
                             exit()
 
@@ -1204,6 +1202,9 @@ def check(
                             plt.show(windowTitle="", size=(1000, 500))
                         else:
                             plt.show()
+                    else:
+                        pdf.savefig()
+                        
 
                     plt.close()
 
