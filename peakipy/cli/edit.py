@@ -13,6 +13,7 @@ from pathlib import Path
 import nmrglue as ng
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.cm import magma, autumn, viridis
 from skimage.filters import threshold_otsu
 from rich import print
@@ -37,7 +38,8 @@ from bokeh.models.widgets import (
     Div,
 )
 from bokeh.plotting import figure
-from bokeh.palettes import PuBuGn9, Category20
+from bokeh.plotting.contour import contour_data
+from bokeh.palettes import PuBuGn9, Category20, Viridis256, RdGy11, Reds256
 
 from peakipy.core import LoadData, read_config, StrucEl
 
@@ -46,17 +48,14 @@ log_div = """<div style=%s>%s</div>"""
 
 
 class BokehScript:
-    def __init__(
-        self, peaklist_path: Path, data_path: Path
-    ):
-
+    def __init__(self, peaklist_path: Path, data_path: Path):
         self._path = peaklist_path
         self._data_path = data_path
         args, config = read_config({})
-        #self.args = args 
-        #self.config = config
-        self._dims = config.get("dims", [0,1,2])
-        self.thres = config.get("thres",1e6)
+        # self.args = args
+        # self.config = config
+        self._dims = config.get("dims", [0, 1, 2])
+        self.thres = config.get("thres", 1e6)
         self._peakipy_data = LoadData(
             self._path, self._data_path, dims=self._dims, verbose=True
         )
@@ -192,21 +191,27 @@ class BokehScript:
             self.peakipy_data.f1_ppm_0,
             self.peakipy_data.f1_ppm_1,
         )
-        self.spec_source = get_contour_data(
-            self.peakipy_data.data[0], cl, extent=self.extent, cmap=viridis
+
+        self.x_ppm_mesh, self.y_ppm_mesh = np.meshgrid(
+            self.peakipy_data.f2_ppm_scale, self.peakipy_data.f1_ppm_scale
         )
-        #  negative contours
-        self.spec_source_neg = get_contour_data(
-            self.peakipy_data.data[0] * -1.0, cl, extent=self.extent, cmap=autumn
+        self.positive_contour_renderer = self.p.contour(
+            self.x_ppm_mesh,
+            self.y_ppm_mesh,
+            self.peakipy_data.data[0],
+            cl,
+            fill_color=Viridis256,
+            line_color="black",
         )
-        self.p.multi_line(
-            xs="xs", ys="ys", line_color="line_color", source=self.spec_source
+        self.negative_contour_renderer = self.p.contour(
+            self.x_ppm_mesh,
+            self.y_ppm_mesh,
+            self.peakipy_data.data[0] * -1.0,
+            cl,
+            fill_color=Reds256,
+            line_color="black",
         )
-        self.p.multi_line(
-            xs="xs", ys="ys", line_color="line_color", source=self.spec_source_neg
-        )
-        # contour_num = Slider(title="contour number", value=20, start=1, end=50,step=1)
-        # contour_start = Slider(title="contour start", value=100000, start=1000, end=10000000,step=1000)
+
         self.contour_start = TextInput(
             value="%.2e" % self.thres, title="Contour level:", width=100
         )
@@ -223,7 +228,7 @@ class BokehScript:
             height="Y_DIAMETER_PPM",
             source=self.source,
             fill_color="color",
-            fill_alpha=0.1,
+            fill_alpha=0.25,
             line_dash="dotted",
             line_color="red",
         )
@@ -425,7 +430,8 @@ class BokehScript:
             row(
                 column(column(self.ls_div), column(self.radio_button_group)),
                 column(column(self.select_plane), column(self.checkbox_group)),
-            ), max_width=400,
+            ),
+            max_width=400,
         )
 
         # reclustering tab
@@ -448,12 +454,22 @@ class BokehScript:
         fitting_layout = fitting_controls
         log_layout = self.fit_reports_div
         recluster_layout = column(
-            row(self.clust_div,),
-            row(column(
-                self.contour_start, self.struct_el, self.struct_el_size, self.recluster
-            )), max_width=400,
+            row(
+                self.clust_div,
+            ),
+            row(
+                column(
+                    self.contour_start,
+                    self.struct_el,
+                    self.struct_el_size,
+                    self.recluster,
+                )
+            ),
+            max_width=400,
         )
-        save_layout = column(self.savefilename, self.button, self.exit_button, max_width=400)
+        save_layout = column(
+            self.savefilename, self.button, self.exit_button, max_width=400
+        )
 
         fitting_tab = TabPanel(child=fitting_layout, title="Peak fitting")
         log_tab = TabPanel(child=log_layout, title="Log")
@@ -487,7 +503,6 @@ class BokehScript:
         return self.peakipy_data.df
 
     def update_memcnt(self):
-
         for ind, group in self.peakipy_data.df.groupby("CLUSTID"):
             self.peakipy_data.df.loc[group.index, "MEMCNT"] = len(group)
 
@@ -504,7 +519,6 @@ class BokehScript:
         return self.peakipy_data.df
 
     def fit_selected(self, event):
-
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
 
@@ -550,7 +564,6 @@ class BokehScript:
         os.system(plot_command)
 
     def save_peaks(self, event):
-
         if self.savefilename.value:
             to_save = Path(self.savefilename.value)
         else:
@@ -630,11 +643,14 @@ class BokehScript:
             "include": "yes",
             "color": "black",
         }
-        self.peakipy_data.df = self.peakipy_data.df.append(new_peak, ignore_index=True)
+        new_peak = {k: [v] for k, v in new_peak.items()}
+        new_peak = pd.DataFrame(new_peak)
+        self.peakipy_data.df = pd.concat(
+            [self.peakipy_data.df, new_peak], ignore_index=True
+        )
         self.update_memcnt()
 
     def slider_callback_x(self, attrname, old, new):
-
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
         self.peakipy_data.df.loc[selectionIndex, "X_RADIUS"] = (
@@ -657,7 +673,6 @@ class BokehScript:
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
 
     def slider_callback_y(self, attrname, old, new):
-
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
         self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS"] = (
@@ -713,7 +728,6 @@ class BokehScript:
     #     self.slider_callback(attrname, old, new, dim="Y")
 
     def update_contour(self, attrname, old, new):
-
         new_cs = eval(self.contour_start.value)
         cl = new_cs * self.contour_factor ** np.arange(self.contour_num)
         if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
@@ -723,60 +737,58 @@ class BokehScript:
 
         pos_neg = self.pos_neg_contour_dic[self.pos_neg_contour_radiobutton.active]
         if pos_neg == "pos/neg":
-            self.spec_source.data = dict(
-                get_contour_data(
+            self.positive_contour_renderer.set_data(
+                contour_data(
+                    self.x_ppm_mesh,
+                    self.y_ppm_mesh,
                     self.peakipy_data.data[plane_index],
                     cl,
-                    extent=self.extent,
-                    cmap=viridis,
-                ).data
+                )
             )
-            self.spec_source_neg.data = dict(
-                get_contour_data(
+            self.negative_contour_renderer.set_data(
+                contour_data(
+                    self.x_ppm_mesh,
+                    self.y_ppm_mesh,
                     self.peakipy_data.data[plane_index] * -1.0,
                     cl,
-                    extent=self.extent,
-                    cmap=autumn,
-                ).data
+                )
             )
 
         elif pos_neg == "pos":
-            self.spec_source.data = dict(
-                get_contour_data(
+            self.positive_contour_renderer.set_data(
+                contour_data(
+                    self.x_ppm_mesh,
+                    self.y_ppm_mesh,
                     self.peakipy_data.data[plane_index],
                     cl,
-                    extent=self.extent,
-                    cmap=viridis,
-                ).data
+                )
             )
-            self.spec_source_neg.data = dict(
-                get_contour_data(
-                    self.peakipy_data.data[plane_index] * 0.0,
+            self.negative_contour_renderer.set_data(
+                contour_data(
+                    self.x_ppm_mesh,
+                    self.y_ppm_mesh,
+                    self.peakipy_data.data[plane_index] * 0,
                     cl,
-                    extent=self.extent,
-                    cmap=autumn,
-                ).data
+                )
             )
 
         elif pos_neg == "neg":
-            self.spec_source.data = dict(
-                get_contour_data(
+            self.positive_contour_renderer.set_data(
+                contour_data(
+                    self.x_ppm_mesh,
+                    self.y_ppm_mesh,
                     self.peakipy_data.data[plane_index] * 0.0,
                     cl,
-                    extent=self.extent,
-                    cmap=viridis,
-                ).data
+                )
             )
-            self.spec_source_neg.data = dict(
-                get_contour_data(
+            self.negative_contour_renderer.set_data(
+                contour_data(
+                    self.x_ppm_mesh,
+                    self.y_ppm_mesh,
                     self.peakipy_data.data[plane_index] * -1.0,
                     cl,
-                    extent=self.extent,
-                    cmap=autumn,
-                ).data
+                )
             )
-
-        # print("Value of checkbox",checkbox_group.active)
 
     def exit_edit_peaks(self, event):
         sys.exit()
