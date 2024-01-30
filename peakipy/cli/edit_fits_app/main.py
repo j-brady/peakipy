@@ -144,7 +144,6 @@ def clusters(
 
 
 def recluster_peaks(event):
-
     struc_size = tuple([int(i) for i in struct_el_size.value.split(",")])
 
     print(struc_size)
@@ -164,7 +163,6 @@ def recluster_peaks(event):
 
 
 def update_memcnt(df):
-
     for ind, group in df.groupby("CLUSTID"):
         df.loc[group.index, "MEMCNT"] = len(group)
 
@@ -179,7 +177,6 @@ def update_memcnt(df):
 
 
 def fit_selected(event):
-
     selectionIndex = source.selected.indices
     current = df.iloc[selectionIndex]
 
@@ -234,7 +231,6 @@ def peak_pick_callback(event):
 
 
 def slider_callback(attrname, old, new):
-
     selectionIndex = source.selected.indices
     current = df.iloc[selectionIndex]
 
