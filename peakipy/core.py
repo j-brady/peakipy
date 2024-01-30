@@ -754,11 +754,32 @@ def make_mask_from_peak_cluster(group, data):
     return mask, peak
 
 
+def select_reference_planes_using_indices(data, indices: List[int]):
+    n_planes = data.shape[0]
+    if indices == []:
+        return data
+
+    max_index = max(indices)
+    min_index = min(indices)
+
+    if max_index >= n_planes:
+        raise IndexError(
+            f"Your data has {n_planes}. You selected plane {max_index} (allowed indices between 0 and {n_planes-1})"
+        )
+    elif min_index < (-1 * n_planes):
+        raise IndexError(
+            f"Your data has {n_planes}. You selected plane {min_index} (allowed indices between -{n_planes} and {n_planes-1})"
+        )
+    else:
+        data = data[indices]
+    return data
+
+
 def select_planes_above_threshold_from_masked_data(data, threshold=None):
     if threshold == None:
         data = data
     else:
-        data = data[data.max(axis=1) > threshold]
+        data = data[np.abs(data).max(axis=1) > threshold]
     return data
 
 
@@ -772,6 +793,7 @@ def fit_first_plane(
     log=None,
     noise=1.0,
     fit_method="leastsq",
+    reference_plane_indices: List[int] = [],
     threshold: Optional[float] = None,
 ):
     """Deconvolute group of peaks
@@ -868,6 +890,7 @@ def fit_first_plane(
     # print("DATA",data.shape, mask.shape)
     peak_slices = np.array([d[mask] for d in data])
     # print("Peak slices", peak_slices.shape)
+    peak_slices = select_reference_planes_using_indices(peak_slices, reference_plane_indices)
     peak_slices = select_planes_above_threshold_from_masked_data(peak_slices, threshold)
     # print(peak_slices.shape)
     peak_slices = peak_slices.sum(axis=0)

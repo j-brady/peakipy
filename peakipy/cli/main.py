@@ -102,15 +102,18 @@ x_radius_ppm_help = "X radius in ppm of the elliptical fitting mask for each pea
 y_radius_ppm_help = "Y radius in ppm of the elliptical fitting mask for each peak"
 dims_help = "Dimension order of your data"
 
+
 @app.command(help="Read NMRPipe/Analysis peaklist into pandas dataframe")
 def read(
     peaklist_path: Annotated[Path, typer.Argument(help=peaklist_path_help)],
     data_path: Annotated[Path, typer.Argument(help=data_path_help)],
-    peaklist_format: Annotated[PeaklistFormat, typer.Argument(help=peaklist_format_help)],
-    thres: Annotated[Optional[float],typer.Option(help=thres_help)] = None,
+    peaklist_format: Annotated[
+        PeaklistFormat, typer.Argument(help=peaklist_format_help)
+    ],
+    thres: Annotated[Optional[float], typer.Option(help=thres_help)] = None,
     struc_el: StrucEl = StrucEl.disk,
     struc_size: Tuple[int, int] = (3, None),  # Tuple[int, Optional[int]] = (3, None),
-    x_radius_ppm: Annotated[float,typer.Option(help=x_radius_ppm_help)] = 0.04,
+    x_radius_ppm: Annotated[float, typer.Option(help=x_radius_ppm_help)] = 0.04,
     y_radius_ppm: Annotated[float, typer.Option(help=y_radius_ppm_help)] = 0.4,
     x_ppm_column_name: str = "Position F1",
     y_ppm_column_name: str = "Position F2",
@@ -352,13 +355,20 @@ def read(
             out.write(yaml)
         os.system("peakipy spec show_clusters.yml")
 
-    print(f"""[green]
+    print(
+        f"""[green]
           
           ✨✨ Finished reading and clustering peaks! ✨✨
           
              Use {outname} to run peakipy edit or fit.[/green]
           
-          """)
+          """
+    )
+
+
+reference_plane_index_help = (
+    "Select planes to use for initial estimation of lineshape parameters"
+)
 
 
 @app.command(help="Fit NMR data to lineshape models and deconvolute overlapping peaks")
@@ -373,6 +383,9 @@ def fit(
     vclist: Optional[Path] = None,
     plane: Optional[List[int]] = None,
     exclude_plane: Optional[List[int]] = None,
+    reference_plane_index: Annotated[
+        List[int], typer.Option(help=reference_plane_index_help)
+    ] = [],
     initial_fit_threshold: Optional[float] = None,
     mp: bool = True,
     plot: Optional[Path] = None,
@@ -477,6 +490,7 @@ def fit(
     args["show"] = show
     args["mp"] = mp
     args["initial_fit_threshold"] = initial_fit_threshold
+    args["reference_plane_indices"] = reference_plane_index
 
     # read vclist
     if vclist is None:
@@ -584,12 +598,17 @@ def fit(
     nclusters = peakipy_data.df.CLUSTID.nunique()
     npeaks = peakipy_data.df.shape[0]
     if (nclusters >= n_cpu) and mp:
-        print(f"[green]Using multiprocessing to fit {npeaks} peaks in {nclusters} clusters [/green]"+"\n")
+        print(
+            f"[green]Using multiprocessing to fit {npeaks} peaks in {nclusters} clusters [/green]"
+            + "\n"
+        )
         # split peak lists
         # tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
         fit_peaks_args = FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
         with Pool(processes=n_cpu) as pool, tqdm(
-            total=len(peakipy_data.df.CLUSTID.unique()), ascii="▱▰",colour="green",
+            total=len(peakipy_data.df.CLUSTID.unique()),
+            ascii="▱▰",
+            colour="green",
         ) as pbar:
             # result = pool.map(fit_peaks, peaklists)
             # result = pool.starmap(fit_peaks, zip(peaklists, args_list))
@@ -1066,8 +1085,8 @@ def check(
                         )
                     )
                     plt.close()
-                
-                    #print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
+
+                    # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
                 elif masked_data.shape[0] == 0 or masked_data.shape[1] == 0:
                     print(
                         f"[red]Nothing to plot for cluster {int(plane.clustid)}[/red]"
@@ -1186,6 +1205,7 @@ def check(
                     ax.legend()
 
                     if show:
+
                         def exit_program(event):
                             exit()
 
@@ -1204,7 +1224,6 @@ def check(
                             plt.show()
                     else:
                         pdf.savefig()
-                        
 
                     plt.close()
 

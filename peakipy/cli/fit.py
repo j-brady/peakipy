@@ -95,14 +95,14 @@ class FitPeaksInput:
         data: np.array,
         config: dict,
         plane_numbers: list,
-        planes_for_initial_fit: Optional[List[int]] = None,
+        reference_planes_for_initial_fit: List[int] = [],
         use_only_planes_above_threshold: Optional[float] = None,
     ):
         self._data = data
         self._args = args
         self._config = config
         self._plane_numbers = plane_numbers
-        self._planes_for_initial_fit = planes_for_initial_fit
+        self._planes_for_initial_fit = reference_planes_for_initial_fit
         self._use_only_planes_above_threshold = use_only_planes_above_threshold
 
     def check_integer_list(self):
@@ -199,6 +199,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     noise = fit_input.args.get("noise")
     verb = fit_input.args.get("verb")
     initial_fit_threshold = fit_input.args.get("initial_fit_threshold")
+    reference_plane_indices = fit_input.args.get("reference_plane_indices")
     lineshape = fit_input.args.get("lineshape")
     xy_bounds = fit_input.args.get("xy_bounds")
     vclist = fit_input.args.get("vclist")
@@ -281,6 +282,7 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
                 verbose=verb,
                 noise=noise,
                 fit_method=fit_input.config.get("fit_method", "leastsq"),
+                reference_plane_indices=reference_plane_indices,
                 threshold=initial_fit_threshold,
             )
             fit_result.plot(
