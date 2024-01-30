@@ -18,9 +18,10 @@ from matplotlib.cm import magma, autumn, viridis
 from skimage.filters import threshold_otsu
 from rich import print
 
+from bokeh.io import curdoc
 from bokeh.events import ButtonClick, DoubleTap
 from bokeh.layouts import row, column
-from bokeh.models import ColumnDataSource, Tabs, TabPanel
+from bokeh.models import ColumnDataSource, Tabs, TabPanel, InlineStyleSheet
 from bokeh.models.tools import HoverTool
 from bokeh.models.widgets import (
     Slider,
@@ -39,7 +40,7 @@ from bokeh.models.widgets import (
 )
 from bokeh.plotting import figure
 from bokeh.plotting.contour import contour_data
-from bokeh.palettes import PuBuGn9, Category20, Viridis256, RdGy11, Reds256
+from bokeh.palettes import PuBuGn9, Category20, Viridis256, RdGy11, Reds256, YlOrRd9
 
 from peakipy.core import LoadData, read_config, StrucEl
 
@@ -81,6 +82,7 @@ class BokehScript:
             )
         )
         doc.title = "peakipy: Edit Fits"
+        doc.theme = "dark_minimal"
 
     @property
     def args(self):
@@ -200,7 +202,7 @@ class BokehScript:
             self.y_ppm_mesh,
             self.peakipy_data.data[0],
             cl,
-            fill_color=Viridis256,
+            fill_color=YlOrRd9,
             line_color="black",
         )
         self.negative_contour_renderer = self.p.contour(
@@ -271,8 +273,8 @@ class BokehScript:
         self.p.line(
             spec_border_x,
             spec_border_y,
-            line_width=1,
-            line_color="black",
+            line_width=2,
+            line_color="red",
             line_dash="dotted",
             line_alpha=0.5,
         )
@@ -361,7 +363,7 @@ class BokehScript:
         self.fit_button.on_event(ButtonClick, self.fit_selected)
 
         columns = [
-            TableColumn(field="ASS", title="Assignment"),
+            TableColumn(field="ASS", title="Assignment", width=500),
             TableColumn(field="CLUSTID", title="Cluster", editor=IntEditor()),
             TableColumn(
                 field="X_PPM",
@@ -405,14 +407,39 @@ class BokehScript:
             TableColumn(
                 field="include",
                 title="Include",
+                width=7,
                 editor=SelectEditor(options=["yes", "no"]),
             ),
             TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
         ]
 
         self.data_table = DataTable(
-            source=self.source, columns=columns, editable=True, fit_columns=True
+            source=self.source, columns=columns, editable=True, width=800,
         )
+        self.table_style = InlineStyleSheet(
+            css="""
+                .slick-header-columns {
+                    background-color: #2B303A !important;
+                    font-family: arial;
+                    font-weight: bold;
+                    font-size: 12pt;
+                    color: #FFFFFF;
+                    text-align: right;
+                }
+                .slick-row {
+                    font-size: 12pt;
+                    font-family: arial;
+                    text-align: left;
+                }
+                .slick-row:hover{
+                    background: none repeat scroll 0 0 #7c7c7c;
+                }
+
+                
+                """
+        )
+
+        self.data_table.stylesheets = [self.table_style]
 
         # callback for adding
         # source.selected.on_change('indices', callback)
