@@ -890,7 +890,9 @@ def fit_first_plane(
     # print("DATA",data.shape, mask.shape)
     peak_slices = np.array([d[mask] for d in data])
     # print("Peak slices", peak_slices.shape)
-    peak_slices = select_reference_planes_using_indices(peak_slices, reference_plane_indices)
+    peak_slices = select_reference_planes_using_indices(
+        peak_slices, reference_plane_indices
+    )
     peak_slices = select_planes_above_threshold_from_masked_data(peak_slices, threshold)
     # print(peak_slices.shape)
     peak_slices = peak_slices.sum(axis=0)

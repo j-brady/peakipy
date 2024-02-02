@@ -801,6 +801,57 @@ def fit(
     run_log()
 
 
+def validate_plane_selection(plane, pseudo3D):
+    if plane > pseudo3D.n_planes:
+        raise ValueError(
+            f"[red]There are {pseudo3D.n_planes} planes in your data you selected --plane {plane}...[red]"
+            f"plane numbering starts from 0."
+        )
+    elif plane < 0:
+        raise ValueError(
+            f"[red]Plane number can not be negative; you selected --plane {plane}...[/red]"
+        )
+    else:
+        return plane
+
+
+def validate_ccount(ccount):
+    if type(ccount) == int:
+        ccount = ccount
+    else:
+        raise TypeError("ccount should be an integer")
+    return ccount
+
+
+def validate_rcount(rcount):
+    if type(rcount) == int:
+        rcount = rcount
+    else:
+        raise TypeError("rcount should be an integer")
+    return rcount
+
+
+def unpack_plotting_colors(colors):
+    match colors:
+        case (data_color, fit_color):
+            data_color, fit_color = colors
+        case _:
+            data_color, fit_color = "green", "blue"
+    return data_color, fit_color
+
+
+def get_fit_data_for_selected_peak_clusters(fits, clusters):
+    match clusters:
+        case None | []:
+            pass
+        case _:
+            # only use these clusters
+            fits = fits[fits.clustid.isin(clusters)]
+            if len(fits) < 1:
+                exit(f"Are you sure clusters {clusters} exist?")
+    return fits
+
+
 @app.command(help="Interactive plots for checking fits")
 def check(
     fits: Path,
@@ -830,7 +881,7 @@ def check(
         e.g. clusters=[2,4,6,7]
     plane : int
         Plot selected plane [default: 0]
-        e.g. plane=2 will plot second plane only
+        e.g. --plane 2 will plot second plane only
     outname : Path
         Plot name [default: Path("plots.pdf")]
     first : bool
@@ -887,52 +938,11 @@ def check(
     else:
         plane = plane
 
-    if plane > pseudo3D.n_planes:
-        raise ValueError(
-            f"[red]There are {pseudo3D.n_planes} planes in your data you selected --plane {plane}...[red]"
-            f"plane numbering starts from 0."
-        )
-    elif plane < 0:
-        raise ValueError(
-            f"[red]Plane number can not be negative; you selected --plane {plane}...[/red]"
-        )
-    # in case first plane is chosen
-    elif plane == 0:
-        selected_plane = plane
-    # plane numbers start from 1 so adjust for indexing
-    else:
-        selected_plane = plane
-        # fits = fits[fits["plane"] == plane]
-        # print(fits)
-
-    if type(ccount) == int:
-        ccount = ccount
-    else:
-        raise TypeError("ccount should be an integer")
-
-    if type(rcount) == int:
-        rcount = rcount
-    else:
-        raise TypeError("rcount should be an integer")
-
-    match colors:
-        case (data_color, fit_color):
-            data_color, fit_color = colors
-        case _:
-            data_color, fit_color = "green", "blue"
-
-        # raise TypeError(
-        # "colors should be valid pair for matplotlib. i.e. g,b or green,blue"
-        # )
-
-    match clusters:
-        case None | []:
-            pass
-        case _:
-            # only use these clusters
-            fits = fits[fits.clustid.isin(clusters)]
-            if len(fits) < 1:
-                exit(f"Are you sure clusters {clusters} exist?")
+    selected_plane = validate_plane_selection(plane, pseudo3D)
+    ccount = validate_ccount(ccount)
+    rcount = validate_rcount(rcount)
+    data_color, fit_color = unpack_plotting_colors(colors)
+    fits = get_fit_data_for_selected_peak_clusters(fits, clusters)
 
     groups = fits.groupby("clustid")
 
@@ -943,7 +953,7 @@ def check(
     X, Y = XY
 
     with PdfPages(outname) as pdf:
-        for name, group in groups:
+        for _, group in groups:
             table = df_to_rich_table(
                 group,
                 title="",

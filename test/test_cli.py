@@ -132,10 +132,11 @@ def test_check_main_with_voigt(protein_L):
     )
     peakipy.cli.main.check(**args)
 
+
 def test_edit_with_default(protein_L):
     args = dict(
-        peaklist_path=protein_L/Path("peaks.csv"),
-        data_path=protein_L/Path("test1.ft2"),
+        peaklist_path=protein_L / Path("peaks.csv"),
+        data_path=protein_L / Path("test1.ft2"),
         test=True,
     )
     peakipy.cli.main.edit(**args)

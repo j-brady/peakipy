@@ -5,22 +5,18 @@ import os
 import sys
 import shutil
 
-from pathlib import Path
 from subprocess import check_output
 from pathlib import Path
 
 
-import nmrglue as ng
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib.cm import magma, autumn, viridis
 from skimage.filters import threshold_otsu
 from rich import print
 
 from bokeh.io import curdoc
 from bokeh.events import ButtonClick, DoubleTap
-from bokeh.layouts import row, column
+from bokeh.layouts import row, column, grid
 from bokeh.models import ColumnDataSource, Tabs, TabPanel, InlineStyleSheet
 from bokeh.models.tools import HoverTool
 from bokeh.models.widgets import (
@@ -64,10 +60,13 @@ class BokehScript:
         self.peakipy_data.check_data_frame()
         # make temporary paths
         self.make_temp_files()
-
         self.make_data_source()
         self.setup_radii_sliders()
         self.setup_save_buttons()
+        self.setup_set_fixed_parameters()
+        self.setup_xybounds()
+        self.setup_set_reference_planes()
+        self.setup_initial_fit_threshold()
         self.setup_quit_button()
         self.setup_plot()
 
@@ -151,6 +150,78 @@ class BokehScript:
         self.button = Button(label="Save", button_type="success")
         self.button.on_event(ButtonClick, self.save_peaks)
 
+    def setup_set_fixed_parameters(self):
+        self.select_fixed_parameters_help = Div(
+            text="Select parameters to fix after initial lineshape parameters have been fitted"
+        )
+        self.select_fixed_parameters = TextInput(
+            value="fraction sigma center", width=200
+        )
+
+    def setup_xybounds(self):
+        self.set_xybounds_help = Div(
+            text="If floating the peak centers you can bound the fits in the x and y dimensions. Units of ppm."
+        )
+        self.set_xybounds = TextInput(placeholder="e.g. 0.01 0.1")
+
+    def get_xybounds(self):
+        try:
+            x_bound, y_bound = self.set_xybounds.value.split(" ")
+            x_bound = float(x_bound)
+            y_bound = float(y_bound)
+            xy_bounds = x_bound, y_bound
+        except:
+            xy_bounds = None, None
+        return xy_bounds
+
+    def make_xybound_command(self, x_bound, y_bound):
+        if (x_bound != None) and (y_bound != None):
+            xy_bounds_command = f" --xy-bounds {x_bound} {y_bound}"
+        else:
+            xy_bounds_command = ""
+        return xy_bounds_command
+
+    def setup_set_reference_planes(self):
+        self.select_reference_planes_help = Div(
+            text="Select reference planes (index starts at 0)"
+        )
+        self.select_reference_planes = TextInput(placeholder="0 1 2 3")
+
+    def get_reference_planes(self):
+        if self.select_reference_planes.value:
+            print("You have selected1")
+            return self.select_reference_planes.value.split(" ")
+        else:
+            return []
+
+    def make_reference_planes_command(self, reference_plane_list):
+        reference_plane_command = ""
+        for plane in reference_plane_list:
+            reference_plane_command += f" --reference-plane-index {plane}"
+        return reference_plane_command
+
+    def setup_initial_fit_threshold(self):
+        self.set_initial_fit_threshold_help = Div(
+            text="Set an intensity threshold for selection of planes for initial estimation of lineshape parameters"
+        )
+        self.set_initial_fit_threshold = TextInput(placeholder="e.g. 1e7")
+
+    def get_initial_fit_threshold(self):
+        try:
+            initial_fit_threshold = float(self.set_initial_fit_threshold.value)
+        except ValueError:
+            initial_fit_threshold = None
+        return initial_fit_threshold
+
+    def make_initial_fit_threshold_command(self, initial_fit_threshold):
+        if initial_fit_threshold is not None:
+            initial_fit_threshold_command = (
+                f" --initial-fit-threshold {initial_fit_threshold}"
+            )
+        else:
+            initial_fit_threshold_command = ""
+        return initial_fit_threshold_command
+
     def setup_quit_button(self):
         # Quit button
         self.exit_button = Button(label="Quit", button_type="warning")
@@ -204,6 +275,7 @@ class BokehScript:
             cl,
             fill_color=YlOrRd9,
             line_color="black",
+            line_width=0.25,
         )
         self.negative_contour_renderer = self.p.contour(
             self.x_ppm_mesh,
@@ -212,6 +284,7 @@ class BokehScript:
             cl,
             fill_color=Reds256,
             line_color="black",
+            line_width=0.25,
         )
 
         self.contour_start = TextInput(
@@ -313,12 +386,12 @@ class BokehScript:
             # 6: "PV_G",
             # 7: "G_L",
         }
-        self.radio_button_group = RadioButtonGroup(
+        self.select_lineshape_radiobuttons = RadioButtonGroup(
             labels=[self.lineshapes[i] for i in self.lineshapes.keys()], active=0
         )
-        self.ls_div = Div(
+        self.select_lineshape_radiobuttons_help = Div(
             text="""Choose lineshape you wish to fit. This can be Voigt (V), pseudo-Voigt (PV), Gaussian (G), Lorentzian (L).
-            PV_PV fits a PV lineshape with independent "fraction" parameters for the direct and indirect dimensions"""
+            PV_PV fits a PV lineshape with independent "fraction" parameters for the direct and indirect dimensions""",
         )
         self.clust_div = Div(
             text="""If you want to adjust how the peaks are automatically clustered then try changing the
@@ -414,7 +487,10 @@ class BokehScript:
         ]
 
         self.data_table = DataTable(
-            source=self.source, columns=columns, editable=True, width=800,
+            source=self.source,
+            columns=columns,
+            editable=True,
+            width=800,
         )
         self.table_style = InlineStyleSheet(
             css="""
@@ -445,20 +521,48 @@ class BokehScript:
         # source.selected.on_change('indices', callback)
         self.source.selected.on_change("indices", self.select_callback)
 
-        # Document layout
-        fitting_controls = column(
-            row(
-                column(self.slider_X_RADIUS, self.slider_Y_RADIUS),
-                column(
-                    row(column(self.contour_start, self.pos_neg_contour_radiobutton)),
-                    column(self.fit_button),
-                ),
+        # # Document layout
+        # fitting_controls = column(
+        #     row(
+        #         column(self.slider_X_RADIUS, self.slider_Y_RADIUS),
+        #         column(
+        #             row(column(self.contour_start, self.pos_neg_contour_radiobutton)),
+        #             column(self.fit_button),
+        #         ),
+        #     ),
+        #     row(
+        #         column(column(self.select_lineshape_radiobuttons_help), column(self.select_lineshape_radiobuttons)),
+        #         column(column(self.select_plane), column(self.checkbox_group)),
+        #         column(self.select_fixed_parameters_help, self.select_fixed_parameters),
+        #         column(self.select_reference_planes)
+        #     ),
+        #     max_width=400,
+        # )
+        fitting_controls = row(
+            column(
+                self.slider_X_RADIUS,
+                self.slider_Y_RADIUS,
+                self.contour_start,
+                self.pos_neg_contour_radiobutton,
+                self.select_lineshape_radiobuttons_help,
+                self.select_lineshape_radiobuttons,
+                max_width=400,
             ),
-            row(
-                column(column(self.ls_div), column(self.radio_button_group)),
-                column(column(self.select_plane), column(self.checkbox_group)),
+            column(
+                self.select_plane,
+                self.checkbox_group,
+                self.select_fixed_parameters_help,
+                self.select_fixed_parameters,
+                self.set_xybounds_help,
+                self.set_xybounds,
+                self.select_reference_planes_help,
+                self.select_reference_planes,
+                self.set_initial_fit_threshold_help,
+                self.set_initial_fit_threshold,
+                self.fit_button,
+                max_width=400,
             ),
-            max_width=400,
+            max_width=800,
         )
 
         # reclustering tab
@@ -545,6 +649,15 @@ class BokehScript:
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
         return self.peakipy_data.df
 
+    def unpack_parameters_to_fix(self):
+        return self.select_fixed_parameters.value.strip().split(" ")
+
+    def make_fix_command_from_parameters(self, parameters):
+        command = ""
+        for parameter in parameters:
+            command += f" --fix {parameter}"
+        return command
+
     def fit_selected(self, event):
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
@@ -568,16 +681,26 @@ class BokehScript:
         ]
 
         selected_df.to_csv(self.TEMP_INPUT_CSV)
+        fix_command = self.make_fix_command_from_parameters(
+            self.unpack_parameters_to_fix()
+        )
+        xy_bounds_command = self.make_xybound_command(*self.get_xybounds())
+        reference_planes_command = self.make_reference_planes_command(
+            self.get_reference_planes()
+        )
+        initial_fit_threshold_command = self.make_initial_fit_threshold_command(
+            self.get_initial_fit_threshold()
+        )
 
-        lineshape = self.lineshapes[self.radio_button_group.active]
+        lineshape = self.lineshapes[self.select_lineshape_radiobuttons.active]
         print(f"[yellow]Using LS = {lineshape}[/yellow]")
         if self.checkbox_group.active == []:
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape}"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
             plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
         else:
             plane_index = self.select_plane.value
             print(f"[yellow]Only fitting plane {plane_index}[/yellow]")
-            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --plane {plane_index}"
+            fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --plane {plane_index}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
             plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane {plane_index}"
 
         print(f"[blue]{fit_command}[/blue]")
@@ -819,40 +942,3 @@ class BokehScript:
 
     def exit_edit_peaks(self, event):
         sys.exit()
-
-
-def get_contour_data(data, levels, **kwargs):
-    cs = plt.contour(data, levels, **kwargs)
-    xs = []
-    ys = []
-    xt = []
-    yt = []
-    col = []
-    text = []
-    isolevelid = 0
-    for isolevel in cs.collections:
-        isocol = isolevel.get_edgecolor()[0]
-        thecol = 3 * [None]
-        theiso = str(cs.get_array()[isolevelid])
-        isolevelid += 1
-        for i in range(3):
-            thecol[i] = int(255 * isocol[i])
-        thecol = "#%02x%02x%02x" % (thecol[0], thecol[1], thecol[2])
-
-        for path in isolevel.get_paths():
-            v = path.vertices
-            x = v[:, 0]
-            y = v[:, 1]
-            xs.append(x.tolist())
-            ys.append(y.tolist())
-            indx = int(len(x) / 2)
-            indy = int(len(y) / 2)
-            xt.append(x[indx])
-            yt.append(y[indy])
-            text.append(theiso)
-            col.append(thecol)
-
-    source = ColumnDataSource(
-        data={"xs": xs, "ys": ys, "line_color": col, "xt": xt, "yt": yt, "text": text}
-    )
-    return source
