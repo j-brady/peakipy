@@ -401,12 +401,12 @@ class BokehScript:
                 any manual edits will be lost."""
         )
         self.intro_div = Div(
-            text="""<h2>peakipy - interactive fit adjustment </h2> 
+            text="""<h2>peakipy - interactive fit adjustment </h2>
             """
         )
 
         self.doc_link = Div(
-            text="<h3><a href='https://j-brady.github.io/peakipy/build/usage/instructions.html', target='_blank'> ℹ️ click here for documentation</a></h3>"
+            text="<h3><a href='https://j-brady.github.io/peakipy/', target='_blank'> ℹ️ click here for documentation</a></h3>"
         )
         self.fit_reports = ""
         self.fit_reports_div = Div(text="", height=400, styles={"overflow": "scroll"})
@@ -490,17 +490,20 @@ class BokehScript:
             source=self.source,
             columns=columns,
             editable=True,
-            width=800,
+            width=1200,
         )
         self.table_style = InlineStyleSheet(
             css="""
                 .slick-header-columns {
-                    background-color: #2B303A !important;
+                    background-color: #00296b !important;
                     font-family: arial;
                     font-weight: bold;
                     font-size: 12pt;
                     color: #FFFFFF;
                     text-align: right;
+                }
+                .slick-header-column:hover {
+                    background: none repeat scroll 0 0 #fdc500;
                 }
                 .slick-row {
                     font-size: 12pt;
@@ -510,8 +513,22 @@ class BokehScript:
                 .slick-row:hover{
                     background: none repeat scroll 0 0 #7c7c7c;
                 }
+                .slick-cell {
+                    header-font-weight: 500;
+                    border-width: 1px 1px 1px 1px;
+                    border-color: #d4d4d4;
+                    background-color: #00509D;
+                    color: #FFFFFF;
+                    }
+                .slick-cell.selected {
+                    header-font-weight: 500;
+                    border-width: 1px 1px 1px 1px;
+                    border-color: #00509D;
+                    background-color: #FDC500;
+                    color: black;
+                }
 
-                
+
                 """
         )
 
@@ -662,12 +679,12 @@ class BokehScript:
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
 
-        self.peakipy_data.df.loc[
-            selectionIndex, "X_RADIUS_PPM"
-        ] = self.slider_X_RADIUS.value
-        self.peakipy_data.df.loc[
-            selectionIndex, "Y_RADIUS_PPM"
-        ] = self.slider_Y_RADIUS.value
+        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = (
+            self.slider_X_RADIUS.value
+        )
+        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = (
+            self.slider_Y_RADIUS.value
+        )
 
         self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
             current["X_RADIUS_PPM"] * 2.0
@@ -806,9 +823,9 @@ class BokehScript:
         self.peakipy_data.df.loc[selectionIndex, "X_RADIUS"] = (
             self.slider_X_RADIUS.value * self.peakipy_data.pt_per_ppm_f2
         )
-        self.peakipy_data.df.loc[
-            selectionIndex, "X_RADIUS_PPM"
-        ] = self.slider_X_RADIUS.value
+        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = (
+            self.slider_X_RADIUS.value
+        )
 
         self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
             current["X_RADIUS_PPM"] * 2.0
@@ -828,9 +845,9 @@ class BokehScript:
         self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS"] = (
             self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
         )
-        self.peakipy_data.df.loc[
-            selectionIndex, "Y_RADIUS_PPM"
-        ] = self.slider_Y_RADIUS.value
+        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = (
+            self.slider_Y_RADIUS.value
+        )
 
         self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = (
             current["Y_RADIUS_PPM"] * 2.0

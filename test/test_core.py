@@ -2,9 +2,11 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
+from numpy.testing import assert_array_equal
 import pandas as pd
 import nmrglue as ng
 from lmfit import Model
+
 
 from peakipy.core import (
     make_mask,
@@ -19,7 +21,90 @@ from peakipy.core import (
     Peaklist,
     Lineshape,
     PeaklistFormat,
+    select_reference_planes_using_indices,
+    select_planes_above_threshold_from_masked_data,
+    slice_peaks_from_data_using_mask,
 )
+
+
+def test_select_reference_planes_using_indices():
+    data = np.zeros((6, 100, 200))
+    indices = []
+    np.testing.assert_array_equal(
+        select_reference_planes_using_indices(data, indices), data
+    )
+    indices = [1]
+    assert select_reference_planes_using_indices(data, indices).shape == (1, 100, 200)
+    indices = [1, -1]
+    assert select_reference_planes_using_indices(data, indices).shape == (2, 100, 200)
+
+
+def test_slice_peaks_from_data_using_mask():
+    data = np.array(
+        [
+            np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 2, 2, 1, 0, 0, 0],
+                    [0, 0, 1, 2, 3, 3, 2, 1, 0, 0],
+                    [0, 1, 2, 3, 4, 4, 3, 2, 1, 0],
+                    [1, 2, 3, 4, 5, 5, 4, 3, 2, 1],
+                    [0, 1, 2, 3, 4, 4, 3, 2, 1, 0],
+                    [0, 0, 1, 2, 3, 3, 2, 1, 0, 0],
+                    [0, 0, 0, 1, 2, 2, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ]
+            )
+            for i in range(5)
+        ]
+    )
+    mask = data[0] > 0
+    assert data.shape == (5, 11, 10)
+    assert mask.shape == (11, 10)
+    peak_slices = slice_peaks_from_data_using_mask(data, mask)
+    # array is flattened by application of mask
+    assert peak_slices.shape == (5, 50)
+
+
+def test_select_planes_above_threshold_from_masked_data():
+    peak_slices = np.array(
+        [
+            [1, 1, 1, 1, 1, 1],
+            [2, 2, 2, 2, 2, 2],
+            [-1, -1, -1, -1, -1, -1],
+            [-2, -2, -2, -2, -2, -2],
+        ]
+    )
+    assert peak_slices.shape == (4, 6)
+    threshold = -1
+    assert select_planes_above_threshold_from_masked_data(
+        peak_slices, threshold
+    ).shape == (
+        4,
+        6,
+    )
+    threshold = 2
+    assert_array_equal(
+        select_planes_above_threshold_from_masked_data(peak_slices, threshold),
+        peak_slices,
+    )
+    threshold = 1
+    assert select_planes_above_threshold_from_masked_data(
+        peak_slices, threshold
+    ).shape == (2, 6)
+
+    threshold = None
+    assert_array_equal(
+        select_planes_above_threshold_from_masked_data(peak_slices, threshold),
+        peak_slices,
+    )
+    threshold = 10
+    assert_array_equal(
+        select_planes_above_threshold_from_masked_data(peak_slices, threshold),
+        peak_slices,
+    )
 
 
 class TestCoreFunctions(unittest.TestCase):
@@ -140,7 +225,7 @@ class TestCoreFunctions(unittest.TestCase):
             (" one", "_one_"),
             (" one/two", "_oneortwo_"),
             (" one?two", "_onemaybetwo_"),
-            (" [{one?two\}][", "___onemaybetwo____"),
+            (r" [{one?two\}][", "___onemaybetwo____"),
         ]
         for test, expect in names:
             prefix = to_prefix(test)

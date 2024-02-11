@@ -1,4 +1,4 @@
-""" 
+"""
 
     peakipy - deconvolute overlapping NMR peaks
     Copyright (C) 2019  Jacob Peter Brady
@@ -18,7 +18,6 @@
 
 
 """
-
 
 import sys
 import json
@@ -91,7 +90,7 @@ class Lineshape(str, Enum):
 
 
 def gaussian(x, center=0.0, sigma=1.0):
-    """1-dimensional Gaussian function.
+    r"""1-dimensional Gaussian function.
 
     gaussian(x, center, sigma) =
         (1/(s2pi*sigma)) * exp(-(1.0*x-center)**2 / (2*sigma**2))
@@ -115,7 +114,7 @@ def gaussian(x, center=0.0, sigma=1.0):
 
 
 def lorentzian(x, center=0.0, sigma=1.0):
-    """1-dimensional Lorentzian function.
+    r"""1-dimensional Lorentzian function.
 
     lorentzian(x, center, sigma) =
         (1/(1 + ((1.0*x-center)/sigma)**2)) / (pi*sigma)
@@ -139,7 +138,7 @@ def lorentzian(x, center=0.0, sigma=1.0):
 
 
 def voigt(x, center=0.0, sigma=1.0, gamma=None):
-    """Return a 1-dimensional Voigt function.
+    r"""Return a 1-dimensional Voigt function.
 
     voigt(x, center, sigma, gamma) =
         amplitude*wofz(z).real / (sigma*sqrt(2.0 * π))
@@ -174,7 +173,7 @@ def voigt(x, center=0.0, sigma=1.0, gamma=None):
 
 
 def pseudo_voigt(x, center=0.0, sigma=1.0, fraction=0.5):
-    """1-dimensional Pseudo-voigt function
+    r"""1-dimensional Pseudo-voigt function
 
     Superposition of Gaussian and Lorentzian function
 
@@ -212,7 +211,7 @@ def pvoigt2d(
     sigma_y=1.0,
     fraction=0.5,
 ):
-    """2D pseudo-voigt model
+    r"""2D pseudo-voigt model
 
     :math:`(1-fraction) G(x,center,\sigma_{gx}) + (fraction) L(x, center, \sigma_x) * (1-fraction) G(y,center,\sigma_{gy}) + (fraction) L(y, center, \sigma_y)`
 
@@ -241,21 +240,9 @@ def pvoigt2d(
     :rtype: numpy.array
 
     """
-
     x, y = XY
-    # sigma_gx = sigma_x / sqrt(2 * log2)
-    # sigma_gy = sigma_y / sqrt(2 * log2)
-    # fraction same for both dimensions
-    # super position of gaussian and lorentzian
-    # then convoluted for x y
-    # pv_x = (1 - fraction) * gaussian(x, center_x, sigma_gx) + fraction * lorentzian(
-    #    x, center_x, sigma_x
-    # )
     pv_x = pseudo_voigt(x, center_x, sigma_x, fraction)
     pv_y = pseudo_voigt(y, center_y, sigma_y, fraction)
-    # pv_y = (1 - fraction) * gaussian(y, center_y, sigma_gy) + fraction * lorentzian(
-    #    y, center_y, sigma_y
-    # )
     return amplitude * pv_x * pv_y
 
 
@@ -495,7 +482,7 @@ def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):
 
     param_dict = {}
 
-    for index, peak in peaks.iterrows():
+    for _, peak in peaks.iterrows():
         str_form = lambda x: "%s%s" % (to_prefix(peak.ASS), x)
         # using exact value of points (i.e decimal)
         param_dict[str_form("center_x")] = peak.X_AXISf
@@ -614,7 +601,7 @@ def make_models(
         # make model for first peak
         first_peak, *remaining_peaks = peaks.iterrows()
         mod = Model(model, prefix="%s" % to_prefix(first_peak[1].ASS))
-        for index, peak in remaining_peaks:
+        for _, peak in remaining_peaks:
             mod += Model(model, prefix="%s" % to_prefix(peak.ASS))
 
         param_dict = make_param_dict(peaks, data, lineshape=lineshape)
@@ -726,7 +713,7 @@ def df_to_rich_table(df, title: str, columns: List[str], styles: str):
     table = Table(title=title)
     for col, style in zip(columns, styles):
         table.add_column(col, style=style)
-    for ind, row in df.iterrows():
+    for _, row in df.iterrows():
         row = row[columns].values
         str_row = []
         for i in row:
@@ -747,7 +734,7 @@ def df_to_rich_table(df, title: str, columns: List[str], styles: str):
 
 def make_mask_from_peak_cluster(group, data):
     mask = np.zeros(data.shape, dtype=bool)
-    for index, peak in group.iterrows():
+    for _, peak in group.iterrows():
         mask += make_mask(
             data, peak.X_AXISf, peak.Y_AXISf, peak.X_RADIUS, peak.Y_RADIUS
         )
@@ -776,11 +763,76 @@ def select_reference_planes_using_indices(data, indices: List[int]):
 
 
 def select_planes_above_threshold_from_masked_data(data, threshold=None):
+    """This function returns planes with data above the threshold.
+
+    It currently uses absolute intensity values.
+    Negative thresholds just result in return of the orignal data.
+
+    """
     if threshold == None:
-        data = data
+        selected_data = data
     else:
-        data = data[np.abs(data).max(axis=1) > threshold]
-    return data
+        selected_data = data[np.abs(data).max(axis=1) > threshold]
+
+    if selected_data.shape[0] == 0:
+        selected_data = data
+
+    return selected_data
+
+
+def get_lineshape_function(lineshape: Lineshape):
+    match lineshape:
+        case lineshape.PV | lineshape.G | lineshape.L:
+            lineshape_function = pvoigt2d
+        case lineshape.V:
+            lineshape_function = voigt2d
+        case lineshape.PV_PV:
+            lineshape_function = pv_pv
+        case lineshape.G_L:
+            lineshape_function = gaussian_lorentzian
+        case lineshape.PV_G:
+            lineshape_function = pv_g
+        case lineshape.PV_L:
+            lineshape_function = pv_l
+        case _:
+            raise Exception("No lineshape was selected!")
+    return lineshape_function
+
+
+def slice_peaks_from_data_using_mask(data, mask):
+    peak_slices = np.array([d[mask] for d in data])
+    return peak_slices
+
+
+def get_limits_for_axis_in_points(group_axis_points, mask_radius_in_points):
+    max_point, min_point = (
+        int(np.ceil(max(group_axis_points) + mask_radius_in_points + 1)),
+        int(np.floor(min(group_axis_points) - mask_radius_in_points)),
+    )
+    return max_point, min_point
+
+
+def deal_with_peaks_on_edge_of_spectrum(data_shape, max_x, min_x, max_y, min_y):
+    if min_y < 0:
+        min_y = 0
+
+    if min_x < 0:
+        min_x = 0
+
+    if max_y > data_shape[-2]:
+        max_y = data_shape[-2]
+
+    if max_x > data_shape[-1]:
+        max_x = data_shape[-1]
+    return max_x, min_x, max_y, min_y
+
+
+def make_meshgrid(data_shape):
+    # must be a better way to make the meshgrid
+    x = np.arange(data_shape[-1])
+    y = np.arange(data_shape[-2])
+    XY = np.meshgrid(x, y)
+    return XY
 
 
 def fit_first_plane(
@@ -796,7 +848,7 @@ def fit_first_plane(
     reference_plane_indices: List[int] = [],
     threshold: Optional[float] = None,
 ):
-    """Deconvolute group of peaks
+    r"""Deconvolute group of peaks
 
     :param group: pandas data from containing group of peaks using groupby("CLUSTID")
     :type group: pandas.core.groupby.generic.DataFrameGroupBy
@@ -835,28 +887,10 @@ def fit_first_plane(
     :rtype: FitResult
 
     """
-    match lineshape:
-        case lineshape.PV | lineshape.G | lineshape.L:
-            lineshape_function = pvoigt2d
-        case lineshape.V:
-            lineshape_function = voigt2d
-        case lineshape.PV_PV:
-            lineshape_function = pv_pv
-        case lineshape.G_L:
-            lineshape_function = gaussian_lorentzian
-        case lineshape.PV_G:
-            lineshape_function = pv_g
-        case lineshape.PV_L:
-            lineshape_function = pv_l
-        case _:
-            raise Exception("No lineshape was selected!")
-
+    lineshape_function = get_lineshape_function(lineshape)
     mod, p_guess = make_models(
         lineshape_function, group, data, lineshape=lineshape, xy_bounds=xy_bounds
     )
-    # get initial peak centers
-    cen_x = [p_guess[k].value for k in p_guess if "center_x" in k]
-    cen_y = [p_guess[k].value for k in p_guess if "center_y" in k]
 
     first_plane_data = data[0]
     mask, peak = make_mask_from_peak_cluster(group, first_plane_data)
@@ -864,48 +898,28 @@ def fit_first_plane(
     x_radius = group.X_RADIUS.max()
     y_radius = group.Y_RADIUS.max()
 
-    max_x, min_x = (
-        int(np.ceil(max(group.X_AXISf) + x_radius + 1)),
-        int(np.floor(min(group.X_AXISf) - x_radius)),
+    max_x, min_x = get_limits_for_axis_in_points(
+        group_axis_points=group.X_AXISf, mask_radius_in_points=x_radius
     )
-    max_y, min_y = (
-        int(np.ceil(max(group.Y_AXISf) + y_radius + 1)),
-        int(np.floor(min(group.Y_AXISf) - y_radius)),
+    max_y, min_y = get_limits_for_axis_in_points(
+        group_axis_points=group.Y_AXISf, mask_radius_in_points=y_radius
+    )
+    max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
+        data.shape, max_x, min_x, max_y, min_y
     )
 
-    #  deal with peaks on the edge of spectrum
-    shape = data.shape
-    if min_y < 0:
-        min_y = 0
-
-    if min_x < 0:
-        min_x = 0
-
-    if max_y > shape[-2]:
-        max_y = shape[-2]
-
-    if max_x > shape[-1]:
-        max_x = shape[-1]
-
-    # print("DATA",data.shape, mask.shape)
-    peak_slices = np.array([d[mask] for d in data])
-    # print("Peak slices", peak_slices.shape)
+    peak_slices = slice_peaks_from_data_using_mask(data, mask)
     peak_slices = select_reference_planes_using_indices(
         peak_slices, reference_plane_indices
     )
     peak_slices = select_planes_above_threshold_from_masked_data(peak_slices, threshold)
-    # print(peak_slices.shape)
     peak_slices = peak_slices.sum(axis=0)
-    # print(peak_slices.shape)
 
-    # must be a better way to make the meshgrid
-    x = np.arange(shape[-1])
-    y = np.arange(shape[-2])
-    XY = np.meshgrid(x, y)
+    XY = make_meshgrid(data.shape)
     X, Y = XY
 
     XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
-    # print("XY_slices", XY_slices)
+
     weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
 
     out = mod.fit(
@@ -1104,9 +1118,9 @@ class FitResult:
             z_sim = self.Z_sim[self.min_y : self.max_y, self.min_x : self.max_x]
 
             ax.set_title(
-                "$\chi^2$="
+                r"$\chi^2$="
                 + f"{self.out.chisqr:.3f}, "
-                + "$\chi_{red}^2$="
+                + r"$\chi_{red}^2$="
                 + f"{self.out.redchi:.4f}"
             )
 
@@ -1635,10 +1649,10 @@ class Peaklist(Pseudo3D):
         self.df["X_AXISf"] = self.df.X_PPM.apply(lambda x: self.uc_f2.f(x, "ppm"))
         self.df["Y_AXISf"] = self.df.Y_PPM.apply(lambda x: self.uc_f1.f(x, "ppm"))
         # in case of missing values (should estimate though)
-        self.df.XW_HZ.replace("None", "20.0", inplace=True)
-        self.df.YW_HZ.replace("None", "20.0", inplace=True)
-        self.df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
-        self.df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
+        self.df["XW_HZ"] = self.df.XW_HZ.replace("None", "20.0")
+        self.df["YW_HZ"] = self.df.YW_HZ.replace("None", "20.0")
+        self.df["XW_HZ"] = self.df.XW_HZ.replace(np.NaN, "20.0")
+        self.df["YW_HZ"] = self.df.YW_HZ.replace(np.NaN, "20.0")
         # convert linewidths to float
         self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
         self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))
@@ -1713,7 +1727,7 @@ class Peaklist(Pseudo3D):
         df = pd.read_csv(
             self.peaklist_path,
             skiprows=1,
-            delim_whitespace=True,
+            sep=r"\s+",
             names=["ASS", "Y_PPM", "X_PPM", "VOLUME", "HEIGHT", "YW_HZ", "XW_HZ"],
         )
         df["INDEX"] = df.index
@@ -1732,7 +1746,7 @@ class Peaklist(Pseudo3D):
                 else:
                     to_skip += 1
         df = pd.read_csv(
-            self.peaklist_path, skiprows=to_skip, names=columns, delim_whitespace=True
+            self.peaklist_path, skiprows=to_skip, names=columns, sep=r"\s+"
         )
         return df
 
@@ -1764,7 +1778,7 @@ class Peaklist(Pseudo3D):
                 textwrap.dedent(
                     """
                     Creating dummy assignments for duplicates
-                
+
                 """
                 )
             )
@@ -1782,7 +1796,7 @@ class Peaklist(Pseudo3D):
                     f"""[red]
                     #################################################################################
 
-                    Excluding the following peaks as they are not within the spectrum which has shape 
+                    Excluding the following peaks as they are not within the spectrum which has shape
 
                     {self.data.shape}
                 [/red]"""
@@ -1967,7 +1981,7 @@ class Peaklist(Pseudo3D):
 
         fuda_file = textwrap.dedent(
             f"""\
-            
+
 # Read peaklist and spectrum info
 PEAKLIST=peaks.fuda
 SPECFILE={self.data_path}
