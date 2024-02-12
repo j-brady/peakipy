@@ -22,6 +22,7 @@ import os
 import json
 import shutil
 from pathlib import Path
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Tuple, List, Annotated
 from multiprocessing import Pool
@@ -41,7 +42,10 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.widgets import Button
+
 import yaml
+import plotly.graph_objects as go
+import panel as pn
 
 from peakipy.core import (
     Peaklist,
@@ -61,6 +65,8 @@ from peakipy.core import (
     PeaklistFormat,
     Lineshape,
     OutFmt,
+    get_limits_for_axis_in_points,
+    deal_with_peaks_on_edge_of_spectrum,
 )
 from .fit import (
     cpu_count,
@@ -357,11 +363,11 @@ def read(
 
     print(
         f"""[green]
-          
+
           ✨✨ Finished reading and clustering peaks! ✨✨
-          
+
              Use {outname} to run peakipy edit or fit.[/green]
-          
+
           """
     )
 
@@ -605,11 +611,14 @@ def fit(
         # split peak lists
         # tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
         fit_peaks_args = FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
-        with Pool(processes=n_cpu) as pool, tqdm(
-            total=len(peakipy_data.df.CLUSTID.unique()),
-            ascii="▱▰",
-            colour="green",
-        ) as pbar:
+        with (
+            Pool(processes=n_cpu) as pool,
+            tqdm(
+                total=len(peakipy_data.df.CLUSTID.unique()),
+                ascii="▱▰",
+                colour="green",
+            ) as pbar,
+        ):
             # result = pool.map(fit_peaks, peaklists)
             # result = pool.starmap(fit_peaks, zip(peaklists, args_list))
             result = [
@@ -795,7 +804,7 @@ def fit(
     print(
         """[green]
            🍾 ✨ Finished! ✨ 🍾
-           [/green]       
+           [/green]
         """
     )
     run_log()
@@ -850,6 +859,351 @@ def get_fit_data_for_selected_peak_clusters(fits, clusters):
             if len(fits) < 1:
                 exit(f"Are you sure clusters {clusters} exist?")
     return fits
+
+
+def make_masks_from_plane_data(empty_mask_array, plane_data):
+    # make masks
+    individual_masks = []
+    for cx, cy, rx, ry, name in zip(
+        plane_data.center_x,
+        plane_data.center_y,
+        plane_data.x_radius,
+        plane_data.y_radius,
+        plane_data.assignment,
+    ):
+        tmp_mask = make_mask(empty_mask_array, cx, cy, rx, ry)
+        empty_mask_array += tmp_mask
+        individual_masks.append(tmp_mask)
+    filled_mask_array = empty_mask_array
+    return individual_masks, filled_mask_array
+
+
+def simulate_pv_pv_lineshapes_from_fitted_peak_parameters(
+    peak_parameters, XY, sim_data, sim_data_singles
+):
+    for amp, c_x, c_y, s_x, s_y, frac_x, frac_y, ls in zip(
+        peak_parameters.amp,
+        peak_parameters.center_x,
+        peak_parameters.center_y,
+        peak_parameters.sigma_x,
+        peak_parameters.sigma_y,
+        peak_parameters.fraction_x,
+        peak_parameters.fraction_y,
+        peak_parameters.lineshape,
+    ):
+        sim_data_i = pv_pv(XY, amp, c_x, c_y, s_x, s_y, frac_x, frac_y).reshape(
+            sim_data.shape
+        )
+        sim_data += sim_data_i
+        sim_data_singles.append(sim_data_i)
+    return sim_data, sim_data_singles
+
+
+def simulate_lineshapes_from_fitted_peak_parameters(
+    peak_parameters, XY, sim_data, sim_data_singles
+):
+    shape = sim_data.shape
+    for amp, c_x, c_y, s_x, s_y, frac, lineshape in zip(
+        peak_parameters.amp,
+        peak_parameters.center_x,
+        peak_parameters.center_y,
+        peak_parameters.sigma_x,
+        peak_parameters.sigma_y,
+        peak_parameters.fraction,
+        peak_parameters.lineshape,
+    ):
+        # print(amp)
+        match lineshape:
+            case "G" | "L" | "PV":
+                sim_data_i = pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
+            case "PV_L":
+                sim_data_i = pv_l(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
+
+            case "PV_G":
+                sim_data_i = pv_g(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
+
+            case "G_L":
+                sim_data_i = gaussian_lorentzian(
+                    XY, amp, c_x, c_y, s_x, s_y, frac
+                ).reshape(shape)
+
+            case "V":
+                sim_data_i = voigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
+        sim_data += sim_data_i
+        sim_data_singles.append(sim_data_i)
+    return sim_data, sim_data_singles
+
+
+@dataclass
+class PlottingDataForPlane:
+    pseudo3D: Pseudo3D
+    plane_id: int
+    plane: pd.DataFrame
+    X: np.array
+    Y: np.array
+    mask: np.array
+    individual_masks: List[np.array]
+    sim_data: np.array
+    sim_data_singles: List[np.array]
+    min_x: int
+    max_x: int
+    min_y: int
+    max_y: int
+    fit_color: str
+    data_color: str
+    rcount: int
+    ccount: int
+
+    x_plot: np.array = field(init=False)
+    y_plot: np.array = field(init=False)
+    masked_data: np.array = field(init=False)
+    masked_sim_data: np.array = field(init=False)
+    residual: np.array = field(init=False)
+    single_colors: List = field(init=False)
+
+    def __post_init__(self):
+        self.plane_data = self.pseudo3D.data[self.plane_id]
+        self.masked_data = self.plane_data.copy()
+        self.masked_sim_data = self.sim_data.copy()
+        self.masked_data[~self.mask] = np.nan
+        self.masked_sim_data[~self.mask] = np.nan
+
+        self.x_plot = self.pseudo3D.uc_f2.ppm(
+            self.X[self.min_y : self.max_y, self.min_x : self.max_x]
+        )
+        self.y_plot = self.pseudo3D.uc_f1.ppm(
+            self.Y[self.min_y : self.max_y, self.min_x : self.max_x]
+        )
+        self.masked_data = self.masked_data[
+            self.min_y : self.max_y, self.min_x : self.max_x
+        ]
+        self.sim_plot = self.masked_sim_data[
+            self.min_y : self.max_y, self.min_x : self.max_x
+        ]
+        self.residual = self.masked_data - self.sim_plot
+
+        for single_mask, single in zip(self.individual_masks, self.sim_data_singles):
+            single[~single_mask] = np.nan
+        self.sim_data_singles = [
+            sim_data_single[self.min_y : self.max_y, self.min_x : self.max_x]
+            for sim_data_single in self.sim_data_singles
+        ]
+        self.single_colors = [
+            cm.viridis(i) for i in np.linspace(0, 1, len(self.sim_data_singles))
+        ]
+
+
+def plot_data_is_valid(plot_data: PlottingDataForPlane) -> bool:
+    if len(plot_data.x_plot) < 1 or len(plot_data.y_plot) < 1:
+        print(f"[red]Nothing to plot for cluster {int(plot_data.plane.clustid)}[/red]")
+        print(f"[red]x={plot_data.x_plot},y={plot_data.y_plot}[/red]")
+        print(
+            df_to_rich_table(
+                plot_data.plane,
+                title="",
+                columns=bad_column_selection,
+                styles=bad_color_selection,
+            )
+        )
+        plt.close()
+        validated = False
+        # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
+    elif plot_data.masked_data.shape[0] == 0 or plot_data.masked_data.shape[1] == 0:
+        print(f"[red]Nothing to plot for cluster {int(plot_data.plane.clustid)}[/red]")
+        print(
+            df_to_rich_table(
+                plot_data.plane,
+                title="Bad plane",
+                columns=bad_column_selection,
+                styles=bad_color_selection,
+            )
+        )
+        spec_lim_f1 = " - ".join(
+            ["%8.3f" % i for i in plot_data.pseudo3D.f1_ppm_limits]
+        )
+        spec_lim_f2 = " - ".join(
+            ["%8.3f" % i for i in plot_data.pseudo3D.f2_ppm_limits]
+        )
+        print(f"Spectrum limits are {plot_data.pseudo3D.f2_label:4s}:{spec_lim_f2} ppm")
+        print(f"                    {plot_data.pseudo3D.f1_label:4s}:{spec_lim_f1} ppm")
+        plt.close()
+        validated = False
+    else:
+        validated = True
+    return validated
+
+
+def create_matplotlib_figure(
+    plot_data: PlottingDataForPlane,
+    pdf: PdfPages,
+    individual=False,
+    label=False,
+    ccpn_flag=False,
+    show=True,
+):
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(projection="3d")
+    if plot_data_is_valid(plot_data):
+        cset = ax.contourf(
+            plot_data.x_plot,
+            plot_data.y_plot,
+            plot_data.residual,
+            zdir="z",
+            offset=np.nanmin(plot_data.masked_data) * 1.1,
+            alpha=0.5,
+            cmap=cm.coolwarm,
+        )
+        cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
+        cbl.ax.set_title("Residual", pad=20)
+
+        if individual:
+            #  for plotting single fit surfaces
+            single_colors = [
+                cm.viridis(i)
+                for i in np.linspace(0, 1, len(plot_data.sim_data_singles))
+            ]
+            [
+                ax.plot_surface(
+                    plot_data.x_plot,
+                    plot_data.y_plot,
+                    z_single,
+                    color=c,
+                    alpha=0.5,
+                )
+                for c, z_single in zip(single_colors, plot_data.sim_data_singles)
+            ]
+        ax.plot_wireframe(
+            plot_data.x_plot,
+            plot_data.y_plot,
+            plot_data.sim_plot,
+            # colors=[cm.coolwarm(i) for i in np.ravel(residual)],
+            colors=plot_data.fit_color,
+            linestyle="--",
+            label="fit",
+            rcount=plot_data.rcount,
+            ccount=plot_data.ccount,
+        )
+        ax.plot_wireframe(
+            plot_data.x_plot,
+            plot_data.y_plot,
+            plot_data.masked_data,
+            colors=plot_data.data_color,
+            linestyle="-",
+            label="data",
+            rcount=plot_data.rcount,
+            ccount=plot_data.ccount,
+        )
+        ax.set_ylabel(plot_data.pseudo3D.f1_label)
+        ax.set_xlabel(plot_data.pseudo3D.f2_label)
+
+        # axes will appear inverted
+        ax.view_init(30, 120)
+
+        # names = ",".join(plane.assignment)
+        title = f"Plane={plot_data.plane_id},Cluster={plot_data.plane.clustid.iloc[0]}"
+        plt.title(title)
+        print(f"[green]Plotting: {title}[/green]")
+        out_str = "Volumes (Heights)\n===========\n"
+        # chi2s = []
+        for _, row in plot_data.plane.iterrows():
+            out_str += f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
+            if label:
+                ax.text(
+                    row.center_x_ppm,
+                    row.center_y_ppm,
+                    row.height * 1.2,
+                    row.assignment,
+                    (1, 1, 1),
+                )
+
+        ax.text2D(
+            -0.5,
+            1.0,
+            out_str,
+            transform=ax.transAxes,
+            fontsize=10,
+            fontfamily="sans-serif",
+            va="top",
+            bbox=dict(boxstyle="round", ec="k", fc="k", alpha=0.5),
+        )
+
+        ax.legend()
+
+        if show:
+
+            def exit_program(event):
+                exit()
+
+            def next_plot(event):
+                plt.close()
+
+            axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
+            bnexit = Button(axexit, "Exit")
+            bnexit.on_clicked(exit_program)
+            axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
+            bnnext = Button(axnext, "Next")
+            bnnext.on_clicked(next_plot)
+            if ccpn_flag:
+                plt.show(windowTitle="", size=(1000, 500))
+            else:
+                plt.show()
+        else:
+            pdf.savefig()
+
+        plt.close()
+
+
+def create_plotly_wireframe_lines(plot_data: PlottingDataForPlane):
+    lines = []
+    show_legend = False
+    # make simulated data wireframe
+    line_marker = dict(color=plot_data.fit_color, width=4)
+    for i, j, k in zip(plot_data.x_plot, plot_data.y_plot, plot_data.sim_plot):
+        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+    for i, j, k in zip(plot_data.x_plot.T, plot_data.y_plot.T, plot_data.sim_plot.T):
+        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+    # make experimental data wireframe
+    line_marker = dict(color=plot_data.data_color, width=4)
+    for i, j, k in zip(plot_data.x_plot, plot_data.y_plot, plot_data.masked_data):
+        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+    for i, j, k in zip(plot_data.x_plot.T, plot_data.y_plot.T, plot_data.masked_data.T):
+        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+
+    return lines
+
+
+def create_plotly_surfaces(plot_data: PlottingDataForPlane):
+    data = []
+    color_scale_values = np.linspace(0, 1, len(plot_data.single_colors))
+    color_scale = [
+        [val, f"rgb({', '.join('%d'%(i*255) for i in c[0:3])})"]
+        for val, c in zip(color_scale_values, plot_data.single_colors)
+    ]
+    for val, individual_peak in zip(color_scale_values, plot_data.sim_data_singles):
+        colors = np.zeros(shape=individual_peak.shape) + val
+        data.append(
+            go.Surface(
+                z=individual_peak,
+                x=plot_data.x_plot,
+                y=plot_data.y_plot,
+                opacity=0.5,
+                surfacecolor=colors,
+                colorscale=color_scale,
+                showscale=False,
+                cmin=0,
+                cmax=1,
+            )
+        )
+    return data
+
+
+def create_plotly_figure(plot_data: PlottingDataForPlane):
+    lines = create_plotly_wireframe_lines(plot_data)
+    surfaces = create_plotly_surfaces(plot_data)
+    fig = go.Figure(data=lines + surfaces)
+    layout = go.Layout(showlegend=False)
+    fig.update_layout(layout)
+    return fig
 
 
 @app.command(help="Interactive plots for checking fits")
@@ -944,7 +1298,7 @@ def check(
     data_color, fit_color = unpack_plotting_colors(colors)
     fits = get_fit_data_for_selected_peak_clusters(fits, clusters)
 
-    groups = fits.groupby("clustid")
+    peak_clusters = fits.groupby("clustid")
 
     # make plotting meshes
     x = np.arange(pseudo3D.f2_size)
@@ -953,292 +1307,90 @@ def check(
     X, Y = XY
 
     with PdfPages(outname) as pdf:
-        for _, group in groups:
+        for _, peak_cluster in peak_clusters:
             table = df_to_rich_table(
-                group,
+                peak_cluster,
                 title="",
                 columns=columns_to_print,
                 styles=["blue" for _ in columns_to_print],
             )
             print(table)
 
-            mask = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
-
-            first_plane = group[group.plane == selected_plane]
-
-            x_radius = group.x_radius.max()
-            y_radius = group.y_radius.max()
-            max_x, min_x = (
-                int(np.ceil(max(group.center_x) + x_radius + 1)),
-                int(np.floor(min(group.center_x) - x_radius)),
+            x_radius = peak_cluster.x_radius.max()
+            y_radius = peak_cluster.y_radius.max()
+            max_x, min_x = get_limits_for_axis_in_points(
+                group_axis_points=peak_cluster.center_x, mask_radius_in_points=x_radius
             )
-            max_y, min_y = (
-                int(np.ceil(max(group.center_y) + y_radius + 1)),
-                int(np.floor(min(group.center_y) - y_radius)),
+            max_y, min_y = get_limits_for_axis_in_points(
+                group_axis_points=peak_cluster.center_y, mask_radius_in_points=y_radius
+            )
+            max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
+                pseudo3D.data.shape, max_x, min_x, max_y, min_y
             )
 
-            #  deal with peaks on the edge of spectrum
-            if min_y < 0:
-                min_y = 0
-
-            if min_x < 0:
-                min_x = 0
-
-            if max_y > pseudo3D.f1_size:
-                max_y = pseudo3D.f1_size
-
-            if max_x > pseudo3D.f2_size:
-                max_x = pseudo3D.f2_size
-
-            masks = []
-            # make masks
-            for cx, cy, rx, ry, name in zip(
-                first_plane.center_x,
-                first_plane.center_y,
-                first_plane.x_radius,
-                first_plane.y_radius,
-                first_plane.assignment,
-            ):
-                tmp_mask = make_mask(mask, cx, cy, rx, ry)
-                mask += tmp_mask
-                masks.append(tmp_mask)
+            empty_mask_array = np.zeros(
+                (pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool
+            )
+            first_plane = peak_cluster[peak_cluster.plane == selected_plane]
+            individual_masks, mask = make_masks_from_plane_data(
+                empty_mask_array, first_plane
+            )
 
             # generate simulated data
-            for plane_id, plane in group.groupby("plane"):
+            for plane_id, plane in peak_cluster.groupby("plane"):
                 sim_data_singles = []
                 sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
-                shape = sim_data.shape
                 try:
-                    for amp, c_x, c_y, s_x, s_y, frac_x, frac_y, ls in zip(
-                        plane.amp,
-                        plane.center_x,
-                        plane.center_y,
-                        plane.sigma_x,
-                        plane.sigma_y,
-                        plane.fraction_x,
-                        plane.fraction_y,
-                        plane.lineshape,
-                    ):
-                        sim_data_i = pv_pv(
-                            XY, amp, c_x, c_y, s_x, s_y, frac_x, frac_y
-                        ).reshape(shape)
-                        sim_data += sim_data_i
-                        sim_data_singles.append(sim_data_i)
+                    (
+                        sim_data,
+                        sim_data_singles,
+                    ) = simulate_pv_pv_lineshapes_from_fitted_peak_parameters(
+                        plane, XY, sim_data, sim_data_singles
+                    )
                 except:
-                    for amp, c_x, c_y, s_x, s_y, frac, ls in zip(
-                        plane.amp,
-                        plane.center_x,
-                        plane.center_y,
-                        plane.sigma_x,
-                        plane.sigma_y,
-                        plane.fraction,
-                        plane.lineshape,
-                    ):
-                        # print(amp)
-                        match ls:
-                            case "G" | "L" | "PV":
-                                sim_data_i = pvoigt2d(
-                                    XY, amp, c_x, c_y, s_x, s_y, frac
-                                ).reshape(shape)
-                            case "PV_L":
-                                sim_data_i = pv_l(
-                                    XY, amp, c_x, c_y, s_x, s_y, frac
-                                ).reshape(shape)
+                    (
+                        sim_data,
+                        sim_data_singles,
+                    ) = simulate_lineshapes_from_fitted_peak_parameters(
+                        plane, XY, sim_data, sim_data_singles
+                    )
 
-                            case "PV_G":
-                                sim_data_i = pv_g(
-                                    XY, amp, c_x, c_y, s_x, s_y, frac
-                                ).reshape(shape)
-
-                            case "G_L":
-                                sim_data_i = gaussian_lorentzian(
-                                    XY, amp, c_x, c_y, s_x, s_y, frac
-                                ).reshape(shape)
-
-                            case "V":
-                                sim_data_i = voigt2d(
-                                    XY, amp, c_x, c_y, s_x, s_y, frac
-                                ).reshape(shape)
-                        sim_data += sim_data_i
-                        sim_data_singles.append(sim_data_i)
-
-                masked_data = pseudo3D.data[plane_id].copy()
-                masked_sim_data = sim_data.copy()
-                masked_data[~mask] = np.nan
-                masked_sim_data[~mask] = np.nan
+                plot_data = PlottingDataForPlane(
+                    pseudo3D,
+                    plane_id,
+                    plane,
+                    X,
+                    Y,
+                    mask,
+                    individual_masks,
+                    sim_data,
+                    sim_data_singles,
+                    min_x,
+                    max_x,
+                    min_y,
+                    max_y,
+                    fit_color,
+                    data_color,
+                    rcount,
+                    ccount,
+                )
 
                 if ccpn_flag:
                     plt = PlotterWidget()
                 else:
                     plt = matplotlib.pyplot
+                create_matplotlib_figure(
+                    plot_data, pdf, individual, label, ccpn_flag, show
+                )
+                # fig = create_plotly_figure(plot_data)
+                fig = create_plotly_figure(plot_data)
+                fig.show()
+                # surf = pn.pane.plotly.Plotly(fig)
+                # app = pn.Column(surf)
+                # app.show(threaded=True)
+                if first:
+                    break
 
-                fig = plt.figure(figsize=(10, 6))
-                ax = fig.add_subplot(projection="3d")
-                ## slice out plot area
-                x_plot = pseudo3D.uc_f2.ppm(X[min_y:max_y, min_x:max_x])
-                y_plot = pseudo3D.uc_f1.ppm(Y[min_y:max_y, min_x:max_x])
-                masked_data = masked_data[min_y:max_y, min_x:max_x]
-                sim_plot = masked_sim_data[min_y:max_y, min_x:max_x]
-                # or len(masked_data)<1 or len(sim_plot)<1
-
-                if len(x_plot) < 1 or len(y_plot) < 1:
-                    print(
-                        f"[red]Nothing to plot for cluster {int(plane.clustid)}[/red]"
-                    )
-                    print(f"[red]x={x_plot},y={y_plot}[/red]")
-                    print(
-                        df_to_rich_table(
-                            plane,
-                            title="",
-                            columns=bad_column_selection,
-                            styles=bad_color_selection,
-                        )
-                    )
-                    plt.close()
-
-                    # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
-                elif masked_data.shape[0] == 0 or masked_data.shape[1] == 0:
-                    print(
-                        f"[red]Nothing to plot for cluster {int(plane.clustid)}[/red]"
-                    )
-                    print(
-                        df_to_rich_table(
-                            plane,
-                            title="Bad plane",
-                            columns=bad_column_selection,
-                            styles=bad_color_selection,
-                        )
-                    )
-                    spec_lim_f1 = " - ".join(
-                        ["%8.3f" % i for i in pseudo3D.f1_ppm_limits]
-                    )
-                    spec_lim_f2 = " - ".join(
-                        ["%8.3f" % i for i in pseudo3D.f2_ppm_limits]
-                    )
-                    print(
-                        f"Spectrum limits are {pseudo3D.f2_label:4s}:{spec_lim_f2} ppm"
-                    )
-                    print(
-                        f"                    {pseudo3D.f1_label:4s}:{spec_lim_f1} ppm"
-                    )
-                    plt.close()
-                else:
-                    residual = masked_data - sim_plot
-                    cset = ax.contourf(
-                        x_plot,
-                        y_plot,
-                        residual,
-                        zdir="z",
-                        offset=np.nanmin(masked_data) * 1.1,
-                        alpha=0.5,
-                        cmap=cm.coolwarm,
-                    )
-                    cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
-                    cbl.ax.set_title("Residual", pad=20)
-
-                    if individual:
-                        # for making colored masks
-                        for single_mask, single in zip(masks, sim_data_singles):
-                            single[~single_mask] = np.nan
-                        sim_data_singles = [
-                            sim_data_single[min_y:max_y, min_x:max_x]
-                            for sim_data_single in sim_data_singles
-                        ]
-                        #  for plotting single fit surfaces
-                        single_colors = [
-                            cm.viridis(i)
-                            for i in np.linspace(0, 1, len(sim_data_singles))
-                        ]
-                        [
-                            ax.plot_surface(
-                                x_plot, y_plot, z_single, color=c, alpha=0.5
-                            )
-                            for c, z_single in zip(single_colors, sim_data_singles)
-                        ]
-                    ax.plot_wireframe(
-                        x_plot,
-                        y_plot,
-                        sim_plot,
-                        # colors=[cm.coolwarm(i) for i in np.ravel(residual)],
-                        colors=fit_color,
-                        linestyle="--",
-                        label="fit",
-                        rcount=rcount,
-                        ccount=ccount,
-                    )
-                    ax.plot_wireframe(
-                        x_plot,
-                        y_plot,
-                        masked_data,
-                        colors=data_color,
-                        linestyle="-",
-                        label="data",
-                        rcount=rcount,
-                        ccount=ccount,
-                    )
-                    ax.set_ylabel(pseudo3D.f1_label)
-                    ax.set_xlabel(pseudo3D.f2_label)
-
-                    # axes will appear inverted
-                    ax.view_init(30, 120)
-
-                    # names = ",".join(plane.assignment)
-                    title = f"Plane={plane_id},Cluster={plane.clustid.iloc[0]}"
-                    plt.title(title)
-                    print(f"[green]Plotting: {title}[/green]")
-                    out_str = "Volumes (Heights)\n===========\n"
-                    # chi2s = []
-                    for ind, row in plane.iterrows():
-                        out_str += (
-                            f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
-                        )
-                        if label:
-                            ax.text(
-                                row.center_x_ppm,
-                                row.center_y_ppm,
-                                row.height * 1.2,
-                                row.assignment,
-                                (1, 1, 1),
-                            )
-
-                    ax.text2D(
-                        -0.5,
-                        1.0,
-                        out_str,
-                        transform=ax.transAxes,
-                        fontsize=10,
-                        fontfamily="sans-serif",
-                        va="top",
-                        bbox=dict(boxstyle="round", ec="k", fc="k", alpha=0.5),
-                    )
-
-                    ax.legend()
-
-                    if show:
-
-                        def exit_program(event):
-                            exit()
-
-                        def next_plot(event):
-                            plt.close()
-
-                        axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-                        bnexit = Button(axexit, "Exit")
-                        bnexit.on_clicked(exit_program)
-                        axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
-                        bnnext = Button(axnext, "Next")
-                        bnnext.on_clicked(next_plot)
-                        if ccpn_flag:
-                            plt.show(windowTitle="", size=(1000, 500))
-                        else:
-                            plt.show()
-                    else:
-                        pdf.savefig()
-
-                    plt.close()
-
-                    if first:
-                        break
     run_log()
 
 
