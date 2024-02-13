@@ -35,6 +35,7 @@ import pandas as pd
 from tqdm import tqdm
 from rich import print
 from skimage.filters import threshold_otsu
+from pydantic import BaseModel
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -1206,6 +1207,40 @@ def create_plotly_figure(plot_data: PlottingDataForPlane):
     return fig
 
 
+class FitDataModel(BaseModel):
+    plane: int
+    clustid: int
+    assignment: str
+    memcnt: int
+    amp: float
+    height: float
+    center_x_ppm: float
+    center_y_ppm: float
+    fwhm_x_hz: float
+    fwhm_y_hz: float
+    lineshape: str
+    x_radius: float
+    y_radius: float
+    center_x: float
+    center_y: float
+    sigma_x: float
+    sigma_y: float
+    fraction: float
+
+
+def validate_fit_data(dict):
+    fit_data = FitDataModel(**dict)
+    return fit_data.model_dump()
+
+
+def validate_fit_dataframe(df):
+    validated_fit_data = []
+    for _, row in df.iterrows():
+        fit_data = validate_fit_data(row.to_dict())
+        validated_fit_data.append(fit_data)
+    return pd.DataFrame(validated_fit_data)
+
+
 @app.command(help="Interactive plots for checking fits")
 def check(
     fits: Path,
@@ -1222,6 +1257,7 @@ def check(
     ccount: int = 50,
     colors: Tuple[str, str] = ("#5e3c99", "#e66101"),
     verb: bool = False,
+    plotly: bool = False,
 ):
     """Interactive plots for checking fits
 
@@ -1271,7 +1307,7 @@ def check(
         "fwhm_y_hz",
         "lineshape",
     ]
-    fits = pd.read_csv(fits)
+    fits = validate_fit_dataframe(pd.read_csv(fits))
     args = {}
     # get dims from config file
     config_path = Path("peakipy.config")
@@ -1383,8 +1419,9 @@ def check(
                     plot_data, pdf, individual, label, ccpn_flag, show
                 )
                 # fig = create_plotly_figure(plot_data)
-                fig = create_plotly_figure(plot_data)
-                fig.show()
+                if plotly:
+                    fig = create_plotly_figure(plot_data)
+                    fig.show()
                 # surf = pn.pane.plotly.Plotly(fig)
                 # app = pn.Column(surf)
                 # app.show(threaded=True)
