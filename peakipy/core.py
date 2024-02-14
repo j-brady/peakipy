@@ -1751,6 +1751,9 @@ class Peaklist(Pseudo3D):
         return df
 
     def check_assignments(self):
+        # self.df["ASS"] = self.df.
+        self.df["ASS"] = self.df.ASS.astype(object)
+        self.df.loc[self.df["ASS"].isnull(), "ASS"] = "None_dummy_0"
         self.df["ASS"] = self.df.ASS.astype(str)
         duplicates_bool = self.df.ASS.duplicated()
         duplicates = self.df.ASS[duplicates_bool]

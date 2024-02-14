@@ -214,7 +214,7 @@ def read(
         "struc_size": struc_size,
     }
     # name of output peaklist
-    outname = peaklist_path.stem
+    outname = peaklist_path.parent / peaklist_path.stem
     cluster = True
 
     match peaklist_format:
@@ -267,7 +267,7 @@ def read(
             )
             cluster = False
             # don't overwrite the old .csv file
-            outname = outname + "_new"
+            outname = outname.parent / (outname.stem + "_new")
 
     peaks.update_df()
 
@@ -287,14 +287,14 @@ def read(
 
     match outfmt.value:
         case "csv":
-            outname = outname + ".csv"
+            outname = outname.with_suffix(".csv")
             data.to_csv(outname, float_format="%.4f", index=False)
         case "pkl":
-            outname = outname + ".pkl"
+            outname = outname.with_suffix(".pkl")
             data.to_pickle(outname)
 
     # write config file
-    config_path = Path("peakipy.config")
+    config_path = data_path.parent / Path("peakipy.config")
     config_kvs = [
         ("dims", dims),
         ("data_path", str(data_path)),
