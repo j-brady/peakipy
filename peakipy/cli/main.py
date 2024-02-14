@@ -1258,6 +1258,7 @@ def check(
     colors: Tuple[str, str] = ("#5e3c99", "#e66101"),
     verb: bool = False,
     plotly: bool = False,
+    config_path: Path = Path("peakipy.config"),
 ):
     """Interactive plots for checking fits
 
@@ -1310,7 +1311,6 @@ def check(
     fits = validate_fit_dataframe(pd.read_csv(fits))
     args = {}
     # get dims from config file
-    config_path = Path("peakipy.config")
     args, config = read_config(args, config_path)
     dims = config.get("dims", (1, 2, 3))
 
@@ -1421,7 +1421,7 @@ def check(
                 # fig = create_plotly_figure(plot_data)
                 if plotly:
                     fig = create_plotly_figure(plot_data)
-                    fig.show()
+                    return fig
                 # surf = pn.pane.plotly.Plotly(fig)
                 # app = pn.Column(surf)
                 # app.show(threaded=True)
