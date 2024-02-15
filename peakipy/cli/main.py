@@ -46,7 +46,9 @@ from matplotlib.widgets import Button
 
 import yaml
 import plotly.graph_objects as go
-import panel as pn
+import plotly.io as pio
+
+pio.templates.default = "plotly_dark"
 
 from peakipy.core import (
     Peaklist,
@@ -939,7 +941,7 @@ def simulate_lineshapes_from_fitted_peak_parameters(
 class PlottingDataForPlane:
     pseudo3D: Pseudo3D
     plane_id: int
-    plane: pd.DataFrame
+    plane_lineshape_parameters: pd.DataFrame
     X: np.array
     Y: np.array
     mask: np.array
@@ -996,11 +998,13 @@ class PlottingDataForPlane:
 
 def plot_data_is_valid(plot_data: PlottingDataForPlane) -> bool:
     if len(plot_data.x_plot) < 1 or len(plot_data.y_plot) < 1:
-        print(f"[red]Nothing to plot for cluster {int(plot_data.plane.clustid)}[/red]")
+        print(
+            f"[red]Nothing to plot for cluster {int(plot_data.plane_lineshape_parameters.clustid)}[/red]"
+        )
         print(f"[red]x={plot_data.x_plot},y={plot_data.y_plot}[/red]")
         print(
             df_to_rich_table(
-                plot_data.plane,
+                plot_data.plane_lineshape_parameters,
                 title="",
                 columns=bad_column_selection,
                 styles=bad_color_selection,
@@ -1013,7 +1017,7 @@ def plot_data_is_valid(plot_data: PlottingDataForPlane) -> bool:
         print(f"[red]Nothing to plot for cluster {int(plot_data.plane.clustid)}[/red]")
         print(
             df_to_rich_table(
-                plot_data.plane,
+                plot_data.plane_lineshape_parameters,
                 title="Bad plane",
                 columns=bad_column_selection,
                 styles=bad_color_selection,
@@ -1101,12 +1105,12 @@ def create_matplotlib_figure(
         ax.view_init(30, 120)
 
         # names = ",".join(plane.assignment)
-        title = f"Plane={plot_data.plane_id},Cluster={plot_data.plane.clustid.iloc[0]}"
+        title = f"Plane={plot_data.plane_id},Cluster={plot_data.plane_lineshape_parameters.clustid.iloc[0]}"
         plt.title(title)
         print(f"[green]Plotting: {title}[/green]")
         out_str = "Volumes (Heights)\n===========\n"
         # chi2s = []
-        for _, row in plot_data.plane.iterrows():
+        for _, row in plot_data.plane_lineshape_parameters.iterrows():
             out_str += f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
             if label:
                 ax.text(
@@ -1156,21 +1160,62 @@ def create_matplotlib_figure(
 
 def create_plotly_wireframe_lines(plot_data: PlottingDataForPlane):
     lines = []
-    show_legend = False
+    show_legend = lambda x: x < 1
+    showlegend = False
     # make simulated data wireframe
     line_marker = dict(color=plot_data.fit_color, width=4)
+    counter = 0
     for i, j, k in zip(plot_data.x_plot, plot_data.y_plot, plot_data.sim_plot):
-        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+        showlegend = show_legend(counter)
+        lines.append(
+            go.Scatter3d(
+                x=i,
+                y=j,
+                z=k,
+                mode="lines",
+                line=line_marker,
+                name="fit",
+                showlegend=showlegend,
+            )
+        )
+        counter += 1
     for i, j, k in zip(plot_data.x_plot.T, plot_data.y_plot.T, plot_data.sim_plot.T):
-        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+        lines.append(
+            go.Scatter3d(
+                x=i, y=j, z=k, mode="lines", line=line_marker, showlegend=showlegend
+            )
+        )
     # make experimental data wireframe
     line_marker = dict(color=plot_data.data_color, width=4)
+    counter = 0
     for i, j, k in zip(plot_data.x_plot, plot_data.y_plot, plot_data.masked_data):
-        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+        showlegend = show_legend(counter)
+        lines.append(
+            go.Scatter3d(
+                x=i,
+                y=j,
+                z=k,
+                mode="lines",
+                name="data",
+                line=line_marker,
+                showlegend=showlegend,
+            )
+        )
+        counter += 1
     for i, j, k in zip(plot_data.x_plot.T, plot_data.y_plot.T, plot_data.masked_data.T):
-        lines.append(go.Scatter3d(x=i, y=j, z=k, mode="lines", line=line_marker))
+        lines.append(
+            go.Scatter3d(
+                x=i, y=j, z=k, mode="lines", line=line_marker, showlegend=showlegend
+            )
+        )
 
     return lines
+
+
+def construct_surface_legend_string(row):
+    surface_legend = ""
+    surface_legend += row.assignment
+    return surface_legend
 
 
 def create_plotly_surfaces(plot_data: PlottingDataForPlane):
@@ -1180,7 +1225,12 @@ def create_plotly_surfaces(plot_data: PlottingDataForPlane):
         [val, f"rgb({', '.join('%d'%(i*255) for i in c[0:3])})"]
         for val, c in zip(color_scale_values, plot_data.single_colors)
     ]
-    for val, individual_peak in zip(color_scale_values, plot_data.sim_data_singles):
+    for val, individual_peak, row in zip(
+        color_scale_values,
+        plot_data.sim_data_singles,
+        plot_data.plane_lineshape_parameters.itertuples(),
+    ):
+        name = construct_surface_legend_string(row)
         colors = np.zeros(shape=individual_peak.shape) + val
         data.append(
             go.Surface(
@@ -1193,18 +1243,58 @@ def create_plotly_surfaces(plot_data: PlottingDataForPlane):
                 showscale=False,
                 cmin=0,
                 cmax=1,
+                name=name,
             )
         )
+    return data
+
+
+def create_residual_contours(plot_data: PlottingDataForPlane):
+    data = []
+    contours = go.Contour(x=plot_data.x_plot, y=plot_data.y_plot, z=plot_data.residual)
+    data.append(contours)
     return data
 
 
 def create_plotly_figure(plot_data: PlottingDataForPlane):
     lines = create_plotly_wireframe_lines(plot_data)
     surfaces = create_plotly_surfaces(plot_data)
+    # residuals = create_residual_contours(plot_data)
     fig = go.Figure(data=lines + surfaces)
-    layout = go.Layout(showlegend=False)
-    fig.update_layout(layout)
+    # layout = go.Layout(showlegend=True)
+    # fig.update_layout(layout)
+    # fig.update_traces(showlegend=True)
+    fig = update_axis_ranges(fig, plot_data)
     return fig
+
+
+def update_axis_ranges(fig, plot_data: PlottingDataForPlane):
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(range=[plot_data.x_plot.max(), plot_data.x_plot.min()]),
+            yaxis=dict(range=[plot_data.y_plot.max(), plot_data.y_plot.min()]),
+            annotations=make_annotations(plot_data),
+        )
+    )
+    return fig
+
+
+def make_annotations(plot_data: PlottingDataForPlane):
+    annotations = []
+    for row in plot_data.plane_lineshape_parameters.itertuples():
+        annotations.append(
+            dict(
+                showarrow=True,
+                x=row.center_x_ppm,
+                y=row.center_y_ppm,
+                z=row.height * 1.0,
+                text=row.assignment,
+                opacity=0.8,
+                textangle=0,
+                arrowsize=1,
+            )
+        )
+    return annotations
 
 
 class FitDataModel(BaseModel):
@@ -1334,7 +1424,7 @@ def check(
     data_color, fit_color = unpack_plotting_colors(colors)
     fits = get_fit_data_for_selected_peak_clusters(fits, clusters)
 
-    peak_clusters = fits.groupby("clustid")
+    peak_clusters = fits.query(f"plane=={selected_plane}").groupby("clustid")
 
     # make plotting meshes
     x = np.arange(pseudo3D.f2_size)

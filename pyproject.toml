@@ -44,6 +44,7 @@ pydantic = "^2.6.1"
 
 [tool.poetry.scripts]
 peakipy = 'peakipy.cli.main:app'
+peakipy-check = 'peakipy.cli.check_panel:app'
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
