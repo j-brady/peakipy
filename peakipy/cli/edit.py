@@ -713,12 +713,14 @@ class BokehScript:
         print(f"[yellow]Using LS = {lineshape}[/yellow]")
         if self.checkbox_group.active == []:
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
-            plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
+            # plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
+            plot_command = f"peakipy-check {self.TEMP_OUT_CSV} {self.data_path}"
         else:
             plane_index = self.select_plane.value
             print(f"[yellow]Only fitting plane {plane_index}[/yellow]")
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --plane {plane_index}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
-            plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane {plane_index}"
+            # plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane {plane_index} --show"
+            plot_command = f"peakipy-check {self.TEMP_OUT_CSV} {self.data_path}"
 
         print(f"[blue]{fit_command}[/blue]")
         self.fit_reports += fit_command + "<br>"

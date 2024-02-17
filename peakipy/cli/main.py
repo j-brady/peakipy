@@ -25,7 +25,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Tuple, List, Annotated
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 import typer
 import numpy as np
@@ -72,7 +72,6 @@ from peakipy.core import (
     deal_with_peaks_on_edge_of_spectrum,
 )
 from .fit import (
-    cpu_count,
     fit_peaks,
     FitPeaksInput,
 )
