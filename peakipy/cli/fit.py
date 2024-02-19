@@ -2,7 +2,8 @@
 """Fit and deconvolute NMR peaks: Functions used for running peakipy fit
 """
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Tuple
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -10,12 +11,18 @@ import pandas as pd
 from rich import print
 from rich.console import Console
 from pydantic import BaseModel
+from lmfit import Model, Parameter
+from lmfit.model import ModelResult
 
 from peakipy.core import (
     fix_params,
-    get_params,
     fit_first_plane,
     LoadData,
+    Lineshape,
+    pvoigt2d,
+    voigt2d,
+    pv_pv,
+    to_prefix,
 )
 
 console = Console()
@@ -28,6 +35,25 @@ tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
 # for printing dataframes
 column_selection = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
+
+
+@dataclass
+class FitPeaksArgs:
+    noise: float
+    dims: List[int] = field(default_factory=lambda: [0, 1, 2])
+    colors: Tuple[str] = ("#5e3c99", "#e66101")
+    max_cluster_size: Optional[int] = None
+    to_fix: List[str] = field(default_factory=lambda: ["fraction", "sigma", "center"])
+    xy_bounds: Tuple[float, float] = ((0, 0),)
+    vclist: Optional[Path] = (None,)
+    plane: Optional[List[int]] = (None,)
+    exclude_plane: Optional[List[int]] = (None,)
+    reference_plane_index: List[int] = ([],)
+    initial_fit_threshold: Optional[float] = (None,)
+    mp: bool = (True,)
+    plot: Optional[Path] = (None,)
+    show: bool = (False,)
+    verb: bool = (False,)
 
 
 class FitPeaksInput:
@@ -207,6 +233,154 @@ def set_parameters_to_fix_during_fit(first_plane_fit_params, to_fix):
     return parameter_set, float_str
 
 
+def get_default_lineshape_param_names(lineshape: Lineshape):
+    match lineshape:
+        case Lineshape.PV | Lineshape.G | Lineshape.L:
+            param_names = Model(pvoigt2d).param_names
+        case Lineshape.V:
+            param_names = Model(voigt2d).param_names
+        case Lineshape.PV_PV:
+            param_names = Model(pv_pv).param_names
+    return param_names
+
+
+def split_parameter_sets_by_peak(
+    default_param_names: List, params: List[Tuple[str, Parameter]]
+):
+    """params is a list of tuples where the first element of each tuple is a
+    prefixed parameter name and the second element is the corresponding
+    Parameter object. This is created by calling .items() on a Parameters
+    object
+    """
+    number_of_fitted_parameters = len(params)
+    number_of_default_params = len(default_param_names)
+    number_of_fitted_peaks = int(number_of_fitted_parameters / number_of_default_params)
+    split_param_items = [
+        params[i : (i + number_of_default_params)]
+        for i in range(0, number_of_fitted_parameters, number_of_default_params)
+    ]
+    assert len(split_param_items) == number_of_fitted_peaks
+    return split_param_items
+
+
+def create_parameter_dict(prefix, parameters: List[Tuple[str, Parameter]]):
+    parameter_dict = dict(prefix=prefix)
+    parameter_dict.update({k.replace(prefix, ""): v.value for k, v in parameters})
+    parameter_dict.update(
+        {f"{k.replace(prefix,'')}_stderr": v.stderr for k, v in parameters}
+    )
+    return parameter_dict
+
+
+def get_prefix_from_parameter_names(
+    default_param_names: List, parameters: List[Tuple[str, Parameter]]
+):
+    prefixes = [
+        param_key_val[0].replace(default_param_name, "")
+        for param_key_val, default_param_name in zip(parameters, default_param_names)
+    ]
+    assert len(set(prefixes)) == 1
+    return prefixes[0]
+
+
+def unpack_fitted_parameters_for_lineshape(
+    lineshape: Lineshape, params: List[dict], plane_number: int
+):
+    default_param_names = get_default_lineshape_param_names(lineshape)
+    split_parameter_names = split_parameter_sets_by_peak(default_param_names, params)
+    prefixes = [
+        get_prefix_from_parameter_names(default_param_names, i)
+        for i in split_parameter_names
+    ]
+    unpacked_params = []
+    for parameter_names, prefix in zip(split_parameter_names, prefixes):
+        parameter_dict = create_parameter_dict(prefix, parameter_names)
+        parameter_dict.update({"plane": plane_number})
+        unpacked_params.append(parameter_dict)
+    return unpacked_params
+
+
+def perform_initial_lineshape_fit_on_cluster_of_peaks(
+    cluster_of_peaks, fit_input: FitPeaksInput
+):
+    fit_result = fit_first_plane(
+        cluster_of_peaks,
+        fit_input.data,
+        # norm(summed_planes),
+        fit_input.args.get("uc_dics"),
+        lineshape=fit_input.args.get("lineshape"),
+        xy_bounds=fit_input.args.get("xy_bounds"),
+        verbose=fit_input.args.get("verb"),
+        noise=fit_input.args.get("noise"),
+        fit_method=fit_input.config.get("fit_method", "leastsq"),
+        reference_plane_indices=fit_input.args.get("reference_plane_indices"),
+        threshold=fit_input.args.get("initial_fit_threshold"),
+    )
+    return fit_result
+
+
+def refit_peaks_with_constraints(fit_input: FitPeaksInput, fit_result: FitPeaksResult):
+    fit_results = []
+    for num, d in enumerate(fit_input.data):
+        plane_number = fit_input.plane_numbers[num]
+        fit_result.out.fit(
+            data=d[fit_result.mask],
+            params=fit_result.out.params,
+            weights=1.0
+            / np.array(
+                [fit_input.args.get("noise")] * len(np.ravel(d[fit_result.mask]))
+            ),
+        )
+        fit_results.extend(
+            unpack_fitted_parameters_for_lineshape(
+                fit_input.args.get("lineshape"),
+                list(fit_result.out.params.items()),
+                plane_number,
+            )
+        )
+        # fit_report = fit_result.out.fit_report()
+        # log.write(
+    return fit_results
+
+
+def merge_unpacked_parameters_with_metadata(cluster_fit_df, group_of_peaks_df):
+    group_of_peaks_df["prefix"] = group_of_peaks_df.ASS.apply(to_prefix)
+    merged_cluster_fit_df = cluster_fit_df.merge(group_of_peaks_df, on="prefix")
+    return merged_cluster_fit_df
+
+
+def update_cluster_df_with_fit_statistics(cluster_df, fit_result: ModelResult):
+    cluster_df["chisqr"] = fit_result.chisqr
+    cluster_df["redchi"] = fit_result.redchi
+    cluster_df["residual_sum"] = np.sum(fit_result.residual)
+    cluster_df["aic"] = fit_result.aic
+    cluster_df["bic"] = fit_result.bic
+    cluster_df["nfev"] = fit_result.nfev
+    cluster_df["ndata"] = fit_result.ndata
+    return cluster_df
+
+
+def rename_columns_for_compatibility(df):
+    mapping = {
+        "amplitude": "amp",
+        "amplitude_stderr": "amp_err",
+        "X_AXIS": "init_center_x",
+        "Y_AXIS": "init_center_y",
+        "ASS": "assignment",
+        "MEMCNT": "memcnt",
+        "X_RADIUS": "x_radius",
+        "Y_RADIUS": "y_radius",
+    }
+    df = df.rename(columns=mapping)
+    return df
+
+
+def add_vclist_to_df(fit_input: FitPeaksInput, df: pd.DataFrame):
+    vclist_data = fit_input.args.get("vclist_data")
+    df["vclist"] = df.plane.apply(lambda x: vclist_data[x])
+    return df
+
+
 def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     """Fit set of peak clusters to lineshape model
 
@@ -219,266 +393,33 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     :returns: Data structure containing pd.DataFrame with the fitted results and a log
     :rtype: FitPeaksResult
     """
-    # group peaks based on CLUSTID
-    groups = peaks.groupby("CLUSTID")
+    peak_clusters = peaks.groupby("CLUSTID")
+    max_cluster_size = fit_input.args.get("max_cluster_size")
+    filtered_peaks = filter_peak_clusters_by_max_cluster_size(
+        peak_clusters, max_cluster_size
+    )
+    peak_clusters = filtered_peaks.groupby("CLUSTID")
     # setup arguments
     to_fix = fit_input.args.get("to_fix")
-    noise = fit_input.args.get("noise")
-    verb = fit_input.args.get("verb")
-    initial_fit_threshold = fit_input.args.get("initial_fit_threshold")
-    reference_plane_indices = fit_input.args.get("reference_plane_indices")
     lineshape = fit_input.args.get("lineshape")
-    xy_bounds = fit_input.args.get("xy_bounds")
-    vclist = fit_input.args.get("vclist")
-    uc_dics = fit_input.args.get("uc_dics")
-
-    # for saving data, currently not using errs for center and sigma
-    amps = []
-    amp_errs = []
-
-    center_xs = []
-    init_center_xs = []
-    # center_x_errs = []
-
-    center_ys = []
-    init_center_ys = []
-    # center_y_errs = []
-
-    sigma_ys = []
-    # sigma_y_errs = []
-
-    sigma_xs = []
-    # sigma_x_errs = []
-
-    match lineshape:
-        case lineshape.V:
-            # lorentzian linewidth
-            gamma_xs = []
-            gamma_ys = []
-            fractions = []
-
-        case lineshape.PV_PV:
-            # seperate fractions for each dim
-            fractions_x = []
-            fractions_y = []
-        case _:
-            fractions = []
-
-    # lists for saving data
-    names = []
-    assign = []
-    clustids = []
-    memcnts = []
-    planes = []
-    x_radii = []
-    y_radii = []
-    x_radii_ppm = []
-    y_radii_ppm = []
-    lineshapes = []
-    # errors
-    chisqrs = []
-    redchis = []
-    aics = []
-    res_sum = []
-
-    # iterate over groups of peaks
     out_str = ""
-    for name, group in groups:
-        #  max cluster size
-        len_group = len(group)
-        if len_group <= fit_input.args.get("max_cluster_size"):
-            if len_group == 1:
-                peak_str = "peak"
-            else:
-                peak_str = "peaks"
-
-            out_str += f"""
-
-            ####################################
-            Fitting cluster of {len_group} {peak_str}
-            ####################################
-            """
-            # fits sum of all planes first
-            fit_result = fit_first_plane(
-                group,
-                fit_input.data,
-                # norm(summed_planes),
-                uc_dics,
-                lineshape=lineshape,
-                xy_bounds=xy_bounds,
-                verbose=verb,
-                noise=noise,
-                fit_method=fit_input.config.get("fit_method", "leastsq"),
-                reference_plane_indices=reference_plane_indices,
-                threshold=initial_fit_threshold,
-            )
-            fit_result.plot(
-                plot_path=fit_input.args.get("plot"),
-                show=fit_input.args.get("show"),
-                mp=fit_input.args.get("mp"),
-            )
-            # jack_knife_result = fit_result.jackknife()
-            # print("JackKnife", jack_knife_result.mean, jack_knife_result.std)
-            first = fit_result.out
-            mask = fit_result.mask
-            #            log.write(
-            out_str += fit_result.fit_str
-            out_str += f"""
-        ------------------------------------
-                   Summed planes
-        ------------------------------------
-        {first.fit_report()}
-                        """
-            #            )
-            # fix sigma center and fraction parameters
-            # could add an option to select params to fix
-            match to_fix:
-                case None | () | []:
-                    float_str = "Floating all parameters"
-                case ["None"] | ["none"]:
-                    float_str = "Floating all parameters"
-                case _:
-                    float_str = f"Fixing parameters: {to_fix}"
-                    fix_params(first.params, to_fix)
-            if verb:
-                console.print(float_str, style="magenta")
-
-            out_str += float_str + "\n"
-
-            for num, d in enumerate(fit_input.data):
-                plane_number = fit_input.plane_numbers[num]
-                first.fit(
-                    data=d[mask],
-                    params=first.params,
-                    weights=1.0 / np.array([noise] * len(np.ravel(d[mask]))),
-                )
-                fit_report = first.fit_report()
-                # log.write(
-                out_str += f"""
-        ------------------------------------
-                     Plane = {num+1}
-        ------------------------------------
-        {fit_report}
-                        """
-                #               )
-                if verb:
-                    console.print(fit_report, style="bold")
-
-                amp, amp_err, name = get_params(first.params, "amplitude")
-                cen_x, cen_x_err, cx_name = get_params(first.params, "center_x")
-                cen_y, cen_y_err, cy_name = get_params(first.params, "center_y")
-                sig_x, sig_x_err, sx_name = get_params(first.params, "sigma_x")
-                sig_y, sig_y_err, sy_name = get_params(first.params, "sigma_y")
-                # currently chi square is calculated for all peaks in cluster (not individual peaks)
-                # chi2 - residual sum of squares
-                chisqrs.extend([first.chisqr for _ in sy_name])
-                # reduced chi2
-                redchis.extend([first.redchi for _ in sy_name])
-                # Akaike Information criterion
-                aics.extend([first.aic for _ in sy_name])
-                # residual sum of squares
-                res_sum.extend([np.sum(first.residual) for _ in sy_name])
-
-                # deal with lineshape specific parameters
-                match lineshape:
-                    case lineshape.PV_PV:
-                        frac_x, frac_err_x, name = get_params(
-                            first.params, "fraction_x"
-                        )
-                        frac_y, frac_err_y, name = get_params(
-                            first.params, "fraction_y"
-                        )
-                        fractions_x.extend(frac_x)
-                        fractions_y.extend(frac_y)
-                    case lineshape.V:
-                        frac, frac_err, name = get_params(first.params, "fraction")
-                        gam_x, gam_x_err, gx_name = get_params(first.params, "gamma_x")
-                        gam_y, gam_y_err, gy_name = get_params(first.params, "gamma_y")
-                        gamma_xs.extend(gam_x)
-                        gamma_ys.extend(gam_y)
-                        fractions.extend(frac)
-                    case _:
-                        frac, frac_err, name = get_params(first.params, "fraction")
-                        fractions.extend(frac)
-
-                # extend lists with fit data
-                amps.extend(amp)
-                amp_errs.extend(amp_err)
-                center_xs.extend(cen_x)
-                init_center_xs.extend(group.X_AXISf)
-                # center_x_errs.extend(cen_x_err)
-                center_ys.extend(cen_y)
-                init_center_ys.extend(group.Y_AXISf)
-                # center_y_errs.extend(cen_y_err)
-                sigma_xs.extend(sig_x)
-                # sigma_x_errs.extend(sig_x_err)
-                sigma_ys.extend(sig_y)
-                # sigma_y_errs.extend(sig_y_err)
-                # add plane number, this should map to vclist
-                planes.extend([plane_number for _ in amp])
-                lineshapes.extend([lineshape.value for _ in amp])
-                #  get prefix for fit
-                names.extend([first.model.prefix] * len(name))
-                assign.extend(group["ASS"])
-                clustids.extend(group["CLUSTID"])
-                memcnts.extend(group["MEMCNT"])
-                x_radii.extend(group["X_RADIUS"])
-                y_radii.extend(group["Y_RADIUS"])
-                x_radii_ppm.extend(group["X_RADIUS_PPM"])
-                y_radii_ppm.extend(group["Y_RADIUS_PPM"])
-
-    df_dic = {
-        "fit_prefix": names,
-        "assignment": assign,
-        "amp": amps,
-        "amp_err": amp_errs,
-        # "height": heights,
-        # "height_err": height_errs,
-        "center_x": center_xs,
-        "init_center_x": init_center_xs,
-        # "center_x_err": center_x_errs,
-        "center_y": center_ys,
-        "init_center_y": init_center_ys,
-        # "center_y_err": center_y_errs,
-        "sigma_x": sigma_xs,
-        # "sigma_x_err": sigma_x_errs,
-        "sigma_y": sigma_ys,
-        # "sigma_y_err": sigma_y_errs,
-        "clustid": clustids,
-        "memcnt": memcnts,
-        "plane": planes,
-        "x_radius": x_radii,
-        "y_radius": y_radii,
-        "x_radius_ppm": x_radii_ppm,
-        "y_radius_ppm": y_radii_ppm,
-        "lineshape": lineshapes,
-        "aic": aics,
-        "chisqr": chisqrs,
-        "redchi": redchis,
-        "residual_sum": res_sum,
-        # "slope": slopes,
-        # "intercept": intercepts
-    }
-
-    # lineshape specific
-    match lineshape:
-        case lineshape.PV_PV:
-            df_dic["fraction_x"] = fractions_x
-            df_dic["fraction_y"] = fractions_y
-        case lineshape.V:
-            df_dic["gamma_x"] = gamma_xs
-            df_dic["gamma_y"] = gamma_ys
-            df_dic["fraction"] = fractions
-        case _:
-            df_dic["fraction"] = fractions
-
-    #  make dataframe
-    df = pd.DataFrame(df_dic)
-    # Fill nan values
-    df.fillna(value=np.nan, inplace=True)
-    # vclist
-    if vclist:
-        vclist_data = fit_input.args.get("vclist_data")
-        df["vclist"] = df.plane.apply(lambda x: vclist_data[x])
-    #  output data
+    cluster_dfs = []
+    for name, peak_cluster in peak_clusters:
+        fit_result = perform_initial_lineshape_fit_on_cluster_of_peaks(
+            peak_cluster, fit_input
+        )
+        fit_result.out.params, float_str = set_parameters_to_fix_during_fit(
+            fit_result.out.params, to_fix
+        )
+        fit_results = refit_peaks_with_constraints(fit_input, fit_result)
+        cluster_df = pd.DataFrame(fit_results)
+        cluster_df = update_cluster_df_with_fit_statistics(cluster_df, fit_result.out)
+        cluster_df["clustid"] = name
+        cluster_df = merge_unpacked_parameters_with_metadata(cluster_df, peak_cluster)
+        cluster_dfs.append(cluster_df)
+    df = pd.concat(cluster_dfs, ignore_index=True)
+    df["lineshape"] = lineshape.value
+    if fit_input.args.get("vclist"):
+        df = add_vclist_to_df(fit_input, df)
+    df = rename_columns_for_compatibility(df)
     return FitPeaksResult(df=df, log=out_str)
