@@ -469,12 +469,14 @@ def get_params(params, name):
     ps = []
     ps_err = []
     names = []
+    prefixes = []
     for k in params:
         if name in k:
             ps.append(params[k].value)
             ps_err.append(params[k].stderr)
             names.append(k)
-    return ps, ps_err, names
+            prefixes.append(k.split(name)[0])
+    return ps, ps_err, names, prefixes
 
 
 def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):

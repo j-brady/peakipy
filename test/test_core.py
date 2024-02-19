@@ -179,19 +179,20 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(pars["fraction"].vary, False)
 
     def test_get_params(self):
-        mod = Model(pvoigt2d)
-        pars = mod.make_params(center_x=20.0, center_y=30.0)
-        pars["center_x"].stderr = 1.0
-        pars["center_y"].stderr = 2.0
-        ps, ps_err, names = get_params(pars, "center")
+        mod = Model(pvoigt2d, prefix="p1_")
+        pars = mod.make_params(p1_center_x=20.0, p1_center_y=30.0)
+        pars["p1_center_x"].stderr = 1.0
+        pars["p1_center_y"].stderr = 2.0
+        ps, ps_err, names, prefixes = get_params(pars, "center")
         #  get index of values
-        cen_x = names.index("center_x")
-        cen_y = names.index("center_y")
+        cen_x = names.index("p1_center_x")
+        cen_y = names.index("p1_center_y")
 
         self.assertEqual(ps[cen_x], 20.0)
         self.assertEqual(ps[cen_y], 30.0)
         self.assertEqual(ps_err[cen_x], 1.0)
         self.assertEqual(ps_err[cen_y], 2.0)
+        self.assertEqual(prefixes[cen_y], "p1_")
 
     def test_make_param_dict(self):
         peaks = pd.DataFrame(

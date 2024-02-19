@@ -670,8 +670,11 @@ def fit(
                 ),
                 axis=1,
             )
+            print("VOIGT")
+            print(df[["amp", "amp_err", "height"]])
             df["height_err"] = df.apply(
-                lambda x: x.amp_err * (x.height / x.amp), axis=1
+                lambda x: x.amp_err * (x.height / x.amp) if x.amp_err != None else 0.0,
+                axis=1,
             )
             df["fwhm_g_x"] = df.sigma_x.apply(
                 lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
@@ -1314,11 +1317,32 @@ class FitDataModel(BaseModel):
     center_y: float
     sigma_x: float
     sigma_y: float
+
+
+class FitDataModelPVGL(FitDataModel):
     fraction: float
 
 
+class FitDataModelVoigt(FitDataModel):
+    fraction: float
+    gamma_x: float
+    gamma_y: float
+
+
+class FitDataModelPVPV(FitDataModel):
+    fraction_x: float
+    fraction_y: float
+
+
 def validate_fit_data(dict):
-    fit_data = FitDataModel(**dict)
+    lineshape = dict.get("lineshape")
+    if lineshape in ["PV", "G", "L"]:
+        fit_data = FitDataModelPVGL(**dict)
+    elif lineshape == "V":
+        fit_data = FitDataModelVoigt(**dict)
+    else:
+        fit_data = FitDataModelPVPV(**dict)
+
     return fit_data.model_dump()
 
 

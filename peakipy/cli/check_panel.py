@@ -10,10 +10,6 @@ from peakipy.cli.main import check, validate_fit_dataframe
 pn.extension()
 pn.config.theme = "dark"
 
-global fits_path
-global data_path
-global config_path
-
 
 @dataclass
 class Data:
@@ -114,7 +110,4 @@ def check_panel(
 
 
 if __name__ == "__main__":
-    # fits_path = Path("../../test/test_protein_L/fits.csv")
-    # data_path = Path("../../test/test_protein_L/test1.ft2")
-    # config_path = Path("../../test/test_protein_L/peakipy.config")
     app()
