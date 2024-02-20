@@ -25,6 +25,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 from enum import Enum
+from dataclasses import dataclass, field
 
 import numpy as np
 import nmrglue as ng
@@ -479,6 +480,38 @@ def get_params(params, name):
     return ps, ps_err, names, prefixes
 
 
+@dataclass
+class PeakLimits:
+    peak: pd.DataFrame
+    data: np.array
+    min_x: int = field(init=False)
+    max_x: int = field(init=False)
+    min_y: int = field(init=False)
+    max_y: int = field(init=False)
+
+    def __post_init__(self):
+        self.max_y = int(self.peak.Y_AXIS + self.peak.YW) + 1
+        if self.max_y > self.data.shape[0]:
+            self.max_y = self.data.shape[0]
+        self.max_x = int(self.peak.X_AXIS + self.peak.XW) + 1
+        if self.max_x > self.data.shape[1]:
+            self.max_x = self.data.shape[1]
+
+        self.min_y = int(self.peak.Y_AXIS - self.peak.YW)
+        if self.min_y < 0:
+            self.min_y = 0
+        self.min_x = int(self.peak.X_AXIS - self.peak.XW)
+        if self.min_x < 0:
+            self.min_x = 0
+
+
+def estimate_amplitude(peak, data):
+    assert len(data.shape) == 2
+    limits = PeakLimits(peak, data)
+    amplitude_est = data[limits.min_y : limits.max_y, limits.min_x : limits.max_x].sum()
+    return amplitude_est
+
+
 def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):
     """Make dict of parameter names using prefix"""
 
@@ -490,11 +523,7 @@ def make_param_dict(peaks, data, lineshape: Lineshape = Lineshape.PV):
         param_dict[str_form("center_x")] = peak.X_AXISf
         param_dict[str_form("center_y")] = peak.Y_AXISf
         # estimate peak volume
-        amplitude_est = data[
-            int(peak.Y_AXIS) - int(peak.YW) : int(peak.Y_AXIS) + int(peak.YW) + 1,
-            int(peak.X_AXIS) - int(peak.XW) : int(peak.X_AXIS) + int(peak.XW) + 1,
-        ].sum()
-
+        amplitude_est = estimate_amplitude(peak, data)
         param_dict[str_form("amplitude")] = amplitude_est
         # sigma linewidth esimate
         param_dict[str_form("sigma_x")] = peak.XW / 2.0
@@ -566,7 +595,11 @@ def to_prefix(x):
 
 
 def make_models(
-    model, peaks, data, lineshape: Lineshape = Lineshape.PV, xy_bounds=None
+    model,
+    peaks,
+    data,
+    lineshape: Lineshape = Lineshape.PV,
+    xy_bounds=None,
 ):
     """Make composite models for multiple peaks
 
@@ -596,7 +629,11 @@ def make_models(
         # make model for first peak
         mod = Model(model, prefix="%s" % to_prefix(peaks.ASS.iloc[0]))
         # add parameters
-        param_dict = make_param_dict(peaks, data, lineshape=lineshape)
+        param_dict = make_param_dict(
+            peaks,
+            data,
+            lineshape=lineshape,
+        )
         p_guess = mod.make_params(**param_dict)
 
     elif len(peaks) > 1:
@@ -606,7 +643,11 @@ def make_models(
         for _, peak in remaining_peaks:
             mod += Model(model, prefix="%s" % to_prefix(peak.ASS))
 
-        param_dict = make_param_dict(peaks, data, lineshape=lineshape)
+        param_dict = make_param_dict(
+            peaks,
+            data,
+            lineshape=lineshape,
+        )
         p_guess = mod.make_params(**param_dict)
         # add Peak params to p_guess
 
@@ -890,9 +931,6 @@ def fit_first_plane(
 
     """
     lineshape_function = get_lineshape_function(lineshape)
-    mod, p_guess = make_models(
-        lineshape_function, group, data, lineshape=lineshape, xy_bounds=xy_bounds
-    )
 
     first_plane_data = data[0]
     mask, peak = make_mask_from_peak_cluster(group, first_plane_data)
@@ -909,7 +947,16 @@ def fit_first_plane(
     max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
         data.shape, max_x, min_x, max_y, min_y
     )
-
+    selected_data = select_reference_planes_using_indices(
+        data, reference_plane_indices
+    ).sum(axis=0)
+    mod, p_guess = make_models(
+        lineshape_function,
+        group,
+        selected_data,
+        lineshape=lineshape,
+        xy_bounds=xy_bounds,
+    )
     peak_slices = slice_peaks_from_data_using_mask(data, mask)
     peak_slices = select_reference_planes_using_indices(
         peak_slices, reference_plane_indices

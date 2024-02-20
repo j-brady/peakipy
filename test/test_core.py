@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+from collections import namedtuple
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -24,6 +25,7 @@ from peakipy.core import (
     select_reference_planes_using_indices,
     select_planes_above_threshold_from_masked_data,
     slice_peaks_from_data_using_mask,
+    estimate_amplitude,
 )
 
 
@@ -105,6 +107,48 @@ def test_select_planes_above_threshold_from_masked_data():
         select_planes_above_threshold_from_masked_data(peak_slices, threshold),
         peak_slices,
     )
+
+
+def test_make_param_dict():
+    selected_planes = [1, 2]
+    data = np.ones((4, 10, 5))
+    expected_shape = (2, 10, 5)
+    actual_shape = data[np.array(selected_planes)].shape
+    assert expected_shape == actual_shape
+
+
+def test_make_param_dict_sum():
+    data = np.ones((4, 10, 5))
+    expected_sum = 200
+    actual_sum = data.sum()
+    assert expected_sum == actual_sum
+
+
+def test_make_param_dict_selected():
+    selected_planes = [1, 2]
+    data = np.ones((4, 10, 5))
+    data = data[np.array(selected_planes)]
+    expected_sum = 100
+    actual_sum = data.sum()
+    assert expected_sum == actual_sum
+
+
+def test_estimate_amplitude():
+    peak = namedtuple("peak", ["X_AXIS", "XW", "Y_AXIS", "YW"])
+    p = peak(5, 2, 3, 2)
+    data = np.ones((20, 10))
+    expected_result = 25
+    actual_result = estimate_amplitude(p, data)
+    assert expected_result == actual_result
+
+
+def test_estimate_amplitude_invalid_indices():
+    peak = namedtuple("peak", ["X_AXIS", "XW", "Y_AXIS", "YW"])
+    p = peak(1, 2, 3, 2)
+    data = np.ones((20, 10))
+    expected_result = 20
+    actual_result = estimate_amplitude(p, data)
+    assert expected_result == actual_result
 
 
 class TestCoreFunctions(unittest.TestCase):
