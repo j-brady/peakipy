@@ -70,10 +70,20 @@ from peakipy.core import (
     OutFmt,
     get_limits_for_axis_in_points,
     deal_with_peaks_on_edge_of_spectrum,
+    calculate_fwhm_for_voigt_lineshape,
+    calculate_height_for_voigt_lineshape,
+    calculate_fwhm_for_pseudo_voigt_lineshape,
+    calculate_height_for_pseudo_voigt_lineshape,
+    calculate_height_for_gaussian_lineshape,
+    calculate_height_for_lorentzian_lineshape,
+    calculate_height_for_pv_pv_lineshape,
+    calculate_peak_centers_in_ppm,
+    calculate_peak_linewidths_in_hz,
 )
 from .fit import (
-    fit_peaks,
+    fit_peak_clusters,
     FitPeaksInput,
+    FitPeaksArgs,
 )
 from .edit import BokehScript
 from .spec import yaml_file
@@ -374,6 +384,218 @@ def read(
     )
 
 
+def calculate_lineshape_specific_height_and_fwhm(
+    lineshape: Lineshape, df: pd.DataFrame
+):
+    match lineshape:
+        case lineshape.V:
+            df = calculate_height_for_voigt_lineshape(df)
+            df = calculate_fwhm_for_voigt_lineshape(df)
+
+        case lineshape.PV:
+            df = calculate_height_for_pseudo_voigt_lineshape(df)
+            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
+
+        case lineshape.G:
+            df = calculate_height_for_gaussian_lineshape(df)
+            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
+
+        case lineshape.L:
+            df = calculate_height_for_lorentzian_lineshape(df)
+            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
+
+        case lineshape.PV_PV:
+            df = calculate_height_for_pv_pv_lineshape(df)
+            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
+        case _:
+            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
+    return df
+
+
+def get_vclist(vclist, args):
+    # read vclist
+    if vclist is None:
+        vclist = False
+    elif vclist.exists():
+        vclist_data = np.genfromtxt(vclist)
+        args["vclist_data"] = vclist_data
+        vclist = True
+    else:
+        raise Exception("vclist not found...")
+
+    args["vclist"] = vclist
+    return args
+
+
+def check_data_shape_is_consistent_with_dims(peakipy_data):
+    # check data shape is consistent with dims
+    if len(peakipy_data.dims) != len(peakipy_data.data.shape):
+        print(
+            f"Dims are {peakipy_data.dims} while data shape is {peakipy_data.data.shape}?"
+        )
+        exit()
+
+
+def select_specified_planes(plane, peakipy_data):
+    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
+    # only fit specified planes
+    if plane:
+        inds = [i for i in plane]
+        data_inds = [
+            (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
+        ]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
+            data_inds
+        ]
+        peakipy_data.data = peakipy_data.data[data_inds]
+        print(
+            "[yellow]Using only planes {plane} data now has the following shape[/yellow]",
+            peakipy_data.data.shape,
+        )
+        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
+            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
+            exit()
+    return plane_numbers, peakipy_data
+
+
+def select_specified_planes(plane, peakipy_data):
+    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
+    # only fit specified planes
+    if plane:
+        inds = [i for i in plane]
+        data_inds = [
+            (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
+        ]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
+            data_inds
+        ]
+        peakipy_data.data = peakipy_data.data[data_inds]
+        print(
+            "[yellow]Using only planes {plane} data now has the following shape[/yellow]",
+            peakipy_data.data.shape,
+        )
+        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
+            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
+            exit()
+    return plane_numbers, peakipy_data
+
+
+def exclude_specified_planes(exclude_plane, peakipy_data):
+    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
+    # do not fit these planes
+    if exclude_plane:
+        inds = [i for i in exclude_plane]
+        data_inds = [
+            (i not in inds)
+            for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
+        ]
+        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
+            data_inds
+        ]
+        peakipy_data.data = peakipy_data.data[data_inds]
+        print(
+            f"[yellow]Excluding planes {exclude_plane} data now has the following shape[/yellow]",
+            peakipy_data.data.shape,
+        )
+        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
+            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
+            exit()
+    return plane_numbers, peakipy_data
+
+
+def check_for_include_column_and_add_if_missing(peakipy_data):
+    # only include peaks with 'include'
+    if "include" in peakipy_data.df.columns:
+        pass
+    else:
+        # for compatibility
+        peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
+    return peakipy_data
+
+
+def remove_excluded_peaks(peakipy_data):
+    if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
+        excluded = peakipy_data.df[peakipy_data.df.include != "yes"][column_selection]
+        table = df_to_rich_table(
+            excluded,
+            title="[yellow] Excluded peaks [/yellow]",
+            columns=excluded.columns,
+            styles=["yellow" for i in excluded.columns],
+        )
+        print(table)
+        peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
+    return peakipy_data
+
+
+def warn_if_trying_to_fit_large_clusters(max_cluster_size, peakipy_data):
+    if max_cluster_size is None:
+        max_cluster_size = peakipy_data.df.MEMCNT.max()
+        if peakipy_data.df.MEMCNT.max() > 10:
+            print(
+                f"""[red]
+                ##################################################################
+                You have some clusters of as many as {max_cluster_size} peaks.
+                You may want to consider reducing the size of your clusters as the
+                fits will struggle.
+
+                Otherwise you can use the --max-cluster-size flag to exclude large
+                clusters
+                ##################################################################
+            [/red]"""
+            )
+    else:
+        max_cluster_size = max_cluster_size
+    return max_cluster_size
+
+
+def update_linewidths_from_hz_to_points(peakipy_data):
+    """in case they were adjusted when running edit.py"""
+    peakipy_data.df["XW"] = peakipy_data.df.XW_HZ * peakipy_data.pt_per_hz_f2
+    peakipy_data.df["YW"] = peakipy_data.df.YW_HZ * peakipy_data.pt_per_hz_f1
+    return peakipy_data
+
+
+def update_peak_positions_from_ppm_to_points(peakipy_data):
+    # convert peak positions from ppm to points in case they were adjusted running edit.py
+    peakipy_data.df["X_AXIS"] = peakipy_data.df.X_PPM.apply(
+        lambda x: peakipy_data.uc_f2(x, "PPM")
+    )
+    peakipy_data.df["Y_AXIS"] = peakipy_data.df.Y_PPM.apply(
+        lambda x: peakipy_data.uc_f1(x, "PPM")
+    )
+    peakipy_data.df["X_AXISf"] = peakipy_data.df.X_PPM.apply(
+        lambda x: peakipy_data.uc_f2.f(x, "PPM")
+    )
+    peakipy_data.df["Y_AXISf"] = peakipy_data.df.Y_PPM.apply(
+        lambda x: peakipy_data.uc_f1.f(x, "PPM")
+    )
+    return peakipy_data
+
+
+def unpack_xy_bounds(xy_bounds, peakipy_data):
+    match xy_bounds:
+        case (0, 0):
+            xy_bounds = None
+        case (x, y):
+            # convert ppm to points
+            xy_bounds = list(xy_bounds)
+            xy_bounds[0] = xy_bounds[0] * peakipy_data.pt_per_ppm_f2
+            xy_bounds[1] = xy_bounds[1] * peakipy_data.pt_per_ppm_f1
+    return xy_bounds
+
+
+def save_data(df, output_name):
+    suffix = output_name.suffix
+    if suffix == ".csv":
+        df.to_csv(output_name, float_format="%.4f", index=False)
+
+    elif suffix == ".tab":
+        df.to_csv(output_name, sep="\t", float_format="%.4f", index=False)
+
+    else:
+        df.to_pickle(output_name)
+
+
 reference_plane_index_help = (
     "Select planes to use for initial estimation of lineshape parameters"
 )
@@ -396,9 +618,7 @@ def fit(
     ] = [],
     initial_fit_threshold: Optional[float] = None,
     mp: bool = True,
-    plot: Optional[Path] = None,
-    show: bool = False,
-    verb: bool = False,
+    verbose: bool = False,
 ):
     """Fit NMR data to lineshape models and deconvolute overlapping peaks
 
@@ -436,13 +656,6 @@ def fit(
         intensities above this threshold will be included in the intial fit of summed planes.
     mp : bool
         Use multiprocessing [default: True]
-    plot : Optional[Path]
-        Whether to plot wireframe fits for each peak
-        (saved into Path provided) [default: None]
-    show : bool
-        Whether to show (using plt.show()) wireframe
-        fits for each peak. Only works if Path is provided to the plot
-        argument
     verb : bool
         Print what's going on
     """
@@ -455,153 +668,36 @@ def fit(
     args, config = read_config(args)
     dims = config.get("dims", [0, 1, 2])
     peakipy_data = LoadData(peaklist_path, data_path, dims=dims)
+    peakipy_data = check_for_include_column_and_add_if_missing(peakipy_data)
+    peakipy_data = remove_excluded_peaks(peakipy_data)
+    max_cluster_size = warn_if_trying_to_fit_large_clusters(
+        max_cluster_size, peakipy_data
+    )
 
-    # only include peaks with 'include'
-    if "include" in peakipy_data.df.columns:
-        pass
-    else:
-        # for compatibility
-        peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
-
-    if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
-        excluded = peakipy_data.df[peakipy_data.df.include != "yes"][column_selection]
-        table = df_to_rich_table(
-            excluded,
-            title="[yellow] Excluded peaks [/yellow]",
-            columns=excluded.columns,
-            styles=["yellow" for i in excluded.columns],
-        )
-        print(table)
-        peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
-
-    # filter list based on cluster size
-    if max_cluster_size is None:
-        max_cluster_size = peakipy_data.df.MEMCNT.max()
-        if peakipy_data.df.MEMCNT.max() > 10:
-            print(
-                f"""[red]
-                ##################################################################
-                You have some clusters of as many as {max_cluster_size} peaks.
-                You may want to consider reducing the size of your clusters as the
-                fits will struggle.
-
-                Otherwise you can use the --max-cluster-size flag to exclude large
-                clusters
-                ##################################################################
-            [/red]"""
-            )
-    else:
-        max_cluster_size = max_cluster_size
     args["max_cluster_size"] = max_cluster_size
     args["to_fix"] = fix
-    args["verb"] = verb
-    args["show"] = show
+    args["verbose"] = verbose
     args["mp"] = mp
     args["initial_fit_threshold"] = initial_fit_threshold
     args["reference_plane_indices"] = reference_plane_index
 
-    # read vclist
-    if vclist is None:
-        vclist = False
-    elif vclist.exists():
-        vclist_data = np.genfromtxt(vclist)
-        args["vclist_data"] = vclist_data
-        vclist = True
-    else:
-        raise Exception("vclist not found...")
-
-    args["vclist"] = vclist
-
+    args = get_vclist(vclist, args)
     # plot results or not
     log_file = open(tmp_path / log_path, "w")
-    if plot:
-        plot.mkdir(parents=True, exist_ok=True)
-
-    args["plot"] = plot
 
     uc_dics = {"f1": peakipy_data.uc_f1, "f2": peakipy_data.uc_f2}
     args["uc_dics"] = uc_dics
 
-    # check data shape is consistent with dims
-    if len(peakipy_data.dims) != len(peakipy_data.data.shape):
-        print(
-            f"Dims are {peakipy_data.dims} while data shape is {peakipy_data.data.shape}?"
-        )
-        exit()
-
-    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
-    # only fit specified planes
-    if plane:
-        inds = [i for i in plane]
-        data_inds = [
-            (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
-        ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
-            data_inds
-        ]
-        peakipy_data.data = peakipy_data.data[data_inds]
-        print(
-            "[yellow]Using only planes {plane} data now has the following shape[/yellow]",
-            peakipy_data.data.shape,
-        )
-        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
-            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
-            exit()
-
-    # do not fit these planes
-    if exclude_plane:
-        inds = [i for i in exclude_plane]
-        data_inds = [
-            (i not in inds)
-            for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
-        ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
-            data_inds
-        ]
-        peakipy_data.data = peakipy_data.data[data_inds]
-        print(
-            f"[yellow]Excluding planes {exclude_plane} data now has the following shape[/yellow]",
-            peakipy_data.data.shape,
-        )
-        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
-            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
-            exit()
-
-    # setting noise for calculation of chi square
-    # if noise is None:
+    check_data_shape_is_consistent_with_dims(peakipy_data)
+    plane_numbers, peakipy_data = select_specified_planes(plane, peakipy_data)
+    plane_numbers, peakipy_data = exclude_specified_planes(exclude_plane, peakipy_data)
     noise = abs(threshold_otsu(peakipy_data.data))
     args["noise"] = noise
     args["lineshape"] = lineshape
-
-    match xy_bounds:
-        case (0, 0):
-            xy_bounds = None
-        case (x, y):
-            # convert ppm to points
-            xy_bounds = list(xy_bounds)
-            xy_bounds[0] = xy_bounds[0] * peakipy_data.pt_per_ppm_f2
-            xy_bounds[1] = xy_bounds[1] * peakipy_data.pt_per_ppm_f1
-
+    xy_bounds = unpack_xy_bounds(xy_bounds, peakipy_data)
     args["xy_bounds"] = xy_bounds
-    # args, config = read_config(args)
-    # convert linewidths from Hz to points in case they were adjusted when running edit.py
-    peakipy_data.df["XW"] = peakipy_data.df.XW_HZ * peakipy_data.pt_per_hz_f2
-    peakipy_data.df["YW"] = peakipy_data.df.YW_HZ * peakipy_data.pt_per_hz_f1
-
-    # convert peak positions from ppm to points in case they were adjusted running edit.py
-    peakipy_data.df["X_AXIS"] = peakipy_data.df.X_PPM.apply(
-        lambda x: peakipy_data.uc_f2(x, "PPM")
-    )
-    peakipy_data.df["Y_AXIS"] = peakipy_data.df.Y_PPM.apply(
-        lambda x: peakipy_data.uc_f1(x, "PPM")
-    )
-    peakipy_data.df["X_AXISf"] = peakipy_data.df.X_PPM.apply(
-        lambda x: peakipy_data.uc_f2.f(x, "PPM")
-    )
-    peakipy_data.df["Y_AXISf"] = peakipy_data.df.Y_PPM.apply(
-        lambda x: peakipy_data.uc_f1.f(x, "PPM")
-    )
-    # start fitting data
+    peakipy_data = update_linewidths_from_hz_to_points(peakipy_data)
+    peakipy_data = update_peak_positions_from_ppm_to_points(peakipy_data)
     # prepare data for multiprocessing
     nclusters = peakipy_data.df.CLUSTID.nunique()
     npeaks = peakipy_data.df.shape[0]
@@ -610,9 +706,9 @@ def fit(
             f"[green]Using multiprocessing to fit {npeaks} peaks in {nclusters} clusters [/green]"
             + "\n"
         )
-        # split peak lists
-        # tmp_dir = split_peaklist(peakipy_data.df, n_cpu)
-        fit_peaks_args = FitPeaksInput(args, peakipy_data.data, config, plane_numbers)
+        fit_peaks_args = FitPeaksInput(
+            FitPeaksArgs(**args), peakipy_data.data, config, plane_numbers
+        )
         with (
             Pool(processes=n_cpu) as pool,
             tqdm(
@@ -621,11 +717,9 @@ def fit(
                 colour="green",
             ) as pbar,
         ):
-            # result = pool.map(fit_peaks, peaklists)
-            # result = pool.starmap(fit_peaks, zip(peaklists, args_list))
             result = [
                 pool.apply_async(
-                    fit_peaks,
+                    fit_peak_clusters,
                     args=(
                         peaklist,
                         fit_peaks_args,
@@ -636,13 +730,14 @@ def fit(
             ]
             df = pd.concat([i.df for i in result], ignore_index=True)
             for num, i in enumerate(result):
-                # i.df.to_csv(tmp_dir / Path(f"peaks_{num}_fit.csv"), index=False)
                 log_file.write(i.log + "\n")
     else:
         print("[green]Not using multiprocessing[green]")
-        result = fit_peaks(
+        result = fit_peak_clusters(
             peakipy_data.df,
-            FitPeaksInput(args, peakipy_data.data, config, plane_numbers),
+            FitPeaksInput(
+                FitPeaksArgs(**args), peakipy_data.data, config, plane_numbers
+            ),
         )
         df = result.df
         log_file.write(result.log)
@@ -652,159 +747,11 @@ def fit(
     # close log file
     log_file.close()
     output = Path(output_path)
-    suffix = output.suffix
-    #  convert sigmas to fwhm
-    match lineshape:
-        case lineshape.V:
-            # calculate peak height
-            df["height"] = df.apply(
-                lambda x: voigt2d(
-                    XY=[0, 0],
-                    center_x=0.0,
-                    center_y=0.0,
-                    sigma_x=x.sigma_x,
-                    sigma_y=x.sigma_y,
-                    gamma_x=x.gamma_x,
-                    gamma_y=x.gamma_y,
-                    amplitude=x.amp,
-                ),
-                axis=1,
-            )
-            print("VOIGT")
-            print(df[["amp", "amp_err", "height"]])
-            df["height_err"] = df.apply(
-                lambda x: x.amp_err * (x.height / x.amp) if x.amp_err != None else 0.0,
-                axis=1,
-            )
-            df["fwhm_g_x"] = df.sigma_x.apply(
-                lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
-            )  # fwhm of gaussian
-            df["fwhm_g_y"] = df.sigma_y.apply(
-                lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
-            )
-            df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2.0 * x)  # fwhm of lorentzian
-            df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2.0 * x)
-            df["fwhm_x"] = df.apply(
-                lambda x: 0.5346 * x.fwhm_l_x
-                + np.sqrt(0.2166 * x.fwhm_l_x**2.0 + x.fwhm_g_x**2.0),
-                axis=1,
-            )
-            df["fwhm_y"] = df.apply(
-                lambda x: 0.5346 * x.fwhm_l_y
-                + np.sqrt(0.2166 * x.fwhm_l_y**2.0 + x.fwhm_g_y**2.0),
-                axis=1,
-            )
-            # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
-            # df["fwhm_x"] = df.apply(lambda x: x.gamma_x + np.sqrt(x.gamma_x**2.0 + 4 * x.sigma_x**2.0 * 2.0 * np.log(2.)), axis=1)
-            # df["fwhm_y"] = df.apply(lambda x: x.gamma_y + np.sqrt(x.gamma_y**2.0 + 4 * x.sigma_y**2.0 * 2.0 * np.log(2.)), axis=1)
+    df = calculate_lineshape_specific_height_and_fwhm(lineshape, df)
+    df = calculate_peak_centers_in_ppm(df, peakipy_data)
+    df = calculate_peak_linewidths_in_hz(df, peakipy_data)
 
-        case lineshape.PV:
-            # calculate peak height
-            df["height"] = df.apply(
-                lambda x: pvoigt2d(
-                    XY=[0, 0],
-                    center_x=0.0,
-                    center_y=0.0,
-                    sigma_x=x.sigma_x,
-                    sigma_y=x.sigma_y,
-                    amplitude=x.amp,
-                    fraction=x.fraction,
-                ),
-                axis=1,
-            )
-            df["height_err"] = df.apply(
-                lambda x: x.amp_err * (x.height / x.amp), axis=1
-            )
-            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
-
-        case lineshape.G:
-            df["height"] = df.apply(
-                lambda x: pvoigt2d(
-                    XY=[0, 0],
-                    center_x=0.0,
-                    center_y=0.0,
-                    sigma_x=x.sigma_x,
-                    sigma_y=x.sigma_y,
-                    amplitude=x.amp,
-                    fraction=0.0,  # gaussian
-                ),
-                axis=1,
-            )
-            df["height_err"] = df.apply(
-                lambda x: x.amp_err * (x.height / x.amp), axis=1
-            )
-            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
-
-        case lineshape.L:
-            df["height"] = df.apply(
-                lambda x: pvoigt2d(
-                    XY=[0, 0],
-                    center_x=0.0,
-                    center_y=0.0,
-                    sigma_x=x.sigma_x,
-                    sigma_y=x.sigma_y,
-                    amplitude=x.amp,
-                    fraction=1.0,  # lorentzian
-                ),
-                axis=1,
-            )
-            df["height_err"] = df.apply(
-                lambda x: x.amp_err * (x.height / x.amp), axis=1
-            )
-            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
-
-        case lineshape.PV_PV:
-            # calculate peak height
-            df["height"] = df.apply(
-                lambda x: pv_pv(
-                    XY=[0, 0],
-                    center_x=0.0,
-                    center_y=0.0,
-                    sigma_x=x.sigma_x,
-                    sigma_y=x.sigma_y,
-                    amplitude=x.amp,
-                    fraction_x=x.fraction_x,
-                    fraction_y=x.fraction_y,
-                ),
-                axis=1,
-            )
-            df["height_err"] = df.apply(
-                lambda x: x.amp_err * (x.height / x.amp), axis=1
-            )
-            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
-
-        case _:
-            df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
-            df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
-    #  convert values to ppm
-    df["center_x_ppm"] = df.center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
-    df["center_y_ppm"] = df.center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
-    df["init_center_x_ppm"] = df.init_center_x.apply(
-        lambda x: peakipy_data.uc_f2.ppm(x)
-    )
-    df["init_center_y_ppm"] = df.init_center_y.apply(
-        lambda x: peakipy_data.uc_f1.ppm(x)
-    )
-    df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
-    df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
-    df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
-    df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
-    df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * peakipy_data.hz_per_pt_f2)
-    df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * peakipy_data.hz_per_pt_f1)
-
-    # save data
-    if suffix == ".csv":
-        df.to_csv(output, float_format="%.4f", index=False)
-
-    elif suffix == ".tab":
-        df.to_csv(output, sep="\t", float_format="%.4f", index=False)
-
-    else:
-        df.to_pickle(output)
+    save_data(df, output)
 
     print(
         """[green]

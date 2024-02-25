@@ -52,6 +52,7 @@ pytest = "^7.4.2"
 mkdocs-material = "^8.5.7"
 ipython = "^8.15.0"
 pre-commit = "^3.6.0"
+coverage = "^7.4.2"
 
 [build-system]
 requires = ["poetry>=0.12"]

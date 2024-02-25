@@ -11,18 +11,25 @@ import pandas as pd
 from rich import print
 from rich.console import Console
 from pydantic import BaseModel
-from lmfit import Model, Parameter
+from lmfit import Model, Parameter, Parameters
 from lmfit.model import ModelResult
 
 from peakipy.core import (
     fix_params,
-    fit_first_plane,
-    LoadData,
     Lineshape,
     pvoigt2d,
     voigt2d,
     pv_pv,
     to_prefix,
+    get_limits_for_axis_in_points,
+    get_lineshape_function,
+    deal_with_peaks_on_edge_of_spectrum,
+    select_planes_above_threshold_from_masked_data,
+    select_reference_planes_using_indices,
+    make_models,
+    make_meshgrid,
+    slice_peaks_from_data_using_mask,
+    make_mask_from_peak_cluster,
 )
 
 console = Console()
@@ -40,6 +47,8 @@ column_selection = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
 @dataclass
 class FitPeaksArgs:
     noise: float
+    uc_dics: dict
+    lineshape: Lineshape
     dims: List[int] = field(default_factory=lambda: [0, 1, 2])
     colors: Tuple[str] = ("#5e3c99", "#e66101")
     max_cluster_size: Optional[int] = None
@@ -48,102 +57,77 @@ class FitPeaksArgs:
     vclist: Optional[Path] = (None,)
     plane: Optional[List[int]] = (None,)
     exclude_plane: Optional[List[int]] = (None,)
-    reference_plane_index: List[int] = ([],)
+    reference_plane_indices: List[int] = ([],)
     initial_fit_threshold: Optional[float] = (None,)
     mp: bool = (True,)
-    plot: Optional[Path] = (None,)
-    show: bool = (False,)
-    verb: bool = (False,)
+    verbose: bool = (False,)
 
 
+@dataclass
+class FirstPlaneFitInput:
+    group: pd.DataFrame
+    last_peak: pd.DataFrame
+    mask: np.array
+    mod: Model
+    p_guess: Parameters
+    XY: np.array
+    peak_slices: np.array
+    XY_slices: np.array
+    min_x: float
+    max_x: float
+    min_y: float
+    max_y: float
+    uc_dics: dict
+    first_plane_data: np.array
+    weights: np.array
+    fit_method: str = "leastsq"
+    verbose: bool = False
+
+
+@dataclass
 class FitPeaksInput:
     """input data for the fit_peaks function"""
 
-    def __init__(
-        self,
-        args: dict,
-        data: np.array,
-        config: dict,
-        plane_numbers: list,
-        reference_planes_for_initial_fit: List[int] = [],
-        use_only_planes_above_threshold: Optional[float] = None,
-    ):
-        self._data = data
-        self._args = args
-        self._config = config
-        self._plane_numbers = plane_numbers
-        self._planes_for_initial_fit = reference_planes_for_initial_fit
-        self._use_only_planes_above_threshold = use_only_planes_above_threshold
-
-    def check_integer_list(self):
-        if hasattr(self._planes_for_initial_fit, "append"):
-            pass
-        else:
-            return False
-        if all([(type(i) == int) for i in self._planes_for_initial_fit]):
-            pass
-        else:
-            return False
-        if all([((i - 1) > self._data.shape[0]) for i in self._planes_for_initial_fit]):
-            return True
-        else:
-            return False
-
-    def sum_planes_for_initial_fit(self):
-        if (
-            self._planes_for_initial_fit
-            == self._use_only_planes_above_threshold
-            == None
-        ):
-            return self._data.sum(axis=0)
-
-        elif self.check_integer_list():
-            return self._data[self._planes_for_initial_fit].sum(axis=0)
-
-        elif type(self._use_only_planes_above_threshold) == float:
-            # very crude at the moment
-            return self._data[
-                self._data.max(axis=1).max(axis=1)
-                > self._use_only_planes_above_threshold
-            ]
-        else:
-            return self._data.sum(axis=0)
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def args(self):
-        return self._args
-
-    @property
-    def config(self):
-        return self._config
-
-    @property
-    def plane_numbers(self):
-        return self._plane_numbers
-
-    @property
-    def summed_planes_for_initial_fit(self):
-        return self.sum_planes_for_initial_fit()
+    args: FitPeaksArgs
+    data: np.array
+    config: dict
+    plane_numbers: list
 
 
+@dataclass
+class FitResult:
+    out: ModelResult
+    mask: np.array
+    fit_str: str
+    log: str
+    group: pd.core.groupby.generic.DataFrameGroupBy
+    uc_dics: dict
+    min_x: float
+    min_y: float
+    max_x: float
+    max_y: float
+    X: np.array
+    Y: np.array
+    Z: np.array
+    Z_sim: np.array
+    peak_slices: np.array
+    XY_slices: np.array
+    weights: np.array
+    mod: Model
+
+    def check_shifts(self):
+        """Calculate difference between initial peak positions
+        and check whether they moved too much from original
+        position
+
+        """
+        pass
+
+
+@dataclass
 class FitPeaksResult:
-    """Result of fitting a set of peaks"""
-
-    def __init__(self, df: pd.DataFrame, log: str):
-        self._df = df
-        self._log = log
-
-    @property
-    def df(self):
-        return self._df
-
-    @property
-    def log(self):
-        return self._log
+    df: pd.DataFrame
+    log: str
 
 
 class FitPeaksResultDfRow(BaseModel):
@@ -301,39 +285,76 @@ def unpack_fitted_parameters_for_lineshape(
 
 
 def perform_initial_lineshape_fit_on_cluster_of_peaks(
-    cluster_of_peaks, fit_input: FitPeaksInput
-):
-    fit_result = fit_first_plane(
-        cluster_of_peaks,
-        fit_input.data,
-        # norm(summed_planes),
-        fit_input.args.get("uc_dics"),
-        lineshape=fit_input.args.get("lineshape"),
-        xy_bounds=fit_input.args.get("xy_bounds"),
-        verbose=fit_input.args.get("verb"),
-        noise=fit_input.args.get("noise"),
-        fit_method=fit_input.config.get("fit_method", "leastsq"),
-        reference_plane_indices=fit_input.args.get("reference_plane_indices"),
-        threshold=fit_input.args.get("initial_fit_threshold"),
+    first_plane_fit_input: FirstPlaneFitInput,
+) -> FitResult:
+    mod = first_plane_fit_input.mod
+    peak_slices = first_plane_fit_input.peak_slices
+    XY_slices = first_plane_fit_input.XY_slices
+    p_guess = first_plane_fit_input.p_guess
+    weights = first_plane_fit_input.weights
+    fit_method = first_plane_fit_input.fit_method
+    mask = first_plane_fit_input.mask
+    XY = first_plane_fit_input.XY
+    X, Y = XY
+    first_plane_data = first_plane_fit_input.first_plane_data
+    peak = first_plane_fit_input.last_peak
+    group = first_plane_fit_input.group
+    min_x = first_plane_fit_input.min_x
+    min_y = first_plane_fit_input.min_y
+    max_x = first_plane_fit_input.max_x
+    max_y = first_plane_fit_input.max_y
+    verbose = first_plane_fit_input.verbose
+    uc_dics = first_plane_fit_input.uc_dics
+
+    out = mod.fit(
+        peak_slices, XY=XY_slices, params=p_guess, weights=weights, method=fit_method
     )
-    return fit_result
+
+    if verbose:
+        console.print(out.fit_report(), style="bold")
+
+    z_sim = mod.eval(XY=XY, params=out.params)
+    z_sim[~mask] = np.nan
+    z_plot = first_plane_data.copy()
+    z_plot[~mask] = np.nan
+    fit_str = ""
+    log = ""
+
+    return FitResult(
+        out=out,
+        mask=mask,
+        fit_str=fit_str,
+        log=log,
+        group=group,
+        uc_dics=uc_dics,
+        min_x=min_x,
+        min_y=min_y,
+        max_x=max_x,
+        max_y=max_y,
+        X=X,
+        Y=Y,
+        Z=z_plot,
+        Z_sim=z_sim,
+        peak_slices=peak_slices,
+        XY_slices=XY_slices,
+        weights=weights,
+        mod=mod,
+    )
 
 
 def refit_peaks_with_constraints(fit_input: FitPeaksInput, fit_result: FitPeaksResult):
     fit_results = []
     for num, d in enumerate(fit_input.data):
         plane_number = fit_input.plane_numbers[num]
+        masked_data = d[fit_result.mask]
         fit_result.out.fit(
-            data=d[fit_result.mask],
+            data=masked_data,
             params=fit_result.out.params,
-            weights=1.0
-            / np.array(
-                [fit_input.args.get("noise")] * len(np.ravel(d[fit_result.mask]))
-            ),
+            weights=fit_result.weights,
         )
         fit_results.extend(
             unpack_fitted_parameters_for_lineshape(
-                fit_input.args.get("lineshape"),
+                fit_input.args.lineshape,
                 list(fit_result.out.params.items()),
                 plane_number,
             )
@@ -381,7 +402,94 @@ def add_vclist_to_df(fit_input: FitPeaksInput, df: pd.DataFrame):
     return df
 
 
-def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
+def prepare_group_of_peaks_for_fitting(
+    group, data, fit_peaks_input_args: FitPeaksArgs, fit_method="leastsq"
+):
+    lineshape_function = get_lineshape_function(fit_peaks_input_args.lineshape)
+
+    first_plane_data = data[0]
+    mask, peak = make_mask_from_peak_cluster(group, first_plane_data)
+
+    x_radius = group.X_RADIUS.max()
+    y_radius = group.Y_RADIUS.max()
+
+    max_x, min_x = get_limits_for_axis_in_points(
+        group_axis_points=group.X_AXISf, mask_radius_in_points=x_radius
+    )
+    max_y, min_y = get_limits_for_axis_in_points(
+        group_axis_points=group.Y_AXISf, mask_radius_in_points=y_radius
+    )
+    max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
+        data.shape, max_x, min_x, max_y, min_y
+    )
+    selected_data = select_reference_planes_using_indices(
+        data, fit_peaks_input_args.reference_plane_indices
+    ).sum(axis=0)
+    mod, p_guess = make_models(
+        lineshape_function,
+        group,
+        selected_data,
+        lineshape=fit_peaks_input_args.lineshape,
+        xy_bounds=fit_peaks_input_args.xy_bounds,
+    )
+    peak_slices = slice_peaks_from_data_using_mask(data, mask)
+    peak_slices = select_reference_planes_using_indices(
+        peak_slices, fit_peaks_input_args.reference_plane_indices
+    )
+    peak_slices = select_planes_above_threshold_from_masked_data(
+        peak_slices, fit_peaks_input_args.initial_fit_threshold
+    )
+    peak_slices = peak_slices.sum(axis=0)
+
+    XY = make_meshgrid(data.shape)
+    X, Y = XY
+
+    XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
+    weights = 1.0 / np.array([fit_peaks_input_args.noise] * len(np.ravel(peak_slices)))
+    # weights = 1.0 / np.ravel(peak_slices)
+    return FirstPlaneFitInput(
+        group=group,
+        last_peak=peak,
+        mask=mask,
+        mod=mod,
+        p_guess=p_guess,
+        XY=XY,
+        peak_slices=peak_slices,
+        XY_slices=XY_slices,
+        weights=weights,
+        fit_method=fit_method,
+        first_plane_data=first_plane_data,
+        uc_dics=fit_peaks_input_args.uc_dics,
+        min_x=min_x,
+        min_y=min_y,
+        max_x=max_x,
+        max_y=max_y,
+        verbose=fit_peaks_input_args.verbose,
+    )
+
+
+def fit_cluster_of_peaks(
+    clustid: int, peak_cluster: pd.DataFrame, fit_input: FitPeaksInput
+) -> pd.DataFrame:
+    data_for_fitting = prepare_group_of_peaks_for_fitting(
+        peak_cluster,
+        fit_input.data,
+        fit_input.args,
+        fit_method=fit_input.config.get("fit_method", "leastsq"),
+    )
+    fit_result = perform_initial_lineshape_fit_on_cluster_of_peaks(data_for_fitting)
+    fit_result.out.params, float_str = set_parameters_to_fix_during_fit(
+        fit_result.out.params, fit_input.args.to_fix
+    )
+    fit_results = refit_peaks_with_constraints(fit_input, fit_result)
+    cluster_df = pd.DataFrame(fit_results)
+    cluster_df = update_cluster_df_with_fit_statistics(cluster_df, fit_result.out)
+    cluster_df["clustid"] = clustid
+    cluster_df = merge_unpacked_parameters_with_metadata(cluster_df, peak_cluster)
+    return cluster_df
+
+
+def fit_peak_clusters(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     """Fit set of peak clusters to lineshape model
 
     :param peaks: peaklist with generated by peakipy read or edit
@@ -394,32 +502,82 @@ def fit_peaks(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaksResult:
     :rtype: FitPeaksResult
     """
     peak_clusters = peaks.groupby("CLUSTID")
-    max_cluster_size = fit_input.args.get("max_cluster_size")
     filtered_peaks = filter_peak_clusters_by_max_cluster_size(
-        peak_clusters, max_cluster_size
+        peak_clusters, fit_input.args.max_cluster_size
     )
     peak_clusters = filtered_peaks.groupby("CLUSTID")
-    # setup arguments
-    to_fix = fit_input.args.get("to_fix")
-    lineshape = fit_input.args.get("lineshape")
     out_str = ""
     cluster_dfs = []
-    for name, peak_cluster in peak_clusters:
-        fit_result = perform_initial_lineshape_fit_on_cluster_of_peaks(
-            peak_cluster, fit_input
+    for clustid, peak_cluster in peak_clusters:
+        cluster_df = fit_cluster_of_peaks(
+            clustid=clustid, peak_cluster=peak_cluster, fit_input=fit_input
         )
-        fit_result.out.params, float_str = set_parameters_to_fix_during_fit(
-            fit_result.out.params, to_fix
-        )
-        fit_results = refit_peaks_with_constraints(fit_input, fit_result)
-        cluster_df = pd.DataFrame(fit_results)
-        cluster_df = update_cluster_df_with_fit_statistics(cluster_df, fit_result.out)
-        cluster_df["clustid"] = name
-        cluster_df = merge_unpacked_parameters_with_metadata(cluster_df, peak_cluster)
         cluster_dfs.append(cluster_df)
     df = pd.concat(cluster_dfs, ignore_index=True)
-    df["lineshape"] = lineshape.value
-    if fit_input.args.get("vclist"):
+    df["lineshape"] = fit_input.args.lineshape.value
+
+    if fit_input.args.vclist:
         df = add_vclist_to_df(fit_input, df)
     df = rename_columns_for_compatibility(df)
     return FitPeaksResult(df=df, log=out_str)
+
+
+@dataclass
+class JackKnifeResult:
+    mean: float
+    std: float
+
+
+def jack_knife_sample_errors(
+    peaks: pd.DataFrame, fit_input: FirstPlaneFitInput
+) -> JackKnifeResult:
+    peak_slices = fit_input.peak_slices
+    XY_slices = fit_input.XY_slices
+    weights = fit_input.weights
+    jk_results = []
+    for i in range(len(peak_slices)):
+        peak_slices = np.delete(peak_slices, i, None)
+        X = np.delete(XY_slices[0], i, None)
+        Y = np.delete(XY_slices[1], i, None)
+        weights = np.delete(weights, i, None)
+        jk_results.append(
+            mod.fit(peak_slices, XY=[X, Y], params=out.params, weights=weights)
+        )
+
+    # print(jk_results)
+    amps = []
+    sigma_xs = []
+    sigma_ys = []
+    names = []
+    with open("test_jackknife", "w") as f:
+        for i in jk_results:
+            f.write(i.fit_report())
+            amp, amp_err, name = get_params(i.params, "amp")
+            sigma_x, sigma_x_err, name_x = get_params(i.params, "sigma_x")
+            sigma_y, sigma_y_err, name_y = get_params(i.params, "sigma_y")
+            f.write(f"{amp},{amp_err},{name_y}\n")
+            amps.extend(amp)
+            names.extend(name_y)
+            sigma_xs.extend(sigma_x)
+            sigma_ys.extend(sigma_y)
+
+        df = pd.DataFrame(
+            {"amp": amps, "name": names, "sigma_x": sigma_xs, "sigma_y": sigma_ys}
+        )
+        grouped = df.groupby("name")
+        mean_amps = grouped.amp.mean()
+        std_amps = grouped.amp.std()
+        mean_sigma_x = grouped.sigma_x.mean()
+        std_sigma_x = grouped.sigma_x.std()
+        mean_sigma_y = grouped.sigma_y.mean()
+        std_sigma_y = grouped.sigma_y.std()
+        f.write("#####################################\n")
+        f.write(
+            f"{mean_amps}, {std_amps}, {mean_sigma_x}, {std_sigma_x}, {mean_sigma_y}, {std_sigma_y} "
+        )
+        f.write(self.out.fit_report())
+        f.write("#####################################\n")
+    # print(amps)
+    # mean = np.mean(amps)
+    # std =  np.std(amps)
+    return JackKnifeResult(mean=mean_amps, std=std_amps)

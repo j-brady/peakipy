@@ -38,7 +38,7 @@ from rich.console import Console
 
 from numpy import sqrt, log, pi, exp, finfo
 
-from lmfit import Model
+from lmfit import Model, Parameters
 from lmfit.model import ModelResult
 from lmfit.models import LinearModel
 from scipy.special import wofz
@@ -876,397 +876,6 @@ def make_meshgrid(data_shape):
     y = np.arange(data_shape[-2])
     XY = np.meshgrid(x, y)
     return XY
-
-
-def fit_first_plane(
-    group,
-    data,
-    uc_dics,
-    lineshape: Lineshape.PV,
-    xy_bounds=None,
-    verbose=False,
-    log=None,
-    noise=1.0,
-    fit_method="leastsq",
-    reference_plane_indices: List[int] = [],
-    threshold: Optional[float] = None,
-):
-    r"""Deconvolute group of peaks
-
-    :param group: pandas data from containing group of peaks using groupby("CLUSTID")
-    :type group: pandas.core.groupby.generic.DataFrameGroupBy
-
-    :param data: NMR data
-    :type data: numpy.array
-
-    :param uc_dics: nmrglue unit conversion dics {"f1":uc_f1,"f2":uc_f2}
-    :type uc_dics: dict
-
-    :param lineshape: lineshape to fit (PV, G, L, V, G_L, PV_L, PV_G or PV_PV)
-    :type lineshape: str
-
-    :param xy_bounds: set bounds on x y positions. None or (x_bound, y_bound)
-    :type xy_bounds: tuple
-
-    :param plot: dir to save wireframe plots
-    :type plot: str
-
-    :param show: interactive matplotlib plot
-    :type show: bool
-
-    :param verbose: print what is happening to terminal
-    :type verbose: bool
-
-    :param log: file
-    :type log: str
-
-    :param noise: estimate of spectral noise for calculation of :math:`\chi^2` and :math:`\chi^2_{red}`
-    :type noise: float
-
-    :param fit_method: method used by lmfit
-    :type fit_method: str
-
-    :return: FitResult
-    :rtype: FitResult
-
-    """
-    lineshape_function = get_lineshape_function(lineshape)
-
-    first_plane_data = data[0]
-    mask, peak = make_mask_from_peak_cluster(group, first_plane_data)
-
-    x_radius = group.X_RADIUS.max()
-    y_radius = group.Y_RADIUS.max()
-
-    max_x, min_x = get_limits_for_axis_in_points(
-        group_axis_points=group.X_AXISf, mask_radius_in_points=x_radius
-    )
-    max_y, min_y = get_limits_for_axis_in_points(
-        group_axis_points=group.Y_AXISf, mask_radius_in_points=y_radius
-    )
-    max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
-        data.shape, max_x, min_x, max_y, min_y
-    )
-    selected_data = select_reference_planes_using_indices(
-        data, reference_plane_indices
-    ).sum(axis=0)
-    mod, p_guess = make_models(
-        lineshape_function,
-        group,
-        selected_data,
-        lineshape=lineshape,
-        xy_bounds=xy_bounds,
-    )
-    peak_slices = slice_peaks_from_data_using_mask(data, mask)
-    peak_slices = select_reference_planes_using_indices(
-        peak_slices, reference_plane_indices
-    )
-    peak_slices = select_planes_above_threshold_from_masked_data(peak_slices, threshold)
-    peak_slices = peak_slices.sum(axis=0)
-
-    XY = make_meshgrid(data.shape)
-    X, Y = XY
-
-    XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
-
-    weights = 1.0 / np.array([noise] * len(np.ravel(peak_slices)))
-
-    out = mod.fit(
-        peak_slices, XY=XY_slices, params=p_guess, weights=weights, method=fit_method
-    )
-
-    if verbose:
-        console.print(out.fit_report(), style="bold")
-
-    z_sim = mod.eval(XY=XY, params=out.params)
-    z_sim[~mask] = np.nan
-    z_plot = first_plane_data.copy()
-    z_plot[~mask] = np.nan
-    #  also if peak position changed significantly from start then add warning
-
-    _z_plot = z_plot[~np.isnan(z_plot)]
-    _z_sim = z_sim[~np.isnan(z_sim)]
-
-    linmod = LinearModel()
-    linpars = linmod.guess(_z_sim, x=_z_plot)
-    linfit = linmod.fit(_z_sim, x=_z_plot, params=linpars)
-    slope = linfit.params["slope"].value
-    #  number of peaks in cluster
-    n_peaks = len(group)
-
-    chi2 = out.chisqr
-    redchi = out.redchi
-
-    fit_str = f"""
-    Cluster {peak.CLUSTID} containing {n_peaks} peaks - slope={slope:.3f}
-
-        chi^2 = {chi2:.5f}
-        redchi = {redchi:.5f}
-
-    """
-    if (slope > 1.05) or (slope < 0.95):
-        fit_str += """
-        🧐 NEEDS CHECKING 🧐
-        """
-        # console.print(fit_str, style="bold yellow")
-    else:
-        # console.print(fit_str, style="green")
-        pass
-
-    if log is not None:
-        log.write("".join("#" for _ in range(60)) + "\n\n")
-        log.write(fit_str + "\n\n")
-        # pass
-    else:
-        pass
-
-    return FitResult(
-        out=out,
-        mask=mask,
-        fit_str=fit_str,
-        log=log,
-        group=group,
-        uc_dics=uc_dics,
-        min_x=min_x,
-        min_y=min_y,
-        max_x=max_x,
-        max_y=max_y,
-        X=X,
-        Y=Y,
-        Z=z_plot,
-        Z_sim=z_sim,
-        peak_slices=peak_slices,
-        XY_slices=XY_slices,
-        weights=weights,
-        mod=mod,
-    )
-
-
-class FitResult:
-    """Data structure for storing fit results"""
-
-    def __init__(
-        self,
-        out: ModelResult,
-        mask: np.array,
-        fit_str: str,
-        log: str,
-        group: pd.core.groupby.generic.DataFrameGroupBy,
-        uc_dics: dict,
-        min_x: float,
-        min_y: float,
-        max_x: float,
-        max_y: float,
-        X: np.array,
-        Y: np.array,
-        Z: np.array,
-        Z_sim: np.array,
-        peak_slices: np.array,
-        XY_slices: np.array,
-        weights: np.array,
-        mod: Model,
-    ):
-        """Store output of fit_first_plane function"""
-        self.out = out
-        self.mask = mask
-        self.fit_str = fit_str
-        self.log = log
-        self.group = group
-        self.uc_dics = uc_dics
-        self.min_x = min_x
-        self.min_y = min_y
-        self.max_x = max_x
-        self.max_y = max_y
-        self.X = X
-        self.Y = Y
-        self.Z = Z
-        self.Z_sim = Z_sim
-        self.peak_slices = peak_slices
-        self.XY_slices = XY_slices
-        self.weights = weights
-        self.mod = mod
-
-    def check_shifts(self):
-        """Calculate difference between initial peak positions
-        and check whether they moved too much from original
-        position
-
-        """
-        pass
-
-    def jackknife(self):
-        """perform jackknife sampling to estimate fitting errors"""
-        jk_results = []
-        for i in range(len(self.peak_slices)):
-            peak_slices = np.delete(self.peak_slices, i, None)
-            X = np.delete(self.XY_slices[0], i, None)
-            Y = np.delete(self.XY_slices[1], i, None)
-            weights = np.delete(self.weights, i, None)
-            jk_results.append(
-                self.mod.fit(
-                    peak_slices, XY=[X, Y], params=self.out.params, weights=weights
-                )
-            )
-
-        # print(jk_results)
-        amps = []
-        sigma_xs = []
-        sigma_ys = []
-        names = []
-        with open("test_jackknife", "w") as f:
-            for i in jk_results:
-                f.write(i.fit_report())
-                amp, amp_err, name = get_params(i.params, "amp")
-                sigma_x, sigma_x_err, name_x = get_params(i.params, "sigma_x")
-                sigma_y, sigma_y_err, name_y = get_params(i.params, "sigma_y")
-                f.write(f"{amp},{amp_err},{name_y}\n")
-                amps.extend(amp)
-                names.extend(name_y)
-                sigma_xs.extend(sigma_x)
-                sigma_ys.extend(sigma_y)
-
-            df = pd.DataFrame(
-                {"amp": amps, "name": names, "sigma_x": sigma_xs, "sigma_y": sigma_ys}
-            )
-            grouped = df.groupby("name")
-            mean_amps = grouped.amp.mean()
-            std_amps = grouped.amp.std()
-            mean_sigma_x = grouped.sigma_x.mean()
-            std_sigma_x = grouped.sigma_x.std()
-            mean_sigma_y = grouped.sigma_y.mean()
-            std_sigma_y = grouped.sigma_y.std()
-            f.write("#####################################\n")
-            f.write(
-                f"{mean_amps}, {std_amps}, {mean_sigma_x}, {std_sigma_x}, {mean_sigma_y}, {std_sigma_y} "
-            )
-            f.write(self.out.fit_report())
-            f.write("#####################################\n")
-        # print(amps)
-        # mean = np.mean(amps)
-        # std =  np.std(amps)
-        return JackKnifeResult(mean=mean_amps, std=std_amps)
-
-    def plot(self, plot_path=None, show=False, mp=False):
-        """Matplotlib interactive plot of the fits"""
-
-        if plot_path != None:
-            plot_path = Path(plot_path)
-            plot_path.mkdir(parents=True, exist_ok=True)
-            # plotting
-            fig = plt.figure(figsize=(8, 6))
-            ax = fig.add_subplot(111, projection="3d")
-            # slice out plot area
-            x_plot = self.uc_dics["f2"].ppm(
-                self.X[self.min_y : self.max_y, self.min_x : self.max_x]
-            )
-            y_plot = self.uc_dics["f1"].ppm(
-                self.Y[self.min_y : self.max_y, self.min_x : self.max_x]
-            )
-            z_plot = self.Z[self.min_y : self.max_y, self.min_x : self.max_x]
-
-            z_sim = self.Z_sim[self.min_y : self.max_y, self.min_x : self.max_x]
-
-            ax.set_title(
-                r"$\chi^2$="
-                + f"{self.out.chisqr:.3f}, "
-                + r"$\chi_{red}^2$="
-                + f"{self.out.redchi:.4f}"
-            )
-
-            residual = z_plot - z_sim
-            cset = ax.contourf(
-                x_plot,
-                y_plot,
-                residual,
-                zdir="z",
-                offset=np.nanmin(z_plot) * 1.1,
-                alpha=0.5,
-                cmap=cm.coolwarm,
-            )
-            cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
-            cbl.ax.set_title("Residual")
-            # plot raw data
-            ax.plot_wireframe(x_plot, y_plot, z_plot, color="#03353E", label="data")
-
-            ax.set_xlabel("F2 ppm")
-            ax.set_ylabel("F1 ppm")
-            ax.plot_wireframe(
-                x_plot, y_plot, z_sim, color="#C1403D", linestyle="--", label="fit"
-            )
-
-            # axes will appear inverted
-            ax.view_init(30, 120)
-
-            # Annotate plots
-            labs = []
-            Z_lab = []
-            Y_lab = []
-            X_lab = []
-            for k, v in self.out.params.valuesdict().items():
-                if "amplitude" in k:
-                    Z_lab.append(v)
-                    # get prefix
-                    labs.append(" ".join(k.split("_")[:-1]))
-                elif "center_x" in k:
-                    X_lab.append(self.uc_dics["f2"].ppm(v))
-                elif "center_y" in k:
-                    Y_lab.append(self.uc_dics["f1"].ppm(v))
-            #  this is dumb as !£$@
-            # Z_lab = [
-            #    self.Z[
-            #        int(round(self.uc_dics["f1"](y, "ppm"))),
-            #        int(round(self.uc_dics["f2"](x, "ppm"))),
-            #    ]
-            #    for x, y in zip(X_lab, Y_lab)
-            # ]
-            z_max = np.nanmax(z_plot.ravel())
-            Z_lab = np.array(Z_lab)
-            z_max = z_max * (Z_lab / max(Z_lab))
-            for l, x, y, z in zip(labs, X_lab, Y_lab, z_max):
-                # print(l, x, y, z)
-                # ax.text(x, y, z * 1.2, l, None)
-                z = z * 1.2
-                ax.text(x, y, z, l, None)
-                ax.plot([x, x], [y, y], [0, z], linestyle="dotted", c="k", alpha=0.5)
-
-            # plt.colorbar(contf)
-            plt.legend(bbox_to_anchor=(1.2, 1.1))
-
-            name = self.group.CLUSTID.iloc[0]
-            if show and not mp:
-                plt.savefig(plot_path / f"{name}.png", dpi=300)
-
-                def exit_program(event):
-                    exit()
-
-                def next_plot(event):
-                    plt.close()
-
-                axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-                bnexit = Button(axexit, "Exit")
-                bnexit.on_clicked(exit_program)
-
-                axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
-                bnnext = Button(axnext, "Next")
-                bnnext.on_clicked(next_plot)
-
-                plt.show()
-            else:
-                print(
-                    "[red]Cannot use interactive matplotlib in multiprocess mode. Use --no-mp flag.[/red]"
-                )
-                plt.savefig(plot_path / f"{name}.png", dpi=300)
-            #    print(p_guess)
-            # close plot
-            plt.close()
-        else:
-            pass
-
-
-class JackKnifeResult:
-    def __init__(self, mean, std):
-        self.mean = mean
-        self.std = std
 
 
 class Pseudo3D:
@@ -2233,3 +1842,142 @@ def read_config(args, config_path="peakipy.config"):
     args["colors"] = colors
 
     return args, config
+
+
+def calculate_height_for_voigt_lineshape(df):
+    df["height"] = df.apply(
+        lambda x: voigt2d(
+            XY=[0, 0],
+            center_x=0.0,
+            center_y=0.0,
+            sigma_x=x.sigma_x,
+            sigma_y=x.sigma_y,
+            gamma_x=x.gamma_x,
+            gamma_y=x.gamma_y,
+            amplitude=x.amp,
+        ),
+        axis=1,
+    )
+    df["height_err"] = df.apply(
+        lambda x: x.amp_err * (x.height / x.amp) if x.amp_err != None else 0.0,
+        axis=1,
+    )
+    return df
+
+
+def calculate_fwhm_for_voigt_lineshape(df):
+    df["fwhm_g_x"] = df.sigma_x.apply(
+        lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0))
+    )  # fwhm of gaussian
+    df["fwhm_g_y"] = df.sigma_y.apply(lambda x: 2.0 * x * np.sqrt(2.0 * np.log(2.0)))
+    df["fwhm_l_x"] = df.gamma_x.apply(lambda x: 2.0 * x)  # fwhm of lorentzian
+    df["fwhm_l_y"] = df.gamma_y.apply(lambda x: 2.0 * x)
+    df["fwhm_x"] = df.apply(
+        lambda x: 0.5346 * x.fwhm_l_x
+        + np.sqrt(0.2166 * x.fwhm_l_x**2.0 + x.fwhm_g_x**2.0),
+        axis=1,
+    )
+    df["fwhm_y"] = df.apply(
+        lambda x: 0.5346 * x.fwhm_l_y
+        + np.sqrt(0.2166 * x.fwhm_l_y**2.0 + x.fwhm_g_y**2.0),
+        axis=1,
+    )
+    return df
+
+
+def calculate_height_for_pseudo_voigt_lineshape(df):
+    df["height"] = df.apply(
+        lambda x: pvoigt2d(
+            XY=[0, 0],
+            center_x=0.0,
+            center_y=0.0,
+            sigma_x=x.sigma_x,
+            sigma_y=x.sigma_y,
+            amplitude=x.amp,
+            fraction=x.fraction,
+        ),
+        axis=1,
+    )
+    df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+    return df
+
+
+def calculate_fwhm_for_pseudo_voigt_lineshape(df):
+    df["fwhm_x"] = df.sigma_x.apply(lambda x: x * 2.0)
+    df["fwhm_y"] = df.sigma_y.apply(lambda x: x * 2.0)
+    return df
+
+
+def calculate_height_for_gaussian_lineshape(df):
+    df["height"] = df.apply(
+        lambda x: pvoigt2d(
+            XY=[0, 0],
+            center_x=0.0,
+            center_y=0.0,
+            sigma_x=x.sigma_x,
+            sigma_y=x.sigma_y,
+            amplitude=x.amp,
+            fraction=0.0,  # gaussian
+        ),
+        axis=1,
+    )
+    df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+    return df
+
+
+def calculate_height_for_lorentzian_lineshape(df):
+    df["height"] = df.apply(
+        lambda x: pvoigt2d(
+            XY=[0, 0],
+            center_x=0.0,
+            center_y=0.0,
+            sigma_x=x.sigma_x,
+            sigma_y=x.sigma_y,
+            amplitude=x.amp,
+            fraction=1.0,  # lorentzian
+        ),
+        axis=1,
+    )
+    df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+    return df
+
+
+def calculate_height_for_pv_pv_lineshape(df):
+    df["height"] = df.apply(
+        lambda x: pv_pv(
+            XY=[0, 0],
+            center_x=0.0,
+            center_y=0.0,
+            sigma_x=x.sigma_x,
+            sigma_y=x.sigma_y,
+            amplitude=x.amp,
+            fraction_x=x.fraction_x,
+            fraction_y=x.fraction_y,
+        ),
+        axis=1,
+    )
+    df["height_err"] = df.apply(lambda x: x.amp_err * (x.height / x.amp), axis=1)
+    return df
+
+
+def calculate_peak_centers_in_ppm(df, peakipy_data):
+    #  convert values to ppm
+    df["center_x_ppm"] = df.center_x.apply(lambda x: peakipy_data.uc_f2.ppm(x))
+    df["center_y_ppm"] = df.center_y.apply(lambda x: peakipy_data.uc_f1.ppm(x))
+    df["init_center_x_ppm"] = df.init_center_x.apply(
+        lambda x: peakipy_data.uc_f2.ppm(x)
+    )
+    df["init_center_y_ppm"] = df.init_center_y.apply(
+        lambda x: peakipy_data.uc_f1.ppm(x)
+    )
+    return df
+
+
+def calculate_peak_linewidths_in_hz(df, peakipy_data):
+    df["sigma_x_ppm"] = df.sigma_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
+    df["sigma_y_ppm"] = df.sigma_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
+    df["fwhm_x_ppm"] = df.fwhm_x.apply(lambda x: x * peakipy_data.ppm_per_pt_f2)
+    df["fwhm_y_ppm"] = df.fwhm_y.apply(lambda x: x * peakipy_data.ppm_per_pt_f1)
+    df["fwhm_x_hz"] = df.fwhm_x.apply(lambda x: x * peakipy_data.hz_per_pt_f2)
+    df["fwhm_y_hz"] = df.fwhm_y.apply(lambda x: x * peakipy_data.hz_per_pt_f1)
+    return df
