@@ -617,6 +617,7 @@ def fit(
         List[int], typer.Option(help=reference_plane_index_help)
     ] = [],
     initial_fit_threshold: Optional[float] = None,
+    jack_knife_sample_errors: bool = False,
     mp: bool = True,
     verbose: bool = False,
 ):
@@ -680,6 +681,7 @@ def fit(
     args["mp"] = mp
     args["initial_fit_threshold"] = initial_fit_threshold
     args["reference_plane_indices"] = reference_plane_index
+    args["jack_knife_sample_errors"] = jack_knife_sample_errors
 
     args = get_vclist(vclist, args)
     # plot results or not
