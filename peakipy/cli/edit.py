@@ -42,7 +42,6 @@ from bokeh.plotting.contour import contour_data
 from bokeh.palettes import PuBuGn9, Category20, Viridis256, RdGy11, Reds256, YlOrRd9
 
 from peakipy.core import LoadData, read_config, StrucEl
-from check_panel import create_check_panel
 
 log_style = "overflow:scroll;"
 log_div = """<div style=%s>%s</div>"""
@@ -719,17 +718,17 @@ class BokehScript:
         if self.checkbox_group.active == []:
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
             # plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
-            self.check_pane = create_check_panel(
-                self.TEMP_OUT_CSV, self.data_path, edit_panel=True
-            )
+            # self.check_pane = create_check_panel(
+            #     self.TEMP_OUT_CSV, self.data_path, edit_panel=True
+            # )
             # plot_command = f"peakipy-check {self.TEMP_OUT_CSV} {self.data_path}"
         else:
             plane_index = self.select_plane.value
             print(f"[yellow]Only fitting plane {plane_index}[/yellow]")
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --plane {plane_index}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
-            self.check_pane = create_check_panel(
-                self.TEMP_OUT_CSV, self.data_path, edit_panel=True
-            )
+            # self.check_pane = create_check_panel(
+            #     self.TEMP_OUT_CSV, self.data_path, edit_panel=True
+            # )
             # plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane {plane_index} --show"
             # plot_command = f"peakipy-check {self.TEMP_OUT_CSV} {self.data_path}"
 
