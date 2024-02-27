@@ -75,8 +75,11 @@ app = typer.Typer()
 
 
 @app.command()
-def check_panel(
-    fits_path: Path, data_path: Path, config_path: Path = Path("./peakipy.config")
+def create_check_panel(
+    fits_path: Path,
+    data_path: Path,
+    config_path: Path = Path("./peakipy.config"),
+    edit_panel: bool = False,
 ):
     data = data_singleton()
     data.fits_path = fits_path
@@ -106,7 +109,10 @@ def check_panel(
         pn.Row(interactive_plotly_pane, interactive_cluster_pane),
         title="Peakipy check",
     )
-    check_pane.show()
+    if edit_panel:
+        return check_pane
+    else:
+        check_pane.show()
 
 
 if __name__ == "__main__":

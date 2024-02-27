@@ -85,7 +85,6 @@ from .fit import (
     FitPeaksInput,
     FitPeaksArgs,
 )
-from .edit import BokehScript
 from .spec import yaml_file
 
 app = typer.Typer()
@@ -1475,15 +1474,15 @@ def check(
 
                 if ccpn_flag:
                     plt = PlotterWidget()
-                else:
-                    plt = matplotlib.pyplot
-                create_matplotlib_figure(
-                    plot_data, pdf, individual, label, ccpn_flag, show
-                )
                 # fig = create_plotly_figure(plot_data)
                 if plotly:
                     fig = create_plotly_figure(plot_data)
                     return fig
+                else:
+                    plt = matplotlib.pyplot
+                    create_matplotlib_figure(
+                        plot_data, pdf, individual, label, ccpn_flag, show
+                    )
                 # surf = pn.pane.plotly.Plotly(fig)
                 # app = pn.Column(surf)
                 # app.show(threaded=True)
@@ -1501,6 +1500,7 @@ def edit(
 ):
     from bokeh.util.browser import view
     from bokeh.server.server import Server
+    from .edit import BokehScript
 
     run_log()
     bs = BokehScript(peaklist_path=peaklist_path, data_path=data_path)
