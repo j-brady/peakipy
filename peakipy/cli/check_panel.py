@@ -8,7 +8,7 @@ import typer
 from peakipy.cli.main import check, validate_fit_dataframe
 
 pn.extension()
-pn.config.theme = "dark"
+# pn.config.theme = "dark"
 
 
 @dataclass
@@ -104,8 +104,7 @@ def create_check_panel(
     )
     check_pane = pn.Card(
         info_pane,
-        select_cluster,
-        select_plane,
+        pn.Row(select_cluster, select_plane),
         pn.Row(interactive_plotly_pane, interactive_cluster_pane),
         title="Peakipy check",
     )

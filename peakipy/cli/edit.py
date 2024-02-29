@@ -85,7 +85,7 @@ class BokehScript:
             )
         )
         doc.title = "peakipy: Edit Fits"
-        doc.theme = "dark_minimal"
+        # doc.theme = "dark_minimal"
 
     @property
     def args(self):
@@ -496,45 +496,52 @@ class BokehScript:
             editable=True,
             width=1200,
         )
+
         self.table_style = InlineStyleSheet(
             css="""
-                .slick-header-columns {
-                    background-color: #00296b !important;
-                    font-family: arial;
-                    font-weight: bold;
-                    font-size: 12pt;
-                    color: #FFFFFF;
-                    text-align: right;
-                }
-                .slick-header-column:hover {
-                    background: none repeat scroll 0 0 #fdc500;
-                }
-                .slick-row {
-                    font-size: 12pt;
-                    font-family: arial;
-                    text-align: left;
-                }
-                .slick-row:hover{
-                    background: none repeat scroll 0 0 #7c7c7c;
-                }
-                .slick-cell {
-                    header-font-weight: 500;
-                    border-width: 1px 1px 1px 1px;
-                    border-color: #d4d4d4;
-                    background-color: #00509D;
-                    color: #FFFFFF;
-                    }
-                .slick-cell.selected {
-                    header-font-weight: 500;
-                    border-width: 1px 1px 1px 1px;
-                    border-color: #00509D;
-                    background-color: #FDC500;
-                    color: black;
-                }
-
-
-                """
+            .slick-row.even { background: #263140; }
+            .slick-row.odd { background: #505c6d; }
+            .slick-cell.l0 {background: #1f2937;}
+            """
         )
+        # self.table_style = InlineStyleSheet(
+        #     css="""
+        #         .slick-header-columns {
+        #             background-color: #00296b !important;
+        #             font-family: arial;
+        #             font-weight: bold;
+        #             font-size: 12pt;
+        #             color: #FFFFFF;
+        #             text-align: right;
+        #         }
+        #         .slick-header-column:hover {
+        #             background: none repeat scroll 0 0 #fdc500;
+        #         }
+        #         .slick-row {
+        #             font-size: 12pt;
+        #             font-family: arial;
+        #             text-align: left;
+        #         }
+        #         .slick-row:hover{
+        #             background: none repeat scroll 0 0 #7c7c7c;
+        #         }
+        #         .slick-cell {
+        #             header-font-weight: 500;
+        #             border-width: 1px 1px 1px 1px;
+        #             border-color: #d4d4d4;
+        #             background-color: #00509D;
+        #             color: #FFFFFF;
+        #             }
+        #         .slick-cell.selected {
+        #             header-font-weight: 500;
+        #             border-width: 1px 1px 1px 1px;
+        #             border-color: #00509D;
+        #             background-color: #FDC500;
+        #             color: black;
+        #         }
+
+        #         """
+        # )
 
         self.data_table.stylesheets = [self.table_style]
 
