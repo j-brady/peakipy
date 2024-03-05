@@ -673,6 +673,8 @@ def fit(
     max_cluster_size = warn_if_trying_to_fit_large_clusters(
         max_cluster_size, peakipy_data
     )
+    # remove peak clusters larger than max_cluster_size
+    peakipy_data.df = peakipy_data.df[peakipy_data.df.MEMCNT <= max_cluster_size]
 
     args["max_cluster_size"] = max_cluster_size
     args["to_fix"] = fix

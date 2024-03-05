@@ -1757,10 +1757,8 @@ class LoadData(Peaklist):
         self.df["X_AXISf"] = self.df.X_PPM.apply(lambda x: self.uc_f2.f(x, "ppm"))
         self.df["Y_AXISf"] = self.df.Y_PPM.apply(lambda x: self.uc_f1.f(x, "ppm"))
         # in case of missing values (should estimate though)
-        # self.df.XW_HZ.replace("None", "20.0", inplace=True)
-        # self.df.YW_HZ.replace("None", "20.0", inplace=True)
-        self.df.XW_HZ.replace(np.NaN, "20.0", inplace=True)
-        self.df.YW_HZ.replace(np.NaN, "20.0", inplace=True)
+        self.df["XW_HZ"] = self.df.XW_HZ.replace(np.NaN, "20.0")
+        self.df["YW_HZ"] = self.df.YW_HZ.replace(np.NaN, "20.0")
         # convert linewidths to float
         self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
         self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))
