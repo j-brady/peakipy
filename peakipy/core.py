@@ -29,7 +29,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 import nmrglue as ng
-import matplotlib.pyplot as plt
 import pandas as pd
 import textwrap
 from rich import print
@@ -38,14 +37,8 @@ from rich.console import Console
 
 from numpy import sqrt, log, pi, exp, finfo
 
-from lmfit import Model, Parameters
-from lmfit.model import ModelResult
-from lmfit.models import LinearModel
+from lmfit import Model
 from scipy.special import wofz
-
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.widgets import Button
 
 from bokeh.palettes import Category20
 from scipy import ndimage
@@ -1169,30 +1162,12 @@ class Peaklist(Pseudo3D):
 
         self._analysis_to_pipe_dic = {
             "#": "INDEX",
-            # "": "X_AXIS",
-            # "": "Y_AXIS",
-            # "": "DX",
-            # "": "DY",
             "Position F1": "X_PPM",
             "Position F2": "Y_PPM",
-            # "": "X_HZ",
-            # "": "Y_HZ",
-            # "": "XW",
-            # "": "YW",
             "Line Width F1 (Hz)": "XW_HZ",
             "Line Width F2 (Hz)": "YW_HZ",
-            # "": "X1",
-            # "": "X3",
-            # "": "Y1",
-            # "": "Y3",
             "Height": "HEIGHT",
-            # "Height": "DHEIGHT",
             "Volume": "VOL",
-            # "": "PCHI2",
-            # "": "TYPE",
-            # "": "ASS",
-            # "": "CLUSTID",
-            # "": "MEMCNT"
         }
         self._assign_to_pipe_dic = {
             "#": "INDEX",
@@ -1206,30 +1181,13 @@ class Peaklist(Pseudo3D):
 
         self._sparky_to_pipe_dic = {
             "index": "INDEX",
-            # "": "X_AXIS",
-            # "": "Y_AXIS",
-            # "": "DX",
-            # "": "DY",
             "w1": "X_PPM",
             "w2": "Y_PPM",
-            # "": "X_HZ",
-            # "": "Y_HZ",
-            # "": "XW",
-            # "": "YW",
             "lw1 (hz)": "XW_HZ",
             "lw2 (hz)": "YW_HZ",
-            # "": "X1",
-            # "": "X3",
-            # "": "Y1",
-            # "": "Y3",
             "Height": "HEIGHT",
-            # "Height": "DHEIGHT",
             "Volume": "VOL",
-            # "": "PCHI2",
-            # "": "TYPE",
             "Assignment": "ASS",
-            # "": "CLUSTID",
-            # "": "MEMCNT"
         }
 
         self._analysis_to_pipe_dic[posF1] = "Y_PPM"

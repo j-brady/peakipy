@@ -33,35 +33,44 @@ def data_singleton():
     return Data()
 
 
+def update_peakipy_data_on_edit_of_table(event):
+    data = data_singleton()
+    column = event.column
+    row = event.row
+    value = event.value
+    data.bs.peakipy_data.df.loc[row, column] = value
+    data.bs.update_memcnt()
+
+
 def panel_app():
     data = data_singleton()
     bs = data.bs
     bokeh_pane = pn.pane.Bokeh(bs.p)
-    # table_pane = pn.pane.Bokeh(bs.data_table)
-    table_pane = pn.widgets.Tabulator(
-        bs.peakipy_data.df[
-            [
-                "ASS",
-                "CLUSTID",
-                "X_PPM",
-                "Y_PPM",
-                "X_RADIUS_PPM",
-                "Y_RADIUS_PPM",
-                "XW_HZ",
-                "YW_HZ",
-                "VOL",
-                "include",
-                "MEMCNT",
-            ]
-        ]
-    )
-
     spectrum_view_settings = pn.WidgetBox(
         "# Contour settings", bs.pos_neg_contour_radiobutton, bs.contour_start
+    )
+    save_peaklist_box = pn.WidgetBox(
+        "# Save your peaklist",
+        bs.savefilename,
+        bs.button,
+        pn.layout.Divider(),
+        bs.exit_button,
+    )
+    recluster_settings = pn.WidgetBox(
+        "# Re-cluster your peaks",
+        bs.clust_div,
+        bs.struct_el,
+        bs.struct_el_size,
+        pn.layout.Divider(),
+        bs.recluster_warning,
+        bs.recluster,
+        sizing_mode="stretch_width",
     )
     button = pn.widgets.Button(name="Fit selected cluster(s)", button_type="primary")
     fit_controls = pn.WidgetBox(
         "# Fit controls",
+        button,
+        pn.layout.Divider(),
         bs.select_plane,
         bs.checkbox_group,
         pn.layout.Divider(),
@@ -76,32 +85,47 @@ def panel_app():
         pn.layout.Divider(),
         bs.select_lineshape_radiobuttons_help,
         bs.select_lineshape_radiobuttons,
-        pn.layout.Divider(),
-        button,
     )
 
     mask_adjustment_controls = pn.WidgetBox(
         "# Fitting mask adjustment", bs.slider_X_RADIUS, bs.slider_Y_RADIUS
     )
 
-    def b(event):
+    # bs.source.on_change()
+    def fit_peaks_button_click(event):
         check_app.loading = True
         bs.fit_selected(None)
         check_panel = create_check_panel(bs.TEMP_OUT_CSV, bs.data_path, edit_panel=True)
         check_app.objects = check_panel.objects
         check_app.loading = False
 
-    button.on_click(b)
+    button.on_click(fit_peaks_button_click)
+
+    def update_source_selected_indices(event):
+        print(event)
+        print(bs.tablulator_widget.selection)
+        bs.source.selected.indices = bs.tablulator_widget.selection
+
+    bs.tablulator_widget.on_click(update_source_selected_indices)
+    bs.tablulator_widget.on_edit(update_peakipy_data_on_edit_of_table)
+
     template = pn.template.BootstrapTemplate(
         title="Peakipy",
         sidebar=[mask_adjustment_controls, fit_controls],
     )
     spectrum = pn.Card(
-        pn.Column(pn.Row(bokeh_pane, spectrum_view_settings), table_pane),
+        pn.Column(
+            pn.Row(
+                bokeh_pane,
+                pn.Column(spectrum_view_settings, save_peaklist_box),
+                recluster_settings,
+            ),
+            bs.tablulator_widget,
+        ),
         title="Peakipy fit",
     )
     check_app = pn.Card(title="Peakipy check")
-    template.main.append(pn.Row(spectrum, check_app))
+    template.main.append(pn.Column(check_app, spectrum))
     template.show()
 
 

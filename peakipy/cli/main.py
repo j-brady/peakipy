@@ -766,33 +766,30 @@ def fit(
 
 
 def validate_plane_selection(plane, pseudo3D):
-    if plane > pseudo3D.n_planes:
+    if (plane == []) or (plane == None):
+        plane = list(range(pseudo3D.n_planes))
+
+    elif max(plane) > (pseudo3D.n_planes - 1):
         raise ValueError(
-            f"[red]There are {pseudo3D.n_planes} planes in your data you selected --plane {plane}...[red]"
+            f"[red]There are {pseudo3D.n_planes} planes in your data you selected --plane {max(plane)}...[red]"
             f"plane numbering starts from 0."
         )
-    elif plane < 0:
+    elif min(plane) < 0:
         raise ValueError(
-            f"[red]Plane number can not be negative; you selected --plane {plane}...[/red]"
+            f"[red]Plane number can not be negative; you selected --plane {min(plane)}...[/red]"
         )
     else:
-        return plane
+        plane = sorted(plane)
+
+    return plane
 
 
-def validate_ccount(ccount):
-    if type(ccount) == int:
-        ccount = ccount
+def validate_sample_count(sample_count):
+    if type(sample_count) == int:
+        sample_count = sample_count
     else:
-        raise TypeError("ccount should be an integer")
-    return ccount
-
-
-def validate_rcount(rcount):
-    if type(rcount) == int:
-        rcount = rcount
-    else:
-        raise TypeError("rcount should be an integer")
-    return rcount
+        raise TypeError("Sample count (ccount, rcount) should be an integer")
+    return sample_count
 
 
 def unpack_plotting_colors(colors):
@@ -1107,7 +1104,7 @@ def create_matplotlib_figure(
         else:
             pdf.savefig()
 
-        plt.close()
+            plt.close()
 
 
 def create_plotly_wireframe_lines(plot_data: PlottingDataForPlane):
@@ -1309,7 +1306,7 @@ def check(
     fits: Path,
     data_path: Path,
     clusters: Optional[List[int]] = None,
-    plane: int = 0,
+    plane: Optional[List[int]] = None,
     outname: Path = Path("plots.pdf"),
     first: bool = False,
     show: bool = False,
@@ -1387,17 +1384,15 @@ def check(
 
     # first only overrides plane option
     if first:
-        plane = 0
+        selected_planes = [0]
     else:
-        plane = plane
-
-    selected_plane = validate_plane_selection(plane, pseudo3D)
-    ccount = validate_ccount(ccount)
-    rcount = validate_rcount(rcount)
+        selected_planes = validate_plane_selection(plane, pseudo3D)
+    ccount = validate_sample_count(ccount)
+    rcount = validate_sample_count(rcount)
     data_color, fit_color = unpack_plotting_colors(colors)
     fits = get_fit_data_for_selected_peak_clusters(fits, clusters)
 
-    peak_clusters = fits.query(f"plane=={selected_plane}").groupby("clustid")
+    peak_clusters = fits.query(f"plane in @selected_planes").groupby("clustid")
 
     # make plotting meshes
     x = np.arange(pseudo3D.f2_size)
@@ -1430,7 +1425,7 @@ def check(
             empty_mask_array = np.zeros(
                 (pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool
             )
-            first_plane = peak_cluster[peak_cluster.plane == selected_plane]
+            first_plane = peak_cluster[peak_cluster.plane == selected_planes[0]]
             individual_masks, mask = make_masks_from_plane_data(
                 empty_mask_array, first_plane
             )

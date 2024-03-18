@@ -8,7 +8,6 @@ import typer
 from peakipy.cli.main import check, validate_fit_dataframe
 
 pn.extension()
-# pn.config.theme = "dark"
 
 
 @dataclass
@@ -35,7 +34,7 @@ def get_cluster(cluster):
     data = data_singleton()
     cluster_groups = data.df.groupby("clustid")
     cluster_group = cluster_groups.get_group(cluster)
-    df_pane = pn.pane.DataFrame(
+    df_pane = pn.widgets.Tabulator(
         cluster_group[
             [
                 "assignment",
@@ -47,10 +46,12 @@ def get_cluster(cluster):
                 "center_x_ppm",
                 "center_y_ppm",
                 "fwhm_x_hz",
-                "fwhm_x_hz",
+                "fwhm_y_hz",
                 "lineshape",
             ]
-        ]
+        ],
+        selectable=False,
+        disabled=True,
     )
     return df_pane
 
@@ -61,7 +62,7 @@ def create_plotly_pane(cluster, plane):
         fits=data.fits_path,
         data_path=data.data_path,
         clusters=[cluster],
-        plane=plane,
+        plane=[plane],
         config_path=data.config_path,
         plotly=True,
     )
@@ -105,7 +106,14 @@ def create_check_panel(
     check_pane = pn.Card(
         info_pane,
         pn.Row(select_cluster, select_plane),
-        pn.Row(interactive_plotly_pane, interactive_cluster_pane),
+        pn.Row(
+            pn.Column(
+                pn.Card(interactive_plotly_pane, title="Fitted cluster"),
+                pn.Card(
+                    interactive_cluster_pane, title="Fitted parameters for cluster"
+                ),
+            )
+        ),
         title="Peakipy check",
     )
     if edit_panel:

@@ -52,8 +52,6 @@ class BokehScript:
         self._path = peaklist_path
         self._data_path = data_path
         args, config = read_config({})
-        # self.args = args
-        # self.config = config
         self._dims = config.get("dims", [0, 1, 2])
         self.thres = config.get("thres", 1e6)
         self._peakipy_data = LoadData(
@@ -64,6 +62,7 @@ class BokehScript:
         # make temporary paths
         self.make_temp_files()
         self.make_data_source()
+        self.make_tabulator_widget()
         self.setup_radii_sliders()
         self.setup_save_buttons()
         self.setup_set_fixed_parameters()
@@ -119,6 +118,34 @@ class BokehScript:
         self.source = ColumnDataSource()
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
         return self.source
+
+    @property
+    def tabulator_columns(self):
+        columns = [
+            "ASS",
+            "CLUSTID",
+            "X_PPM",
+            "Y_PPM",
+            "X_RADIUS_PPM",
+            "Y_RADIUS_PPM",
+            "XW_HZ",
+            "YW_HZ",
+            "VOL",
+            "include",
+            "MEMCNT",
+        ]
+        return columns
+
+    def make_tabulator_widget(self):
+        self.tablulator_widget = pn.widgets.Tabulator(
+            self.peakipy_data.df[self.tabulator_columns],
+        )
+        return self.tablulator_widget
+
+    def select_callback(self, attrname, old, new):
+        for col in self.peakipy_data.df.columns:
+            self.peakipy_data.df.loc[:, col] = self.source.data[col]
+        self.update_memcnt()
 
     def setup_radii_sliders(self):
         # configure sliders for setting radii
@@ -399,10 +426,15 @@ class BokehScript:
         )
         self.clust_div = Div(
             text="""If you want to adjust how the peaks are automatically clustered then try changing the
-                width/diameter/height (integer values) of the structuring element used during the binary dilation step
-                (you can also remove it by selecting 'None'). Increasing the size of the structuring element will cause
-                peaks to be more readily incorporated into clusters. Be sure to save your peak list before doing this as
-                any manual edits will be lost."""
+                width/diameter/height (integer values) of the structuring element used during the binary dilation step.
+                Increasing the size of the structuring element will cause
+                peaks to be more readily incorporated into clusters. The mask_method scales the fitting masks based on
+                the provided floating point value and considers any overlapping masks to be part of a cluster.""",
+        )
+        self.recluster_warning = Div(
+            text="""
+                Be sure to save your peak list before reclustering as
+                any manual edits to clusters will be lost.""",
         )
         self.intro_div = Div(
             text="""<h2>peakipy - interactive fit adjustment </h2>
@@ -434,170 +466,17 @@ class BokehScript:
             labels=["fit current plane only"], active=[]
         )
 
-        #  not sure this is needed
-        selected_df = self.peakipy_data.df.copy()
-
         self.fit_button.on_event(ButtonClick, self.fit_selected)
-
-        columns = [
-            TableColumn(field="ASS", title="Assignment", width=500),
-            TableColumn(field="CLUSTID", title="Cluster", editor=IntEditor()),
-            TableColumn(
-                field="X_PPM",
-                title=f"{self.peakipy_data.f2_label}",
-                editor=NumberEditor(step=0.0001),
-                formatter=NumberFormatter(format="0.0000"),
-            ),
-            TableColumn(
-                field="Y_PPM",
-                title=f"{self.peakipy_data.f1_label}",
-                editor=NumberEditor(step=0.0001),
-                formatter=NumberFormatter(format="0.0000"),
-            ),
-            TableColumn(
-                field="X_RADIUS_PPM",
-                title=f"{self.peakipy_data.f2_label} radius (ppm)",
-                editor=NumberEditor(step=0.0001),
-                formatter=NumberFormatter(format="0.0000"),
-            ),
-            TableColumn(
-                field="Y_RADIUS_PPM",
-                title=f"{self.peakipy_data.f1_label} radius (ppm)",
-                editor=NumberEditor(step=0.0001),
-                formatter=NumberFormatter(format="0.0000"),
-            ),
-            TableColumn(
-                field="XW_HZ",
-                title=f"{self.peakipy_data.f2_label} LW (Hz)",
-                editor=NumberEditor(step=0.01),
-                formatter=NumberFormatter(format="0.00"),
-            ),
-            TableColumn(
-                field="YW_HZ",
-                title=f"{self.peakipy_data.f1_label} LW (Hz)",
-                editor=NumberEditor(step=0.01),
-                formatter=NumberFormatter(format="0.00"),
-            ),
-            TableColumn(
-                field="VOL", title="Volume", formatter=NumberFormatter(format="0.0")
-            ),
-            TableColumn(
-                field="include",
-                title="Include",
-                width=7,
-                editor=SelectEditor(options=["yes", "no"]),
-            ),
-            TableColumn(field="MEMCNT", title="MEMCNT", editor=IntEditor()),
-        ]
-
-        self.data_table = DataTable(
-            source=self.source,
-            columns=columns,
-            editable=True,
-            width=1200,
-        )
-
-        self.table_style = InlineStyleSheet(
-            css="""
-            .slick-row.even { background: #263140; }
-            .slick-row.odd { background: #505c6d; }
-            .slick-cell.l0 {background: #1f2937;}
-            """
-        )
-        # self.table_style = InlineStyleSheet(
-        #     css="""
-        #         .slick-header-columns {
-        #             background-color: #00296b !important;
-        #             font-family: arial;
-        #             font-weight: bold;
-        #             font-size: 12pt;
-        #             color: #FFFFFF;
-        #             text-align: right;
-        #         }
-        #         .slick-header-column:hover {
-        #             background: none repeat scroll 0 0 #fdc500;
-        #         }
-        #         .slick-row {
-        #             font-size: 12pt;
-        #             font-family: arial;
-        #             text-align: left;
-        #         }
-        #         .slick-row:hover{
-        #             background: none repeat scroll 0 0 #7c7c7c;
-        #         }
-        #         .slick-cell {
-        #             header-font-weight: 500;
-        #             border-width: 1px 1px 1px 1px;
-        #             border-color: #d4d4d4;
-        #             background-color: #00509D;
-        #             color: #FFFFFF;
-        #             }
-        #         .slick-cell.selected {
-        #             header-font-weight: 500;
-        #             border-width: 1px 1px 1px 1px;
-        #             border-color: #00509D;
-        #             background-color: #FDC500;
-        #             color: black;
-        #         }
-
-        #         """
-        # )
-
-        self.data_table.stylesheets = [self.table_style]
 
         # callback for adding
         # source.selected.on_change('indices', callback)
         self.source.selected.on_change("indices", self.select_callback)
 
-        # # Document layout
-        # fitting_controls = column(
-        #     row(
-        #         column(self.slider_X_RADIUS, self.slider_Y_RADIUS),
-        #         column(
-        #             row(column(self.contour_start, self.pos_neg_contour_radiobutton)),
-        #             column(self.fit_button),
-        #         ),
-        #     ),
-        #     row(
-        #         column(column(self.select_lineshape_radiobuttons_help), column(self.select_lineshape_radiobuttons)),
-        #         column(column(self.select_plane), column(self.checkbox_group)),
-        #         column(self.select_fixed_parameters_help, self.select_fixed_parameters),
-        #         column(self.select_reference_planes)
-        #     ),
-        #     max_width=400,
-        # )
-        fitting_controls = row(
-            column(
-                self.slider_X_RADIUS,
-                self.slider_Y_RADIUS,
-                self.contour_start,
-                self.pos_neg_contour_radiobutton,
-                self.select_lineshape_radiobuttons_help,
-                self.select_lineshape_radiobuttons,
-                max_width=400,
-            ),
-            column(
-                self.select_plane,
-                self.checkbox_group,
-                self.select_fixed_parameters_help,
-                self.select_fixed_parameters,
-                self.set_xybounds_help,
-                self.set_xybounds,
-                self.select_reference_planes_help,
-                self.select_reference_planes,
-                self.set_initial_fit_threshold_help,
-                self.set_initial_fit_threshold,
-                self.fit_button,
-                max_width=400,
-            ),
-            max_width=800,
-        )
-
         # reclustering tab
         self.struct_el = Select(
             title="Structuring element:",
             value=StrucEl.disk.value,
-            options=[i.value for i in StrucEl] + ["None"],
+            options=[i.value for i in StrucEl],
             width=100,
         )
         self.struct_el_size = TextInput(
@@ -608,36 +487,6 @@ class BokehScript:
 
         self.recluster = Button(label="Re-cluster", button_type="warning")
         self.recluster.on_event(ButtonClick, self.recluster_peaks)
-
-        # edit_fits tabs
-        fitting_layout = fitting_controls
-        log_layout = self.fit_reports_div
-        recluster_layout = column(
-            row(
-                self.clust_div,
-            ),
-            row(
-                column(
-                    self.contour_start,
-                    self.struct_el,
-                    self.struct_el_size,
-                    self.recluster,
-                )
-            ),
-            max_width=400,
-        )
-        save_layout = column(
-            self.savefilename, self.button, self.exit_button, max_width=400
-        )
-
-        fitting_tab = TabPanel(child=fitting_layout, title="Peak fitting")
-        log_tab = TabPanel(child=log_layout, title="Log")
-        recluster_tab = TabPanel(child=recluster_layout, title="Re-cluster peaks")
-        save_tab = TabPanel(child=save_layout, title="Save edited peaklist")
-        self.tabs = Tabs(
-            tabs=[fitting_tab, log_tab, recluster_tab, save_tab],
-            sizing_mode="scale_both",
-        )
 
     def recluster_peaks(self, event):
         if self.struct_el.value == "mask_method":
@@ -658,7 +507,7 @@ class BokehScript:
             )
         # update data source
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-
+        self.tablulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
         return self.peakipy_data.df
 
     def update_memcnt(self):
@@ -675,6 +524,7 @@ class BokehScript:
         self.peakipy_data.df.loc[include_no, "color"] = "ghostwhite"
         # update source data
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+        self.tablulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
         return self.peakipy_data.df
 
     def unpack_parameters_to_fix(self):
@@ -690,12 +540,12 @@ class BokehScript:
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
 
-        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = (
-            self.slider_X_RADIUS.value
-        )
-        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = (
-            self.slider_Y_RADIUS.value
-        )
+        # self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = (
+        #     self.slider_X_RADIUS.value
+        # )
+        # self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = (
+        #     self.slider_Y_RADIUS.value
+        # )
 
         self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
             current["X_RADIUS_PPM"] * 2.0
@@ -724,20 +574,10 @@ class BokehScript:
         print(f"[yellow]Using LS = {lineshape}[/yellow]")
         if self.checkbox_group.active == []:
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
-            # plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --show --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')}"
-            # self.check_pane = create_check_panel(
-            #     self.TEMP_OUT_CSV, self.data_path, edit_panel=True
-            # )
-            # plot_command = f"peakipy-check {self.TEMP_OUT_CSV} {self.data_path}"
         else:
             plane_index = self.select_plane.value
             print(f"[yellow]Only fitting plane {plane_index}[/yellow]")
             fit_command = f"peakipy fit {self.TEMP_INPUT_CSV} {self.data_path} {self.TEMP_OUT_CSV} --lineshape {lineshape} --plane {plane_index}{fix_command}{reference_planes_command}{initial_fit_threshold_command}{xy_bounds_command}"
-            # self.check_pane = create_check_panel(
-            #     self.TEMP_OUT_CSV, self.data_path, edit_panel=True
-            # )
-            # plot_command = f"peakipy check {self.TEMP_OUT_CSV} {self.data_path} --label --individual --outname {self.TEMP_OUT_PLOT / Path('tmp.pdf')} --plane {plane_index} --show"
-            # plot_command = f"peakipy-check {self.TEMP_OUT_CSV} {self.data_path}"
 
         print(f"[blue]{fit_command}[/blue]")
         self.fit_reports += fit_command + "<br>"
@@ -746,8 +586,6 @@ class BokehScript:
         self.fit_reports += stdout.decode() + "<br><hr><br>"
         self.fit_reports = self.fit_reports.replace("\n", "<br>")
         self.fit_reports_div.text = log_div % (log_style, self.fit_reports)
-        # plot data
-        # os.system(plot_command)
 
     def save_peaks(self, event):
         if self.savefilename.value:
@@ -764,18 +602,6 @@ class BokehScript:
             self.peakipy_data.df.to_csv(to_save, float_format="%.4f", index=False)
         else:
             self.peakipy_data.df.to_pickle(to_save)
-
-    def select_callback(self, attrname, old, new):
-        # print(Fore.RED + "Calling Select Callback")
-        # selectionIndex = self.source.selected.indices
-        # current = self.peakipy_data.df.iloc[selectionIndex]
-
-        for col in self.peakipy_data.df.columns:
-            self.peakipy_data.df.loc[:, col] = self.source.data[col]
-        # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-        # update memcnt
-        self.update_memcnt()
-        # print(Fore.YELLOW + "Finished Calling Select Callback")
 
     def peak_pick_callback(self, event):
         # global so that df is updated globally
@@ -836,82 +662,33 @@ class BokehScript:
         )
         self.update_memcnt()
 
-    def slider_callback_x(self, attrname, old, new):
+    def slider_callback(self, dim, channel):
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
-        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS"] = (
-            self.slider_X_RADIUS.value * self.peakipy_data.pt_per_ppm_f2
-        )
-        self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = (
-            self.slider_X_RADIUS.value
-        )
+        self.peakipy_data.df.loc[selectionIndex, f"{dim}_RADIUS"] = getattr(
+            self, f"slider_{dim}_RADIUS"
+        ).value * getattr(self.peakipy_data, f"pt_per_ppm_{channel}")
+        self.peakipy_data.df.loc[selectionIndex, f"{dim}_RADIUS_PPM"] = getattr(
+            self, f"slider_{dim}_RADIUS"
+        ).value
 
-        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
-            current["X_RADIUS_PPM"] * 2.0
+        self.peakipy_data.df.loc[selectionIndex, f"{dim}_DIAMETER_PPM"] = (
+            current[f"{dim}_RADIUS_PPM"] * 2.0
         )
-        self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER"] = (
-            current["X_RADIUS"] * 2.0
+        self.peakipy_data.df.loc[selectionIndex, f"{dim}_DIAMETER"] = (
+            current[f"{dim}_RADIUS"] * 2.0
         )
 
         # set edited rows to True
         self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
-
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
+        self.tablulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
+
+    def slider_callback_x(self, attrname, old, new):
+        self.slider_callback("X", "f2")
 
     def slider_callback_y(self, attrname, old, new):
-        selectionIndex = self.source.selected.indices
-        current = self.peakipy_data.df.iloc[selectionIndex]
-        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS"] = (
-            self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
-        )
-        self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = (
-            self.slider_Y_RADIUS.value
-        )
-
-        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER_PPM"] = (
-            current["Y_RADIUS_PPM"] * 2.0
-        )
-        self.peakipy_data.df.loc[selectionIndex, "Y_DIAMETER"] = (
-            current["Y_RADIUS"] * 2.0
-        )
-
-        # set edited rows to True
-        self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
-
-        self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-
-    # def slider_callback(self, attrname, old, new, dim="X"):
-    #
-    #     selectionIndex = self.source.selected.indices
-    #     current = self.peakipy_data.df.iloc[selectionIndex]
-    #     self.peakipy_data.df.loc[selectionIndex, f"{dim}_RADIUS"] = (
-    #             self.slider_Y_RADIUS.value * self.peakipy_data.pt_per_ppm_f1
-    #     )
-    #     self.peakipy_data.df.loc[
-    #         selectionIndex, f"{dim}_RADIUS_PPM"
-    #     ] = self.slider_Y_RADIUS.value
-    #
-    #     self.peakipy_data.df.loc[selectionIndex, f"{dim}_DIAMETER_PPM"] = (
-    #             current[f"{dim}_RADIUS_PPM"] * 2.0
-    #     )
-    #     self.peakipy_data.df.loc[selectionIndex, f"{dim}_DIAMETER"] = (
-    #             current[f"{dim}_RADIUS"] * 2.0
-    #     )
-    #
-    #     set edited rows to True
-    #     self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
-
-    # selected_df = df[df.CLUSTID.isin(list(current.CLUSTID))]
-    # print(list(selected_df))
-    # self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-
-    # def slider_callback_x(self, attrname, old, new):
-    #
-    #     self.slider_callback(attrname, old, new, dim="X")
-    #
-    # def slider_callback_y(self, attrname, old, new):
-    #
-    #     self.slider_callback(attrname, old, new, dim="Y")
+        self.slider_callback("Y", "f1")
 
     def update_contour(self, attrname, old, new):
         new_cs = eval(self.contour_start.value)
