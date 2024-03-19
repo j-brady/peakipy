@@ -215,10 +215,6 @@ def read(
 
     """
 
-    # verbose_mode = args.get("--verb")
-    # if verbose_mode:
-    #    print("Using arguments:", args)
-
     clust_args = {
         "struc_el": struc_el,
         "struc_size": struc_size,
@@ -241,7 +237,6 @@ def read(
                 posF1=y_ppm_column_name,
                 posF2=x_ppm_column_name,
             )
-            # peaks.adaptive_clusters(block_size=151,offset=0)
 
         case peaklist_format.a3:
             peaks = Peaklist(
@@ -291,9 +286,6 @@ def read(
 
     if fuda:
         peaks.to_fuda()
-
-    # if verbose_mode:
-    #    print(data.head())
 
     match outfmt.value:
         case "csv":
@@ -1053,12 +1045,10 @@ def create_matplotlib_figure(
         # axes will appear inverted
         ax.view_init(30, 120)
 
-        # names = ",".join(plane.assignment)
         title = f"Plane={plot_data.plane_id},Cluster={plot_data.plane_lineshape_parameters.clustid.iloc[0]}"
         plt.title(title)
         print(f"[green]Plotting: {title}[/green]")
         out_str = "Volumes (Heights)\n===========\n"
-        # chi2s = []
         for _, row in plot_data.plane_lineshape_parameters.iterrows():
             out_str += f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
             if label:
@@ -1199,10 +1189,23 @@ def create_plotly_surfaces(plot_data: PlottingDataForPlane):
 
 
 def create_residual_contours(plot_data: PlottingDataForPlane):
-    data = []
-    contours = go.Contour(x=plot_data.x_plot, y=plot_data.y_plot, z=plot_data.residual)
-    data.append(contours)
-    return data
+    contours = go.Contour(
+        x=plot_data.x_plot[0], y=plot_data.y_plot.T[0], z=plot_data.residual
+    )
+    return contours
+
+
+def create_residual_figure(plot_data: PlottingDataForPlane):
+    data = create_residual_contours(plot_data)
+    fig = go.Figure(data=data)
+    fig.update_layout(
+        title="Fit residuals",
+        xaxis_title=f"{plot_data.pseudo3D.f2_label} ppm",
+        yaxis_title=f"{plot_data.pseudo3D.f1_label} ppm",
+        xaxis=dict(range=[plot_data.x_plot.max(), plot_data.x_plot.min()]),
+        yaxis=dict(range=[plot_data.y_plot.max(), plot_data.y_plot.min()]),
+    )
+    return fig
 
 
 def create_plotly_figure(plot_data: PlottingDataForPlane):
@@ -1210,9 +1213,6 @@ def create_plotly_figure(plot_data: PlottingDataForPlane):
     surfaces = create_plotly_surfaces(plot_data)
     # residuals = create_residual_contours(plot_data)
     fig = go.Figure(data=lines + surfaces)
-    # layout = go.Layout(showlegend=True)
-    # fig.update_layout(layout)
-    # fig.update_traces(showlegend=True)
     fig = update_axis_ranges(fig, plot_data)
     return fig
 
@@ -1222,6 +1222,8 @@ def update_axis_ranges(fig, plot_data: PlottingDataForPlane):
         scene=dict(
             xaxis=dict(range=[plot_data.x_plot.max(), plot_data.x_plot.min()]),
             yaxis=dict(range=[plot_data.y_plot.max(), plot_data.y_plot.min()]),
+            xaxis_title=f"{plot_data.pseudo3D.f2_label} ppm",
+            yaxis_title=f"{plot_data.pseudo3D.f1_label} ppm",
             annotations=make_annotations(plot_data),
         )
     )
@@ -1474,39 +1476,17 @@ def check(
                 # fig = create_plotly_figure(plot_data)
                 if plotly:
                     fig = create_plotly_figure(plot_data)
-                    return fig
+                    residual_fig = create_residual_figure(plot_data)
+                    return fig, residual_fig
                 else:
                     plt = matplotlib.pyplot
                     create_matplotlib_figure(
                         plot_data, pdf, individual, label, ccpn_flag, show
                     )
-                # surf = pn.pane.plotly.Plotly(fig)
-                # app = pn.Column(surf)
-                # app.show(threaded=True)
                 if first:
                     break
 
     run_log()
-
-
-@app.command(help="Interactive Bokeh dashboard for configuring fitting parameters")
-def edit(
-    peaklist_path: Path,
-    data_path: Path,
-    test: bool = False,
-):
-    from bokeh.util.browser import view
-    from bokeh.server.server import Server
-    from .edit import BokehScript
-
-    run_log()
-    bs = BokehScript(peaklist_path=peaklist_path, data_path=data_path)
-    if not test:
-        server = Server({"/edit": bs.init})
-        server.start()
-        print("[green]Opening peakipy: Edit fits on http://localhost:5006/edit[/green]")
-        server.io_loop.add_callback(server.show, "/edit")
-        server.io_loop.start()
 
 
 def make_yaml_file(name, yaml_file=yaml_file):

@@ -56,9 +56,15 @@ def get_cluster(cluster):
     return df_pane
 
 
+@dataclass
+class PlotContainer:
+    main_figure: pn.pane.Plotly
+    residual_figure: pn.pane.Plotly
+
+
 def create_plotly_pane(cluster, plane):
     data = data_singleton()
-    fig = check(
+    fig, residual_fig = check(
         fits=data.fits_path,
         data_path=data.data_path,
         clusters=[cluster],
@@ -69,7 +75,8 @@ def create_plotly_pane(cluster, plane):
 
     fig["layout"].update(height=800, width=800)
     fig = fig.to_dict()
-    return pn.pane.Plotly(fig)
+    residual_fig = residual_fig.to_dict()
+    return pn.Column(pn.pane.Plotly(fig), pn.pane.Plotly(residual_fig))
 
 
 app = typer.Typer()
@@ -96,7 +103,7 @@ def create_check_panel(
     select_plane = pn.widgets.Select(
         name="Plane", options={f"{plane}": plane for plane in data.df.plane.unique()}
     )
-    interactive_cluster_pane = pn.bind(get_cluster, select_cluster)
+    result_table_pane = pn.bind(get_cluster, select_cluster)
     interactive_plotly_pane = pn.bind(
         create_plotly_pane, cluster=select_cluster, plane=select_plane
     )
@@ -104,14 +111,15 @@ def create_check_panel(
         "Select a cluster and plane to look at from the dropdown menus"
     )
     check_pane = pn.Card(
-        info_pane,
-        pn.Row(select_cluster, select_plane),
+        # info_pane,
+        # pn.Row(select_cluster, select_plane),
         pn.Row(
             pn.Column(
-                pn.Card(interactive_plotly_pane, title="Fitted cluster"),
-                pn.Card(
-                    interactive_cluster_pane, title="Fitted parameters for cluster"
+                pn.Row(
+                    pn.Card(interactive_plotly_pane, title="Fitted cluster"),
+                    pn.Column(info_pane, select_cluster, select_plane),
                 ),
+                pn.Card(result_table_pane, title="Fitted parameters for cluster"),
             )
         ),
         title="Peakipy check",

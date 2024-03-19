@@ -23,7 +23,7 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 from enum import Enum
 from dataclasses import dataclass, field
 
@@ -1514,28 +1514,6 @@ class Peaklist(Pseudo3D):
             axis=1,
         )
         return ClustersResult(labeled_array, num_features, closed_data, peaks)
-
-    # def adaptive_clusters(self, block_size, offset, l_struc=None):
-
-    #     self.thresh = threshold_otsu(self.data[0])
-
-    #     peaks = [[y, x] for y, x in zip(self.df.Y_AXIS, self.df.X_AXIS)]
-
-    #     binary_adaptive = threshold_adaptive(
-    #         self.data[0], block_size=block_size, offset=offset
-    #     )
-
-    #     labeled_array, num_features = ndimage.label(binary_adaptive, l_struc)
-    #     # print(labeled_array, num_features)
-
-    #     self.df["CLUSTID"] = [labeled_array[i[0], i[1]] for i in peaks]
-
-    #     #  renumber "0" clusters
-    #     max_clustid = self.df["CLUSTID"].max()
-    #     n_of_zeros = len(self.df[self.df["CLUSTID"] == 0]["CLUSTID"])
-    #     self.df.loc[self.df[self.df["CLUSTID"] == 0].index, "CLUSTID"] = np.arange(
-    #         max_clustid + 1, n_of_zeros + max_clustid + 1, dtype=int
-    #     )
 
     def mask_method(self, overlap=1.0, l_struc=None):
         """connect clusters based on overlap of fitting masks

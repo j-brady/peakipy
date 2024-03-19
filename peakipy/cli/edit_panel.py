@@ -102,8 +102,8 @@ def panel_app():
     button.on_click(fit_peaks_button_click)
 
     def update_source_selected_indices(event):
-        print(event)
-        print(bs.tablulator_widget.selection)
+        # print(event)
+        # print(bs.tablulator_widget.selection)
         bs.source.selected.indices = bs.tablulator_widget.selection
 
     bs.tablulator_widget.on_click(update_source_selected_indices)

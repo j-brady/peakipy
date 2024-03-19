@@ -17,21 +17,14 @@ from rich import print
 
 import panel as pn
 
-from bokeh.io import curdoc
 from bokeh.events import ButtonClick, DoubleTap
-from bokeh.layouts import row, column, grid
-from bokeh.models import ColumnDataSource, Tabs, TabPanel, InlineStyleSheet
+from bokeh.layouts import row, column
+from bokeh.models import ColumnDataSource
 from bokeh.models.tools import HoverTool
 from bokeh.models.widgets import (
     Slider,
     Select,
     Button,
-    DataTable,
-    TableColumn,
-    NumberFormatter,
-    NumberEditor,
-    IntEditor,
-    SelectEditor,
     TextInput,
     RadioButtonGroup,
     CheckboxGroup,
@@ -136,9 +129,15 @@ class BokehScript:
         ]
         return columns
 
+    @property
+    def tabulator_non_editable_columns(self):
+        editors = {"X_RADIUS_PPM": None, "Y_RADIUS_PPM": None}
+        return editors
+
     def make_tabulator_widget(self):
         self.tablulator_widget = pn.widgets.Tabulator(
             self.peakipy_data.df[self.tabulator_columns],
+            editors=self.tabulator_non_editable_columns,
         )
         return self.tablulator_widget
 
@@ -321,10 +320,7 @@ class BokehScript:
         self.contour_start = TextInput(
             value="%.2e" % self.thres, title="Contour level:", width=100
         )
-        # contour_factor = Slider(title="contour factor", value=1.20, start=1., end=2.,step=0.05)
         self.contour_start.on_change("value", self.update_contour)
-        # for w in [contour_num,contour_start,contour_factor]:
-        #    w.on_change("value",update_contour)
 
         #  plot mask outlines
         el = self.p.ellipse(
@@ -539,13 +535,6 @@ class BokehScript:
     def fit_selected(self, event):
         selectionIndex = self.source.selected.indices
         current = self.peakipy_data.df.iloc[selectionIndex]
-
-        # self.peakipy_data.df.loc[selectionIndex, "X_RADIUS_PPM"] = (
-        #     self.slider_X_RADIUS.value
-        # )
-        # self.peakipy_data.df.loc[selectionIndex, "Y_RADIUS_PPM"] = (
-        #     self.slider_Y_RADIUS.value
-        # )
 
         self.peakipy_data.df.loc[selectionIndex, "X_DIAMETER_PPM"] = (
             current["X_RADIUS_PPM"] * 2.0

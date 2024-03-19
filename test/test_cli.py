@@ -154,22 +154,3 @@ def test_check_main_with_pv_pv(protein_L):
         individual=True,
     )
     peakipy.cli.main.check(**args)
-
-
-# def test_edit_with_default(protein_L):
-#     args = dict(
-#         peaklist_path=protein_L / Path("peaks.csv"),
-#         data_path=protein_L / Path("test1.ft2"),
-#         test=True,
-#     )
-#     peakipy.cli.main.edit(**args)
-
-
-# if __name__ == "__main__":
-
-#     unittest.TestLoader.sortTestMethodsUsing = None
-#     unittest.main(verbosity=2)
-#     to_clean = ["test.csv", "peakipy.config", "run_log.txt", "fits.csv"]
-#     for i in to_clean:
-#         print(f"Deleting: {i}")
-#         shutil.rmtree(i)
