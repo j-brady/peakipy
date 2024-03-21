@@ -1728,7 +1728,28 @@ class LoadData(Peaklist):
         self.check_peak_bounds()
 
 
-def read_config(args, config_path="peakipy.config"):
+def load_config(config_path):
+    if config_path.exists():
+        with open(config_path) as opened_config:
+            config_dic = json.load(opened_config)
+            return config_dic
+    else:
+        return {}
+
+
+def write_config(config_path, config_dic):
+    with open(config_path, "w") as config:
+        config.write(json.dumps(config_dic, sort_keys=True, indent=4))
+
+
+def update_config_file(config_path, config_kvs):
+    config_dic = load_config(config_path)
+    config_dic.update(config_kvs)
+    write_config(config_path, config_dic)
+    return config_dic
+
+
+def update_args_with_values_from_config_file(args, config_path="peakipy.config"):
     """read a peakipy config file, extract params and update args dict
 
     :param args: dict containing params extracted from docopt command line
@@ -1746,17 +1767,16 @@ def read_config(args, config_path="peakipy.config"):
     config_path = Path(config_path)
     if config_path.exists():
         try:
-            with open(config_path) as config_file:
-                config = json.load(config_file)
-                print(
-                    f"[green]Using config file with dims [yellow]{config.get('dims')}[/yellow][/green]"
-                )
-                args["dims"] = config.get("dims", [0, 1, 2])
-                noise = config.get("noise")
-                if noise:
-                    noise = float(noise)
+            config = load_config(config_path)
+            print(
+                f"[green]Using config file with dims [yellow]{config.get('dims')}[/yellow][/green]"
+            )
+            args["dims"] = config.get("dims", (0, 1, 2))
+            noise = config.get("noise")
+            if noise:
+                noise = float(noise)
 
-                colors = config.get("colors", ["#5e3c99", "#e66101"])
+            colors = config.get("colors", ["#5e3c99", "#e66101"])
         except json.decoder.JSONDecodeError:
             print(
                 "[red]Your peakipy.config file is corrupted - maybe your JSON is not correct...[/red]"

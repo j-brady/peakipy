@@ -34,7 +34,7 @@ from bokeh.plotting import figure
 from bokeh.plotting.contour import contour_data
 from bokeh.palettes import PuBuGn9, Category20, Viridis256, RdGy11, Reds256, YlOrRd9
 
-from peakipy.core import LoadData, read_config, StrucEl
+from peakipy.core import LoadData, update_args_with_values_from_config_file, StrucEl
 
 log_style = "overflow:scroll;"
 log_div = """<div style=%s>%s</div>"""
@@ -44,7 +44,7 @@ class BokehScript:
     def __init__(self, peaklist_path: Path, data_path: Path):
         self._path = peaklist_path
         self._data_path = data_path
-        args, config = read_config({})
+        args, config = update_args_with_values_from_config_file({})
         self._dims = config.get("dims", [0, 1, 2])
         self.thres = config.get("thres", 1e6)
         self._peakipy_data = LoadData(

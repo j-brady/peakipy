@@ -33,15 +33,12 @@ from peakipy.core import (
 )
 
 console = Console()
-# some constants
 π = np.pi
 sqrt2 = np.sqrt(2.0)
-# temp and log paths
+
 tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
-# for printing dataframes
-column_selection = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
 
 
 @dataclass
@@ -376,8 +373,6 @@ def refit_peak_cluster_with_constraints(
                 plane_number,
             )
         )
-        # fit_report = fit_result.out.fit_report()
-        # log.write(
     return fit_results
 
 
@@ -461,7 +456,6 @@ def prepare_group_of_peaks_for_fitting(clustid, group, fit_peaks_input: FitPeaks
 
     XY_slices = np.array([X.copy()[mask], Y.copy()[mask]])
     weights = 1.0 / np.array([fit_peaks_input.args.noise] * len(np.ravel(peak_slices)))
-    # weights = 1.0 / np.ravel(peak_slices)
     return FitPeakClusterInput(
         args=fit_peaks_input.args,
         data=fit_peaks_input.data,
@@ -534,6 +528,7 @@ def fit_peak_clusters(peaks: pd.DataFrame, fit_input: FitPeaksInput) -> FitPeaks
             cluster_df = fit_cluster_of_peaks(data_for_fitting)
         cluster_dfs.append(cluster_df)
     df = pd.concat(cluster_dfs, ignore_index=True)
+
     df["lineshape"] = fit_input.args.lineshape.value
 
     if fit_input.args.vclist:

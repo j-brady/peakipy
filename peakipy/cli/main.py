@@ -54,7 +54,6 @@ from peakipy.core import (
     Peaklist,
     run_log,
     LoadData,
-    read_config,
     pv_pv,
     pvoigt2d,
     voigt2d,
@@ -68,6 +67,9 @@ from peakipy.core import (
     PeaklistFormat,
     Lineshape,
     OutFmt,
+    write_config,
+    update_config_file,
+    update_args_with_values_from_config_file,
     get_limits_for_axis_in_points,
     deal_with_peaks_on_edge_of_spectrum,
     calculate_fwhm_for_voigt_lineshape,
@@ -92,7 +94,7 @@ tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
 # for printing dataframes
-column_selection = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
+peaklist_columns_for_printing = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
 bad_column_selection = [
     "clustid",
     "amp",
@@ -111,6 +113,8 @@ bad_color_selection = [
     "red",
     "magenta",
 ]
+
+
 peaklist_path_help = "Path to peaklist"
 data_path_help = "Path to 2D or pseudo3D processed NMRPipe data (e.g. .ft2 or .ft3)"
 peaklist_format_help = "The format of your peaklist. This can be a2 for CCPN Analysis version 2 style, a3 for CCPN Analysis version 3, sparky, pipe for NMRPipe, or peakipy if you want to use a previously .csv peaklist from peakipy"
@@ -296,7 +300,7 @@ def read(
             data.to_pickle(outname)
 
     # write config file
-    config_path = data_path.parent / Path("peakipy.config")
+    config_path = peaklist_path.parent / Path("peakipy.config")
     config_kvs = [
         ("dims", dims),
         ("data_path", str(data_path)),
@@ -306,28 +310,16 @@ def read(
         ("fit_method", "leastsq"),
     ]
     try:
-        if config_path.exists():
-            with open(config_path) as opened_config:
-                config_dic = json.load(opened_config)
-                # update values in dict
-                config_dic.update(dict(config_kvs))
-
-        else:
-            # make a new config
-            config_dic = dict(config_kvs)
+        update_config_file(config_path, config_kvs)
 
     except json.decoder.JSONDecodeError:
         print(
-            f"Your {config_path} may be corrupted. Making new one (old one moved to {config_path}.bak)"
+            "\n"
+            + f"[yellow]Your {config_path} may be corrupted. Making new one (old one moved to {config_path}.bak)[/yellow]"
         )
         shutil.copy(f"{config_path}", f"{config_path}.bak")
         config_dic = dict(config_kvs)
-
-    with open(config_path, "w") as config:
-        # write json
-        # print(config_dic)
-        config.write(json.dumps(config_dic, sort_keys=True, indent=4))
-        # json.dump(config_dic, fp=config, sort_keys=True, indent=4)
+        write_config(config_path, config_dic)
 
     run_log()
 
@@ -506,7 +498,9 @@ def check_for_include_column_and_add_if_missing(peakipy_data):
 
 def remove_excluded_peaks(peakipy_data):
     if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
-        excluded = peakipy_data.df[peakipy_data.df.include != "yes"][column_selection]
+        excluded = peakipy_data.df[peakipy_data.df.include != "yes"][
+            peaklist_columns_for_printing
+        ]
         table = df_to_rich_table(
             excluded,
             title="[yellow] Excluded peaks [/yellow]",
@@ -657,7 +651,7 @@ def fit(
     # read NMR data
     args = {}
     config = {}
-    args, config = read_config(args)
+    args, config = update_args_with_values_from_config_file(args)
     dims = config.get("dims", [0, 1, 2])
     peakipy_data = LoadData(peaklist_path, data_path, dims=dims)
     peakipy_data = check_for_include_column_and_add_if_missing(peakipy_data)
@@ -1211,7 +1205,6 @@ def create_residual_figure(plot_data: PlottingDataForPlane):
 def create_plotly_figure(plot_data: PlottingDataForPlane):
     lines = create_plotly_wireframe_lines(plot_data)
     surfaces = create_plotly_surfaces(plot_data)
-    # residuals = create_residual_contours(plot_data)
     fig = go.Figure(data=lines + surfaces)
     fig = update_axis_ranges(fig, plot_data)
     return fig
@@ -1373,7 +1366,7 @@ def check(
     fits = validate_fit_dataframe(pd.read_csv(fits))
     args = {}
     # get dims from config file
-    args, config = read_config(args, config_path)
+    args, config = update_args_with_values_from_config_file(args, config_path)
     dims = config.get("dims", (1, 2, 3))
 
     ccpn_flag = ccpn

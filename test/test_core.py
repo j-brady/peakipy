@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
 from collections import namedtuple
+from pathlib import Path
+import json
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -26,6 +28,9 @@ from peakipy.core import (
     select_planes_above_threshold_from_masked_data,
     slice_peaks_from_data_using_mask,
     estimate_amplitude,
+    load_config,
+    write_config,
+    update_config_file,
 )
 
 
@@ -400,6 +405,72 @@ class TestSpecScript(unittest.TestCase):
         args = {"<peaklist>": "hello", "<data>": "data"}
         spec = MockSpec(args)
         self.assertIsNotNone(spec)
+
+
+def test_load_config_existing():
+    config_path = Path("test_config.json")
+    # Create a dummy existing config file
+    with open(config_path, "w") as f:
+        json.dump({"key1": "value1"}, f)
+
+    loaded_config = load_config(config_path)
+
+    assert loaded_config == {"key1": "value1"}
+
+    # Clean up
+    config_path.unlink()
+
+
+def test_load_config_nonexistent():
+    config_path = Path("test_config.json")
+
+    loaded_config = load_config(config_path)
+
+    assert loaded_config == {}
+
+
+def test_write_config():
+    config_path = Path("test_config.json")
+    config_kvs = {"key1": "value1", "key2": "value2"}
+
+    write_config(config_path, config_kvs)
+
+    # Check if the config file is created correctly
+    assert config_path.exists()
+
+    # Check if the config file content is correct
+    with open(config_path) as f:
+        created_config = json.load(f)
+        assert created_config == {"key1": "value1", "key2": "value2"}
+
+    # Clean up
+    config_path.unlink()
+
+
+def test_update_config_file_existing():
+    config_path = Path("test_config.json")
+    # Create a dummy existing config file
+    with open(config_path, "w") as f:
+        json.dump({"key1": "value1"}, f)
+
+    config_kvs = {"key2": "value2", "key3": "value3"}
+    updated_config = update_config_file(config_path, config_kvs)
+
+    assert updated_config == {"key1": "value1", "key2": "value2", "key3": "value3"}
+
+    # Clean up
+    config_path.unlink()
+
+
+def test_update_config_file_nonexistent():
+    config_path = Path("test_config.json")
+    config_kvs = {"key1": "value1", "key2": "value2"}
+    updated_config = update_config_file(config_path, config_kvs)
+
+    assert updated_config == {"key1": "value1", "key2": "value2"}
+
+    # Clean up
+    config_path.unlink()
 
 
 if __name__ == "__main__":
