@@ -59,6 +59,7 @@ class FitPeaksArgs:
     jack_knife_sample_errors: bool = False
     mp: bool = (True,)
     verbose: bool = (False,)
+    vclist_data: Optional[np.array] = None
 
 
 @dataclass
@@ -409,7 +410,7 @@ def rename_columns_for_compatibility(df):
 
 
 def add_vclist_to_df(fit_input: FitPeaksInput, df: pd.DataFrame):
-    vclist_data = fit_input.args.get("vclist_data")
+    vclist_data = fit_input.args.vclist_data
     df["vclist"] = df.plane.apply(lambda x: vclist_data[x])
     return df
 

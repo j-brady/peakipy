@@ -19,6 +19,9 @@ from peakipy.cli.fit import (
     create_parameter_dict,
     perform_initial_lineshape_fit_on_cluster_of_peaks,
     merge_unpacked_parameters_with_metadata,
+    add_vclist_to_df,
+    FitPeaksArgs,
+    FitPeaksInput,
 )
 from peakipy.core import Lineshape, pvoigt2d
 
@@ -342,6 +345,32 @@ def test_merge_unpacked_parameters_with_metadata():
     )
     actual_result = merge_unpacked_parameters_with_metadata(cluster_fit_df, peak_df)
     assert expected_result.equals(actual_result)
+
+
+def test_add_vclist_to_df():
+    args = FitPeaksArgs(
+        noise=0, uc_dics={}, lineshape=Lineshape.PV, vclist_data=np.array([1, 2, 3])
+    )
+    fit_peaks_input = FitPeaksInput(
+        args=args, data=None, config=None, plane_numbers=None
+    )
+    df = pd.DataFrame(dict(plane=[0, 1, 2]))
+    expected_df = pd.DataFrame(dict(plane=[0, 1, 2], vclist=[1, 2, 3]))
+    actual_df = add_vclist_to_df(fit_peaks_input, df)
+    assert actual_df.equals(expected_df)
+
+
+def test_add_vclist_to_df_plane_order():
+    args = FitPeaksArgs(
+        noise=0, uc_dics={}, lineshape=Lineshape.PV, vclist_data=np.array([1, 2, 3])
+    )
+    fit_peaks_input = FitPeaksInput(
+        args=args, data=None, config=None, plane_numbers=None
+    )
+    df = pd.DataFrame(dict(plane=[2, 1, 0]))
+    expected_df = pd.DataFrame(dict(plane=[2, 1, 0], vclist=[3, 2, 1]))
+    actual_df = add_vclist_to_df(fit_peaks_input, df)
+    assert actual_df.equals(expected_df)
 
 
 # def test_perform_initial_lineshape_fit_on_cluster_of_peaks(pseudo_voigt_model_result):

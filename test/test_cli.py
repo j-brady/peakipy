@@ -51,6 +51,16 @@ def test_fit_main_with_default(protein_L):
     peakipy.cli.main.fit(**args)
 
 
+def test_fit_main_with_vclist(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("test.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        output_path=protein_L / Path("fits_PV.csv"),
+        vclist=protein_L / Path("vclist"),
+    )
+    peakipy.cli.main.fit(**args)
+
+
 def test_fit_main_with_gaussian(protein_L):
     args = dict(
         peaklist_path=protein_L / Path("test.csv"),
