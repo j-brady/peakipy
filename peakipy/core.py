@@ -475,6 +475,17 @@ def get_params(params, name):
 
 @dataclass
 class PeakLimits:
+    """Given a peak position and linewidth in points determine
+    the limits based on the data
+
+    Arguments
+    ---------
+    peak: pd.DataFrame
+        peak is a row from a pandas dataframe
+    data: np.array
+        2D numpy array
+    """
+
     peak: pd.DataFrame
     data: np.array
     min_x: int = field(init=False)
@@ -483,10 +494,12 @@ class PeakLimits:
     max_y: int = field(init=False)
 
     def __post_init__(self):
-        self.max_y = int(self.peak.Y_AXIS + self.peak.YW) + 1
+        assert self.peak.Y_AXIS <= self.data.shape[0]
+        assert self.peak.X_AXIS <= self.data.shape[1]
+        self.max_y = int(np.ceil(self.peak.Y_AXIS + self.peak.YW)) + 1
         if self.max_y > self.data.shape[0]:
             self.max_y = self.data.shape[0]
-        self.max_x = int(self.peak.X_AXIS + self.peak.XW) + 1
+        self.max_x = int(np.ceil(self.peak.X_AXIS + self.peak.XW)) + 1
         if self.max_x > self.data.shape[1]:
             self.max_x = self.data.shape[1]
 

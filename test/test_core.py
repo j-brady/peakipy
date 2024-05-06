@@ -4,6 +4,7 @@ from collections import namedtuple
 from pathlib import Path
 import json
 
+import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
@@ -14,16 +15,22 @@ from lmfit import Model
 from peakipy.core import (
     make_mask,
     fix_params,
+    gaussian_lorentzian,
+    pv_g,
+    pv_l,
+    voigt2d,
     pvoigt2d,
     pv_pv,
     get_params,
     make_param_dict,
     to_prefix,
     make_models,
+    get_lineshape_function,
     Pseudo3D,
     Peaklist,
     Lineshape,
     PeaklistFormat,
+    PeakLimits,
     select_reference_planes_using_indices,
     select_planes_above_threshold_from_masked_data,
     slice_peaks_from_data_using_mask,
@@ -32,6 +39,11 @@ from peakipy.core import (
     write_config,
     update_config_file,
 )
+
+
+@pytest.fixture
+def test_directory():
+    return Path(__file__).parent
 
 
 def test_select_reference_planes_using_indices():
@@ -157,6 +169,9 @@ def test_estimate_amplitude_invalid_indices():
 
 
 class TestCoreFunctions(unittest.TestCase):
+    test_directory = Path(__file__).parent
+    test_directory = "./"
+
     def test_make_mask(self):
         data = np.ones((10, 10))
         c_x = 5
@@ -268,6 +283,12 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(params["_two_sigma_x"], 1.25)
         self.assertEqual(params["_two_sigma_y"], 1.25)
 
+        voigt_params = make_param_dict(peaks, data, Lineshape.V)
+        self.assertEqual(
+            voigt_params["_one_sigma_x"], 2.5 / (2.0 * np.sqrt(2.0 * np.log(2)))
+        )
+        self.assertEqual(voigt_params["_one_gamma_x"], 2.5 / 2.0)
+
     def test_to_prefix(self):
         names = [
             (1, "_1_"),
@@ -328,9 +349,9 @@ class TestCoreFunctions(unittest.TestCase):
 
     def test_Pseudo3D(self):
         datasets = [
-            ("test/test_protein_L/test1.ft2", [0, 1, 2]),
-            ("test/test_protein_L/test_tp.ft2", [2, 1, 0]),
-            ("test/test_protein_L/test_tp2.ft2", [1, 2, 0]),
+            (f"{self.test_directory}/test_protein_L/test1.ft2", [0, 1, 2]),
+            (f"{self.test_directory}/test_protein_L/test_tp.ft2", [2, 1, 0]),
+            (f"{self.test_directory}/test_protein_L/test_tp2.ft2", [1, 2, 0]),
         ]
 
         # expected shape
@@ -377,6 +398,8 @@ class TestFitScript(unittest.TestCase):
 
 
 class TestReadScript(unittest.TestCase):
+    test_directory = "./"
+
     @patch("peakipy.cli.main.read")
     def test_main(self, MockRead):
         args = {"<peaklist>": "hello", "<data>": "data"}
@@ -385,8 +408,8 @@ class TestReadScript(unittest.TestCase):
 
     def test_read_pipe_peaklist(self):
         args = {
-            "path": "test/test_pipe.tab",
-            "data_path": "test/test_pipe.ft2",
+            "path": f"{self.test_directory}/test_pipe.tab",
+            "data_path": f"{self.test_directory}/test_pipe.ft2",
             "dims": [0, 1, 2],
             "fmt": PeaklistFormat.pipe,
         }
@@ -471,6 +494,76 @@ def test_update_config_file_nonexistent():
 
     # Clean up
     config_path.unlink()
+
+
+@pytest.fixture
+def sample_data():
+    return np.zeros((10, 10))
+
+
+@pytest.fixture
+def sample_peak():
+    peak_data = {"X_AXIS": [5], "Y_AXIS": [5], "XW": [2], "YW": [2]}
+    return pd.DataFrame(peak_data).iloc[0]
+
+
+def test_peak_limits_max_min(sample_peak, sample_data):
+    limits = PeakLimits(sample_peak, sample_data)
+
+    assert limits.max_x == 8
+    assert limits.max_y == 8
+    assert limits.min_x == 3
+    assert limits.min_y == 3
+
+
+def test_peak_limits_boundary(sample_data):
+    peak_data = {"X_AXIS": [8], "Y_AXIS": [8], "XW": [2], "YW": [2]}
+    peak = pd.DataFrame(peak_data).iloc[0]
+    limits = PeakLimits(peak, sample_data)
+
+    assert limits.max_x == 10
+    assert limits.max_y == 10
+    assert limits.min_x == 6
+    assert limits.min_y == 6
+
+
+def test_peak_limits_at_boundary(sample_data):
+    peak_data = {"X_AXIS": [0], "Y_AXIS": [0], "XW": [2], "YW": [2]}
+    peak = pd.DataFrame(peak_data).iloc[0]
+    limits = PeakLimits(peak, sample_data)
+
+    assert limits.max_x == 3
+    assert limits.max_y == 3
+    assert limits.min_x == 0
+    assert limits.min_y == 0
+
+
+def test_peak_limits_outside_boundary(sample_data):
+    peak_data = {"X_AXIS": [15], "Y_AXIS": [15], "XW": [2], "YW": [2]}
+    peak = pd.DataFrame(peak_data).iloc[0]
+    with pytest.raises(AssertionError):
+        limits = PeakLimits(peak, sample_data)
+
+
+def test_peak_limits_1d_data():
+    data = np.zeros(10)
+    peak_data = {"X_AXIS": [5], "Y_AXIS": [0], "XW": [2], "YW": [0]}
+    peak = pd.DataFrame(peak_data).iloc[0]
+    with pytest.raises(IndexError):
+        limits = PeakLimits(peak, data)
+
+
+def test_get_lineshape_function():
+    assert get_lineshape_function(Lineshape.PV) == pvoigt2d
+    assert get_lineshape_function(Lineshape.L) == pvoigt2d
+    assert get_lineshape_function(Lineshape.G) == pvoigt2d
+    assert get_lineshape_function(Lineshape.G_L) == gaussian_lorentzian
+    assert get_lineshape_function(Lineshape.PV_G) == pv_g
+    assert get_lineshape_function(Lineshape.PV_L) == pv_l
+    assert get_lineshape_function(Lineshape.PV_PV) == pv_pv
+    assert get_lineshape_function(Lineshape.V) == voigt2d
+    with pytest.raises(Exception):
+        get_lineshape_function("bla")
 
 
 if __name__ == "__main__":

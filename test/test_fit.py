@@ -20,6 +20,8 @@ from peakipy.cli.fit import (
     perform_initial_lineshape_fit_on_cluster_of_peaks,
     merge_unpacked_parameters_with_metadata,
     add_vclist_to_df,
+    update_cluster_df_with_fit_statistics,
+    rename_columns_for_compatibility,
     FitPeaksArgs,
     FitPeaksInput,
 )
@@ -105,6 +107,85 @@ def test_set_parameters_to_fix_during_fit_3():
         != modified_parameter_set["test2"].vary
         == False
     )
+
+
+def test_set_parameters_to_fix_during_fit_None():
+    parameter_set = Parameters()
+    parameter_set.add("test1", vary=True)
+    parameter_set.add("test2", vary=True)
+    modified_parameter_set, float_str = set_parameters_to_fix_during_fit(
+        parameter_set, None
+    )
+    assert (
+        modified_parameter_set["test1"].vary
+        == modified_parameter_set["test2"].vary
+        == True
+    )
+
+
+def test_set_parameters_to_fix_during_fit_None_str():
+    parameter_set = Parameters()
+    parameter_set.add("test1", vary=True)
+    parameter_set.add("test2", vary=True)
+    modified_parameter_set, float_str = set_parameters_to_fix_during_fit(
+        parameter_set, ["None"]
+    )
+    assert (
+        modified_parameter_set["test1"].vary
+        == modified_parameter_set["test2"].vary
+        == True
+    )
+
+
+def test_update_cluster_df_with_fit_statistics():
+    result = ModelResult(Model(pvoigt2d), None, None)
+    result.aic = None
+    result.bic = None
+    data = [
+        dict(
+            chisqr=None,
+            redchi=None,
+            residual_sum=None,
+            aic=None,
+            bic=None,
+            nfev=0,
+            ndata=0,
+        )
+    ]
+    expected_cluster_df = pd.DataFrame(data)
+    actual_cluster_df = update_cluster_df_with_fit_statistics(
+        expected_cluster_df, result
+    )
+    pd.testing.assert_frame_equal(actual_cluster_df, expected_cluster_df)
+
+
+def test_rename_columns_for_compatibility():
+    df = pd.DataFrame(
+        [
+            dict(
+                amplitude=1,
+                amplitude_stderr=1,
+                X_AXIS=1,
+                Y_AXIS=1,
+                ASS="None",
+                MEMCNT=1,
+                X_RADIUS=1,
+                Y_RADIUS=1,
+            )
+        ]
+    )
+    expected_columns = [
+        "amp",
+        "amp_err",
+        "init_center_x",
+        "init_center_y",
+        "assignment",
+        "memcnt",
+        "x_radius",
+        "y_radius",
+    ]
+    actual_columns = rename_columns_for_compatibility(df).columns
+    assert all([i == j for i, j in zip(actual_columns, expected_columns)])
 
 
 def test_get_default_param_names_pseudo_voigt():
