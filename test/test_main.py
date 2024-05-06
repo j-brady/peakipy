@@ -29,8 +29,8 @@ def actual_vclist():
 
 @dataclass
 class PeakipyData:
-    df: pd.DataFrame = pd.DataFrame()
-    data: np.array = np.zeros((4, 10, 20))
+    df: pd.DataFrame = field(default_factory=lambda: pd.DataFrame())
+    data: np.array = field(default_factory=lambda: np.zeros((4, 10, 20)))
     dims: list = field(default_factory=lambda: [0, 1, 2])
 
 
