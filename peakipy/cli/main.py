@@ -441,28 +441,6 @@ def select_specified_planes(plane, peakipy_data):
     return plane_numbers, peakipy_data
 
 
-def select_specified_planes(plane, peakipy_data):
-    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
-    # only fit specified planes
-    if plane:
-        inds = [i for i in plane]
-        data_inds = [
-            (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
-        ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
-            data_inds
-        ]
-        peakipy_data.data = peakipy_data.data[data_inds]
-        print(
-            "[yellow]Using only planes {plane} data now has the following shape[/yellow]",
-            peakipy_data.data.shape,
-        )
-        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
-            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
-            exit()
-    return plane_numbers, peakipy_data
-
-
 def exclude_specified_planes(exclude_plane, peakipy_data):
     plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
     # do not fit these planes
@@ -566,6 +544,10 @@ def unpack_xy_bounds(xy_bounds, peakipy_data):
             xy_bounds = list(xy_bounds)
             xy_bounds[0] = xy_bounds[0] * peakipy_data.pt_per_ppm_f2
             xy_bounds[1] = xy_bounds[1] * peakipy_data.pt_per_ppm_f1
+        case _:
+            raise TypeError(
+                "xy_bounds should be a tuple (<x_bounds_ppm>, <y_bounds_ppm>)"
+            )
     return xy_bounds
 
 

@@ -9,8 +9,12 @@ from pytest import fixture
 from peakipy.cli.main import (
     get_vclist,
     check_for_include_column_and_add_if_missing,
+    check_data_shape_is_consistent_with_dims,
     select_specified_planes,
     exclude_specified_planes,
+    remove_excluded_peaks,
+    warn_if_trying_to_fit_large_clusters,
+    unpack_xy_bounds,
     validate_plane_selection,
     validate_sample_count,
     unpack_plotting_colors,
@@ -32,6 +36,8 @@ class PeakipyData:
     df: pd.DataFrame = field(default_factory=lambda: pd.DataFrame())
     data: np.array = field(default_factory=lambda: np.zeros((4, 10, 20)))
     dims: list = field(default_factory=lambda: [0, 1, 2])
+    pt_per_ppm_f2 = 10
+    pt_per_ppm_f1 = 20
 
 
 def test_get_vclist(actual_vclist):
@@ -45,6 +51,13 @@ def test_get_vclist_none():
     args = get_vclist(vclist, args)
     expected_args = dict(vclist=False)
     assert args == expected_args
+
+
+def test_get_vclist_error():
+    vclist = "vclist"
+    args = {}
+    with pytest.raises(Exception):
+        get_vclist(vclist, args)
 
 
 def test_check_for_include_column():
@@ -68,6 +81,14 @@ def test_select_specified_planes_2():
     assert peakipy_data.data.shape == (2, 10, 20)
 
 
+def test_select_specified_planes_all_planes_excluded(capsys):
+    plane = [10]
+    with pytest.raises(SystemExit):
+        select_specified_planes(plane, PeakipyData())
+    captured = capsys.readouterr()
+    assert "" in captured.err
+
+
 def test_exclude_specified_planes():
     plane = None
     expected_plane_numbers = np.arange(4)
@@ -81,6 +102,66 @@ def test_exclude_specified_planes_2():
     actual_plane_numbers, peakipy_data = exclude_specified_planes(plane, PeakipyData())
     np.testing.assert_array_equal(expected_plane_numbers, actual_plane_numbers)
     assert peakipy_data.data.shape == (2, 10, 20)
+
+
+def test_exclude_specified_planes_all_planes_excluded(capsys):
+    plane = [0, 1, 2, 3]
+    with pytest.raises(SystemExit):
+        exclude_specified_planes(plane, PeakipyData())
+    captured = capsys.readouterr()
+    assert "" in captured.err
+
+
+def test_remove_excluded_peaks():
+    actual_dict = dict(
+        include=["yes", "yes", "no"],
+        peak=[1, 2, 3],
+        INDEX=[0, 1, 2],
+        ASS=["one", "two", "three"],
+        X_PPM=[1, 2, 3],
+        Y_PPM=[1, 2, 3],
+        CLUSTID=[1, 2, 3],
+        MEMCNT=[1, 1, 1],
+    )
+    expected_dict = {k: v[:-1] for k, v in actual_dict.items()}
+    actual_df = pd.DataFrame(actual_dict)
+    expected_df = pd.DataFrame(expected_dict)
+    peakipy_data = PeakipyData(df=actual_df)
+    pd.testing.assert_frame_equal(remove_excluded_peaks(peakipy_data).df, expected_df)
+
+
+def test_warn_if_trying_to_fit_large_clusters():
+    max_cluster_size = 7
+    df = pd.DataFrame(dict(MEMCNT=[1, 6], CLUSTID=[0, 1]))
+    peakipy_data = PeakipyData(df=df)
+    assert (
+        warn_if_trying_to_fit_large_clusters(max_cluster_size, peakipy_data)
+        == max_cluster_size
+    )
+
+
+def test_warn_if_trying_to_fit_large_clusters_none():
+    max_cluster_size = None
+    df = pd.DataFrame(dict(MEMCNT=[1, 12], CLUSTID=[0, 1]))
+    peakipy_data = PeakipyData(df=df)
+    assert warn_if_trying_to_fit_large_clusters(max_cluster_size, peakipy_data) == 12
+
+
+def test_unpack_xy_bounds_case_00():
+    xy_bounds = (0, 0)
+    result = unpack_xy_bounds(xy_bounds, PeakipyData())
+    assert result == None
+
+
+def test_unpack_xy_bounds_case_xy():
+    xy_bounds = (1, 2)
+    result = unpack_xy_bounds(xy_bounds, PeakipyData())
+    assert result == [10, 40]
+
+
+def test_unpack_xy_bounds_invalid_input():
+    with pytest.raises(TypeError):
+        unpack_xy_bounds(None, PeakipyData())
 
 
 class MockPseudo3D:
@@ -195,3 +276,9 @@ def test_invalid_clusters():
     fits = pd.DataFrame({"clustid": [1, 2, 3]})
     with pytest.raises(SystemExit):
         get_fit_data_for_selected_peak_clusters(fits, [4, 5, 6])
+
+
+def test_check_data_shape_is_consistent_with_dims():
+    peakipy_data = PeakipyData(data=np.zeros((4, 10)))
+    with pytest.raises(SystemExit):
+        check_data_shape_is_consistent_with_dims(peakipy_data)
