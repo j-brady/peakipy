@@ -69,7 +69,7 @@ def create_plotly_pane(cluster, plane):
         data_path=data.data_path,
         clusters=[cluster],
         plane=[plane],
-        config_path=data.config_path,
+        # config_path=data.config_path,
         plotly=True,
     )
 

@@ -1,7 +1,8 @@
 .PHONY: coverage
 
 coverage:
-	coverage run -m pytest test/test_core.py test/test_main.py test/test_fit.py test/test_cli.py
+	#coverage run -m pytest test/test_core.py test/test_main.py test/test_fit.py test/test_cli.py
+	coverage run -m pytest test/test_fitting.py test/test_lineshapes.py test/test_io.py test/test_utils.py test/test_main.py test/test_cli.py
 
 coverage-html:
 	coverage html

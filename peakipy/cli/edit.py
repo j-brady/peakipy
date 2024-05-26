@@ -34,7 +34,8 @@ from bokeh.plotting import figure
 from bokeh.plotting.contour import contour_data
 from bokeh.palettes import PuBuGn9, Category20, Viridis256, RdGy11, Reds256, YlOrRd9
 
-from peakipy.core import LoadData, update_args_with_values_from_config_file, StrucEl
+from peakipy.io import LoadData, StrucEl
+from peakipy.utils import update_args_with_values_from_config_file
 
 log_style = "overflow:scroll;"
 log_div = """<div style=%s>%s</div>"""

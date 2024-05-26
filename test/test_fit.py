@@ -25,7 +25,7 @@ from peakipy.cli.fit import (
     FitPeaksArgs,
     FitPeaksInput,
 )
-from peakipy.core import Lineshape, pvoigt2d
+from peakipy.lineshapes import Lineshape, pvoigt2d
 
 
 def test_get_fit_peaks_result_validation_model_PVPV():

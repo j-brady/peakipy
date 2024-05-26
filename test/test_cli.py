@@ -6,12 +6,10 @@ import pytest
 import peakipy.cli.main
 from peakipy.cli.main import PeaklistFormat, Lineshape
 
-os.chdir("test")
-
 
 @pytest.fixture
 def protein_L():
-    path = Path("test_protein_L")
+    path = Path("test/test_protein_L")
     return path
 
 

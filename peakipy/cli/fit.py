@@ -14,15 +14,17 @@ from pydantic import BaseModel
 from lmfit import Model, Parameter, Parameters
 from lmfit.model import ModelResult
 
-from peakipy.core import (
-    fix_params,
+from peakipy.lineshapes import (
     Lineshape,
     pvoigt2d,
     voigt2d,
     pv_pv,
+    get_lineshape_function,
+)
+from peakipy.fitting import (
+    fix_params,
     to_prefix,
     get_limits_for_axis_in_points,
-    get_lineshape_function,
     deal_with_peaks_on_edge_of_spectrum,
     select_planes_above_threshold_from_masked_data,
     select_reference_planes_using_indices,

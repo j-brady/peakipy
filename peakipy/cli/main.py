@@ -1,23 +1,4 @@
 #!/usr/bin/env python3
-"""
-
-    peakipy - deconvolute overlapping NMR peaks
-    Copyright (C) 2019  Jacob Peter Brady
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-"""
 import os
 import json
 import shutil
@@ -42,50 +23,68 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.widgets import Button
 
 import yaml
-import plotly.graph_objects as go
 import plotly.io as pio
 
 pio.templates.default = "plotly_dark"
 
-from peakipy.core import (
+from peakipy.io import (
     Peaklist,
-    run_log,
     LoadData,
-    pv_pv,
-    pvoigt2d,
-    voigt2d,
-    make_mask,
-    pv_g,
-    pv_l,
-    gaussian_lorentzian,
     Pseudo3D,
-    df_to_rich_table,
     StrucEl,
     PeaklistFormat,
-    Lineshape,
     OutFmt,
+    get_vclist,
+)
+from peakipy.utils import (
+    run_log,
+    df_to_rich_table,
     write_config,
     update_config_file,
     update_args_with_values_from_config_file,
-    get_limits_for_axis_in_points,
-    deal_with_peaks_on_edge_of_spectrum,
-    calculate_fwhm_for_voigt_lineshape,
-    calculate_height_for_voigt_lineshape,
-    calculate_fwhm_for_pseudo_voigt_lineshape,
-    calculate_height_for_pseudo_voigt_lineshape,
-    calculate_height_for_gaussian_lineshape,
-    calculate_height_for_lorentzian_lineshape,
-    calculate_height_for_pv_pv_lineshape,
+    update_linewidths_from_hz_to_points,
+    update_peak_positions_from_ppm_to_points,
+    check_data_shape_is_consistent_with_dims,
+    check_for_include_column_and_add_if_missing,
+    remove_excluded_peaks,
+    warn_if_trying_to_fit_large_clusters,
+    save_data,
+)
+
+from peakipy.lineshapes import (
+    Lineshape,
+    calculate_lineshape_specific_height_and_fwhm,
     calculate_peak_centers_in_ppm,
     calculate_peak_linewidths_in_hz,
 )
+from peakipy.fitting import (
+    get_limits_for_axis_in_points,
+    deal_with_peaks_on_edge_of_spectrum,
+    select_specified_planes,
+    exclude_specified_planes,
+    unpack_xy_bounds,
+    validate_plane_selection,
+    get_fit_data_for_selected_peak_clusters,
+    make_masks_from_plane_data,
+    simulate_lineshapes_from_fitted_peak_parameters,
+    simulate_pv_pv_lineshapes_from_fitted_peak_parameters,
+    validate_fit_dataframe,
+)
+
 from .fit import (
     fit_peak_clusters,
     FitPeaksInput,
     FitPeaksArgs,
+)
+from peakipy.plotting import (
+    PlottingDataForPlane,
+    validate_sample_count,
+    unpack_plotting_colors,
+    create_plotly_figure,
+    create_residual_figure,
+    create_matplotlib_figure,
 )
 from .spec import yaml_file
 
@@ -93,26 +92,6 @@ app = typer.Typer()
 tmp_path = Path("tmp")
 tmp_path.mkdir(exist_ok=True)
 log_path = Path("log.txt")
-# for printing dataframes
-peaklist_columns_for_printing = ["INDEX", "ASS", "X_PPM", "Y_PPM", "CLUSTID", "MEMCNT"]
-bad_column_selection = [
-    "clustid",
-    "amp",
-    "center_x_ppm",
-    "center_y_ppm",
-    "fwhm_x_hz",
-    "fwhm_y_hz",
-    "lineshape",
-]
-bad_color_selection = [
-    "green",
-    "blue",
-    "yellow",
-    "red",
-    "yellow",
-    "red",
-    "magenta",
-]
 
 
 peaklist_path_help = "Path to peaklist"
@@ -367,225 +346,46 @@ def read(
     )
 
 
-def calculate_lineshape_specific_height_and_fwhm(
-    lineshape: Lineshape, df: pd.DataFrame
-):
-    match lineshape:
-        case lineshape.V:
-            df = calculate_height_for_voigt_lineshape(df)
-            df = calculate_fwhm_for_voigt_lineshape(df)
-
-        case lineshape.PV:
-            df = calculate_height_for_pseudo_voigt_lineshape(df)
-            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
-
-        case lineshape.G:
-            df = calculate_height_for_gaussian_lineshape(df)
-            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
-
-        case lineshape.L:
-            df = calculate_height_for_lorentzian_lineshape(df)
-            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
-
-        case lineshape.PV_PV:
-            df = calculate_height_for_pv_pv_lineshape(df)
-            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
-        case _:
-            df = calculate_fwhm_for_pseudo_voigt_lineshape(df)
-    return df
-
-
-def get_vclist(vclist, args):
-    # read vclist
-    if vclist is None:
-        vclist = False
-    elif vclist.exists():
-        vclist_data = np.genfromtxt(vclist)
-        args["vclist_data"] = vclist_data
-        vclist = True
-    else:
-        raise Exception("vclist not found...")
-
-    args["vclist"] = vclist
-    return args
-
-
-def check_data_shape_is_consistent_with_dims(peakipy_data):
-    # check data shape is consistent with dims
-    if len(peakipy_data.dims) != len(peakipy_data.data.shape):
-        print(
-            f"Dims are {peakipy_data.dims} while data shape is {peakipy_data.data.shape}?"
-        )
-        exit()
-
-
-def select_specified_planes(plane, peakipy_data):
-    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
-    # only fit specified planes
-    if plane:
-        inds = [i for i in plane]
-        data_inds = [
-            (i in inds) for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
-        ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
-            data_inds
-        ]
-        peakipy_data.data = peakipy_data.data[data_inds]
-        print(
-            "[yellow]Using only planes {plane} data now has the following shape[/yellow]",
-            peakipy_data.data.shape,
-        )
-        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
-            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
-            exit()
-    return plane_numbers, peakipy_data
-
-
-def exclude_specified_planes(exclude_plane, peakipy_data):
-    plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])
-    # do not fit these planes
-    if exclude_plane:
-        inds = [i for i in exclude_plane]
-        data_inds = [
-            (i not in inds)
-            for i in range(peakipy_data.data.shape[peakipy_data.dims[0]])
-        ]
-        plane_numbers = np.arange(peakipy_data.data.shape[peakipy_data.dims[0]])[
-            data_inds
-        ]
-        peakipy_data.data = peakipy_data.data[data_inds]
-        print(
-            f"[yellow]Excluding planes {exclude_plane} data now has the following shape[/yellow]",
-            peakipy_data.data.shape,
-        )
-        if peakipy_data.data.shape[peakipy_data.dims[0]] == 0:
-            print("[red]You have excluded all the data![/red]", peakipy_data.data.shape)
-            exit()
-    return plane_numbers, peakipy_data
-
-
-def check_for_include_column_and_add_if_missing(peakipy_data):
-    # only include peaks with 'include'
-    if "include" in peakipy_data.df.columns:
-        pass
-    else:
-        # for compatibility
-        peakipy_data.df["include"] = peakipy_data.df.apply(lambda _: "yes", axis=1)
-    return peakipy_data
-
-
-def remove_excluded_peaks(peakipy_data):
-    if len(peakipy_data.df[peakipy_data.df.include != "yes"]) > 0:
-        excluded = peakipy_data.df[peakipy_data.df.include != "yes"][
-            peaklist_columns_for_printing
-        ]
-        table = df_to_rich_table(
-            excluded,
-            title="[yellow] Excluded peaks [/yellow]",
-            columns=excluded.columns,
-            styles=["yellow" for i in excluded.columns],
-        )
-        print(table)
-        peakipy_data.df = peakipy_data.df[peakipy_data.df.include == "yes"]
-    return peakipy_data
-
-
-def warn_if_trying_to_fit_large_clusters(max_cluster_size, peakipy_data):
-    if max_cluster_size is None:
-        max_cluster_size = peakipy_data.df.MEMCNT.max()
-        if peakipy_data.df.MEMCNT.max() > 10:
-            print(
-                f"""[red]
-                ##################################################################
-                You have some clusters of as many as {max_cluster_size} peaks.
-                You may want to consider reducing the size of your clusters as the
-                fits will struggle.
-
-                Otherwise you can use the --max-cluster-size flag to exclude large
-                clusters
-                ##################################################################
-            [/red]"""
-            )
-    else:
-        max_cluster_size = max_cluster_size
-    return max_cluster_size
-
-
-def update_linewidths_from_hz_to_points(peakipy_data):
-    """in case they were adjusted when running edit.py"""
-    peakipy_data.df["XW"] = peakipy_data.df.XW_HZ * peakipy_data.pt_per_hz_f2
-    peakipy_data.df["YW"] = peakipy_data.df.YW_HZ * peakipy_data.pt_per_hz_f1
-    return peakipy_data
-
-
-def update_peak_positions_from_ppm_to_points(peakipy_data):
-    # convert peak positions from ppm to points in case they were adjusted running edit.py
-    peakipy_data.df["X_AXIS"] = peakipy_data.df.X_PPM.apply(
-        lambda x: peakipy_data.uc_f2(x, "PPM")
-    )
-    peakipy_data.df["Y_AXIS"] = peakipy_data.df.Y_PPM.apply(
-        lambda x: peakipy_data.uc_f1(x, "PPM")
-    )
-    peakipy_data.df["X_AXISf"] = peakipy_data.df.X_PPM.apply(
-        lambda x: peakipy_data.uc_f2.f(x, "PPM")
-    )
-    peakipy_data.df["Y_AXISf"] = peakipy_data.df.Y_PPM.apply(
-        lambda x: peakipy_data.uc_f1.f(x, "PPM")
-    )
-    return peakipy_data
-
-
-def unpack_xy_bounds(xy_bounds, peakipy_data):
-    match xy_bounds:
-        case (0, 0):
-            xy_bounds = None
-        case (x, y):
-            # convert ppm to points
-            xy_bounds = list(xy_bounds)
-            xy_bounds[0] = xy_bounds[0] * peakipy_data.pt_per_ppm_f2
-            xy_bounds[1] = xy_bounds[1] * peakipy_data.pt_per_ppm_f1
-        case _:
-            raise TypeError(
-                "xy_bounds should be a tuple (<x_bounds_ppm>, <y_bounds_ppm>)"
-            )
-    return xy_bounds
-
-
-def save_data(df, output_name):
-    suffix = output_name.suffix
-    if suffix == ".csv":
-        df.to_csv(output_name, float_format="%.4f", index=False)
-
-    elif suffix == ".tab":
-        df.to_csv(output_name, sep="\t", float_format="%.4f", index=False)
-
-    else:
-        df.to_pickle(output_name)
-
-
-reference_plane_index_help = (
-    "Select planes to use for initial estimation of lineshape parameters"
+fix_help = "Set parameters to fix after initial lineshape fit (see docs)"
+xy_bounds_help = (
+    "Restrict fitted peak centre within +/- x and y from initial picked position"
 )
+reference_plane_index_help = (
+    "Select plane(s) to use for initial estimation of lineshape parameters"
+)
+mp_help = "Use multiprocessing"
+vclist_help = "Provide a vclist style file"
+plane_help = "Select individual planes for fitting"
+exclude_plane_help = "Exclude individual planes from fitting"
 
 
 @app.command(help="Fit NMR data to lineshape models and deconvolute overlapping peaks")
 def fit(
-    peaklist_path: Path,
-    data_path: Path,
+    peaklist_path: Annotated[Path, typer.Argument(help=peaklist_path_help)],
+    data_path: Annotated[Path, typer.Argument(help=data_path_help)],
     output_path: Path,
     max_cluster_size: Optional[int] = None,
     lineshape: Lineshape = Lineshape.PV,
-    fix: List[str] = ["fraction", "sigma", "center"],
-    xy_bounds: Tuple[float, float] = (0, 0),
-    vclist: Optional[Path] = None,
-    plane: Optional[List[int]] = None,
-    exclude_plane: Optional[List[int]] = None,
+    fix: Annotated[List[str], typer.Option(help=fix_help)] = [
+        "fraction",
+        "sigma",
+        "center",
+    ],
+    xy_bounds: Annotated[Tuple[float, float], typer.Option(help=xy_bounds_help)] = (
+        0,
+        0,
+    ),
+    vclist: Annotated[Optional[Path], typer.Option(help=vclist_help)] = None,
+    plane: Annotated[Optional[List[int]], typer.Option(help=plane_help)] = None,
+    exclude_plane: Annotated[
+        Optional[List[int]], typer.Option(help=exclude_plane_help)
+    ] = None,
     reference_plane_index: Annotated[
         List[int], typer.Option(help=reference_plane_index_help)
     ] = [],
     initial_fit_threshold: Optional[float] = None,
     jack_knife_sample_errors: bool = False,
-    mp: bool = True,
+    mp: Annotated[bool, typer.Option(help=mp_help)] = True,
     verbose: bool = False,
 ):
     """Fit NMR data to lineshape models and deconvolute overlapping peaks
@@ -633,7 +433,10 @@ def fit(
     # read NMR data
     args = {}
     config = {}
-    args, config = update_args_with_values_from_config_file(args)
+    data_dir = peaklist_path.parent
+    args, config = update_args_with_values_from_config_file(
+        args, config_path=data_dir / "peakipy.config"
+    )
     dims = config.get("dims", [0, 1, 2])
     peakipy_data = LoadData(peaklist_path, data_path, dims=dims)
     peakipy_data = check_for_include_column_and_add_if_missing(peakipy_data)
@@ -733,551 +536,6 @@ def fit(
     run_log()
 
 
-def validate_plane_selection(plane, pseudo3D):
-    if (plane == []) or (plane == None):
-        plane = list(range(pseudo3D.n_planes))
-
-    elif max(plane) > (pseudo3D.n_planes - 1):
-        raise ValueError(
-            f"[red]There are {pseudo3D.n_planes} planes in your data you selected --plane {max(plane)}...[red]"
-            f"plane numbering starts from 0."
-        )
-    elif min(plane) < 0:
-        raise ValueError(
-            f"[red]Plane number can not be negative; you selected --plane {min(plane)}...[/red]"
-        )
-    else:
-        plane = sorted(plane)
-
-    return plane
-
-
-def validate_sample_count(sample_count):
-    if type(sample_count) == int:
-        sample_count = sample_count
-    else:
-        raise TypeError("Sample count (ccount, rcount) should be an integer")
-    return sample_count
-
-
-def unpack_plotting_colors(colors):
-    match colors:
-        case (data_color, fit_color):
-            data_color, fit_color = colors
-        case _:
-            data_color, fit_color = "green", "blue"
-    return data_color, fit_color
-
-
-def get_fit_data_for_selected_peak_clusters(fits, clusters):
-    match clusters:
-        case None | []:
-            pass
-        case _:
-            # only use these clusters
-            fits = fits[fits.clustid.isin(clusters)]
-            if len(fits) < 1:
-                exit(f"Are you sure clusters {clusters} exist?")
-    return fits
-
-
-def make_masks_from_plane_data(empty_mask_array, plane_data):
-    # make masks
-    individual_masks = []
-    for cx, cy, rx, ry, name in zip(
-        plane_data.center_x,
-        plane_data.center_y,
-        plane_data.x_radius,
-        plane_data.y_radius,
-        plane_data.assignment,
-    ):
-        tmp_mask = make_mask(empty_mask_array, cx, cy, rx, ry)
-        empty_mask_array += tmp_mask
-        individual_masks.append(tmp_mask)
-    filled_mask_array = empty_mask_array
-    return individual_masks, filled_mask_array
-
-
-def simulate_pv_pv_lineshapes_from_fitted_peak_parameters(
-    peak_parameters, XY, sim_data, sim_data_singles
-):
-    for amp, c_x, c_y, s_x, s_y, frac_x, frac_y, ls in zip(
-        peak_parameters.amp,
-        peak_parameters.center_x,
-        peak_parameters.center_y,
-        peak_parameters.sigma_x,
-        peak_parameters.sigma_y,
-        peak_parameters.fraction_x,
-        peak_parameters.fraction_y,
-        peak_parameters.lineshape,
-    ):
-        sim_data_i = pv_pv(XY, amp, c_x, c_y, s_x, s_y, frac_x, frac_y).reshape(
-            sim_data.shape
-        )
-        sim_data += sim_data_i
-        sim_data_singles.append(sim_data_i)
-    return sim_data, sim_data_singles
-
-
-def simulate_lineshapes_from_fitted_peak_parameters(
-    peak_parameters, XY, sim_data, sim_data_singles
-):
-    shape = sim_data.shape
-    for amp, c_x, c_y, s_x, s_y, frac, lineshape in zip(
-        peak_parameters.amp,
-        peak_parameters.center_x,
-        peak_parameters.center_y,
-        peak_parameters.sigma_x,
-        peak_parameters.sigma_y,
-        peak_parameters.fraction,
-        peak_parameters.lineshape,
-    ):
-        # print(amp)
-        match lineshape:
-            case "G" | "L" | "PV":
-                sim_data_i = pvoigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
-            case "PV_L":
-                sim_data_i = pv_l(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
-
-            case "PV_G":
-                sim_data_i = pv_g(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
-
-            case "G_L":
-                sim_data_i = gaussian_lorentzian(
-                    XY, amp, c_x, c_y, s_x, s_y, frac
-                ).reshape(shape)
-
-            case "V":
-                sim_data_i = voigt2d(XY, amp, c_x, c_y, s_x, s_y, frac).reshape(shape)
-        sim_data += sim_data_i
-        sim_data_singles.append(sim_data_i)
-    return sim_data, sim_data_singles
-
-
-@dataclass
-class PlottingDataForPlane:
-    pseudo3D: Pseudo3D
-    plane_id: int
-    plane_lineshape_parameters: pd.DataFrame
-    X: np.array
-    Y: np.array
-    mask: np.array
-    individual_masks: List[np.array]
-    sim_data: np.array
-    sim_data_singles: List[np.array]
-    min_x: int
-    max_x: int
-    min_y: int
-    max_y: int
-    fit_color: str
-    data_color: str
-    rcount: int
-    ccount: int
-
-    x_plot: np.array = field(init=False)
-    y_plot: np.array = field(init=False)
-    masked_data: np.array = field(init=False)
-    masked_sim_data: np.array = field(init=False)
-    residual: np.array = field(init=False)
-    single_colors: List = field(init=False)
-
-    def __post_init__(self):
-        self.plane_data = self.pseudo3D.data[self.plane_id]
-        self.masked_data = self.plane_data.copy()
-        self.masked_sim_data = self.sim_data.copy()
-        self.masked_data[~self.mask] = np.nan
-        self.masked_sim_data[~self.mask] = np.nan
-
-        self.x_plot = self.pseudo3D.uc_f2.ppm(
-            self.X[self.min_y : self.max_y, self.min_x : self.max_x]
-        )
-        self.y_plot = self.pseudo3D.uc_f1.ppm(
-            self.Y[self.min_y : self.max_y, self.min_x : self.max_x]
-        )
-        self.masked_data = self.masked_data[
-            self.min_y : self.max_y, self.min_x : self.max_x
-        ]
-        self.sim_plot = self.masked_sim_data[
-            self.min_y : self.max_y, self.min_x : self.max_x
-        ]
-        self.residual = self.masked_data - self.sim_plot
-
-        for single_mask, single in zip(self.individual_masks, self.sim_data_singles):
-            single[~single_mask] = np.nan
-        self.sim_data_singles = [
-            sim_data_single[self.min_y : self.max_y, self.min_x : self.max_x]
-            for sim_data_single in self.sim_data_singles
-        ]
-        self.single_colors = [
-            cm.viridis(i) for i in np.linspace(0, 1, len(self.sim_data_singles))
-        ]
-
-
-def plot_data_is_valid(plot_data: PlottingDataForPlane) -> bool:
-    if len(plot_data.x_plot) < 1 or len(plot_data.y_plot) < 1:
-        print(
-            f"[red]Nothing to plot for cluster {int(plot_data.plane_lineshape_parameters.clustid)}[/red]"
-        )
-        print(f"[red]x={plot_data.x_plot},y={plot_data.y_plot}[/red]")
-        print(
-            df_to_rich_table(
-                plot_data.plane_lineshape_parameters,
-                title="",
-                columns=bad_column_selection,
-                styles=bad_color_selection,
-            )
-        )
-        plt.close()
-        validated = False
-        # print(Fore.RED + "Maybe your F1/F2 radii for fitting were too small...")
-    elif plot_data.masked_data.shape[0] == 0 or plot_data.masked_data.shape[1] == 0:
-        print(f"[red]Nothing to plot for cluster {int(plot_data.plane.clustid)}[/red]")
-        print(
-            df_to_rich_table(
-                plot_data.plane_lineshape_parameters,
-                title="Bad plane",
-                columns=bad_column_selection,
-                styles=bad_color_selection,
-            )
-        )
-        spec_lim_f1 = " - ".join(
-            ["%8.3f" % i for i in plot_data.pseudo3D.f1_ppm_limits]
-        )
-        spec_lim_f2 = " - ".join(
-            ["%8.3f" % i for i in plot_data.pseudo3D.f2_ppm_limits]
-        )
-        print(f"Spectrum limits are {plot_data.pseudo3D.f2_label:4s}:{spec_lim_f2} ppm")
-        print(f"                    {plot_data.pseudo3D.f1_label:4s}:{spec_lim_f1} ppm")
-        plt.close()
-        validated = False
-    else:
-        validated = True
-    return validated
-
-
-def create_matplotlib_figure(
-    plot_data: PlottingDataForPlane,
-    pdf: PdfPages,
-    individual=False,
-    label=False,
-    ccpn_flag=False,
-    show=True,
-):
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.add_subplot(projection="3d")
-    if plot_data_is_valid(plot_data):
-        cset = ax.contourf(
-            plot_data.x_plot,
-            plot_data.y_plot,
-            plot_data.residual,
-            zdir="z",
-            offset=np.nanmin(plot_data.masked_data) * 1.1,
-            alpha=0.5,
-            cmap=cm.coolwarm,
-        )
-        cbl = fig.colorbar(cset, ax=ax, shrink=0.5, format="%.2e")
-        cbl.ax.set_title("Residual", pad=20)
-
-        if individual:
-            #  for plotting single fit surfaces
-            single_colors = [
-                cm.viridis(i)
-                for i in np.linspace(0, 1, len(plot_data.sim_data_singles))
-            ]
-            [
-                ax.plot_surface(
-                    plot_data.x_plot,
-                    plot_data.y_plot,
-                    z_single,
-                    color=c,
-                    alpha=0.5,
-                )
-                for c, z_single in zip(single_colors, plot_data.sim_data_singles)
-            ]
-        ax.plot_wireframe(
-            plot_data.x_plot,
-            plot_data.y_plot,
-            plot_data.sim_plot,
-            # colors=[cm.coolwarm(i) for i in np.ravel(residual)],
-            colors=plot_data.fit_color,
-            linestyle="--",
-            label="fit",
-            rcount=plot_data.rcount,
-            ccount=plot_data.ccount,
-        )
-        ax.plot_wireframe(
-            plot_data.x_plot,
-            plot_data.y_plot,
-            plot_data.masked_data,
-            colors=plot_data.data_color,
-            linestyle="-",
-            label="data",
-            rcount=plot_data.rcount,
-            ccount=plot_data.ccount,
-        )
-        ax.set_ylabel(plot_data.pseudo3D.f1_label)
-        ax.set_xlabel(plot_data.pseudo3D.f2_label)
-
-        # axes will appear inverted
-        ax.view_init(30, 120)
-
-        title = f"Plane={plot_data.plane_id},Cluster={plot_data.plane_lineshape_parameters.clustid.iloc[0]}"
-        plt.title(title)
-        print(f"[green]Plotting: {title}[/green]")
-        out_str = "Volumes (Heights)\n===========\n"
-        for _, row in plot_data.plane_lineshape_parameters.iterrows():
-            out_str += f"{row.assignment} = {row.amp:.3e} ({row.height:.3e})\n"
-            if label:
-                ax.text(
-                    row.center_x_ppm,
-                    row.center_y_ppm,
-                    row.height * 1.2,
-                    row.assignment,
-                    (1, 1, 1),
-                )
-
-        ax.text2D(
-            -0.5,
-            1.0,
-            out_str,
-            transform=ax.transAxes,
-            fontsize=10,
-            fontfamily="sans-serif",
-            va="top",
-            bbox=dict(boxstyle="round", ec="k", fc="k", alpha=0.5),
-        )
-
-        ax.legend()
-
-        if show:
-
-            def exit_program(event):
-                exit()
-
-            def next_plot(event):
-                plt.close()
-
-            axexit = plt.axes([0.81, 0.05, 0.1, 0.075])
-            bnexit = Button(axexit, "Exit")
-            bnexit.on_clicked(exit_program)
-            axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
-            bnnext = Button(axnext, "Next")
-            bnnext.on_clicked(next_plot)
-            if ccpn_flag:
-                plt.show(windowTitle="", size=(1000, 500))
-            else:
-                plt.show()
-        else:
-            pdf.savefig()
-
-            plt.close()
-
-
-def create_plotly_wireframe_lines(plot_data: PlottingDataForPlane):
-    lines = []
-    show_legend = lambda x: x < 1
-    showlegend = False
-    # make simulated data wireframe
-    line_marker = dict(color=plot_data.fit_color, width=4)
-    counter = 0
-    for i, j, k in zip(plot_data.x_plot, plot_data.y_plot, plot_data.sim_plot):
-        showlegend = show_legend(counter)
-        lines.append(
-            go.Scatter3d(
-                x=i,
-                y=j,
-                z=k,
-                mode="lines",
-                line=line_marker,
-                name="fit",
-                showlegend=showlegend,
-            )
-        )
-        counter += 1
-    for i, j, k in zip(plot_data.x_plot.T, plot_data.y_plot.T, plot_data.sim_plot.T):
-        lines.append(
-            go.Scatter3d(
-                x=i, y=j, z=k, mode="lines", line=line_marker, showlegend=showlegend
-            )
-        )
-    # make experimental data wireframe
-    line_marker = dict(color=plot_data.data_color, width=4)
-    counter = 0
-    for i, j, k in zip(plot_data.x_plot, plot_data.y_plot, plot_data.masked_data):
-        showlegend = show_legend(counter)
-        lines.append(
-            go.Scatter3d(
-                x=i,
-                y=j,
-                z=k,
-                mode="lines",
-                name="data",
-                line=line_marker,
-                showlegend=showlegend,
-            )
-        )
-        counter += 1
-    for i, j, k in zip(plot_data.x_plot.T, plot_data.y_plot.T, plot_data.masked_data.T):
-        lines.append(
-            go.Scatter3d(
-                x=i, y=j, z=k, mode="lines", line=line_marker, showlegend=showlegend
-            )
-        )
-
-    return lines
-
-
-def construct_surface_legend_string(row):
-    surface_legend = ""
-    surface_legend += row.assignment
-    return surface_legend
-
-
-def create_plotly_surfaces(plot_data: PlottingDataForPlane):
-    data = []
-    color_scale_values = np.linspace(0, 1, len(plot_data.single_colors))
-    color_scale = [
-        [val, f"rgb({', '.join('%d'%(i*255) for i in c[0:3])})"]
-        for val, c in zip(color_scale_values, plot_data.single_colors)
-    ]
-    for val, individual_peak, row in zip(
-        color_scale_values,
-        plot_data.sim_data_singles,
-        plot_data.plane_lineshape_parameters.itertuples(),
-    ):
-        name = construct_surface_legend_string(row)
-        colors = np.zeros(shape=individual_peak.shape) + val
-        data.append(
-            go.Surface(
-                z=individual_peak,
-                x=plot_data.x_plot,
-                y=plot_data.y_plot,
-                opacity=0.5,
-                surfacecolor=colors,
-                colorscale=color_scale,
-                showscale=False,
-                cmin=0,
-                cmax=1,
-                name=name,
-            )
-        )
-    return data
-
-
-def create_residual_contours(plot_data: PlottingDataForPlane):
-    contours = go.Contour(
-        x=plot_data.x_plot[0], y=plot_data.y_plot.T[0], z=plot_data.residual
-    )
-    return contours
-
-
-def create_residual_figure(plot_data: PlottingDataForPlane):
-    data = create_residual_contours(plot_data)
-    fig = go.Figure(data=data)
-    fig.update_layout(
-        title="Fit residuals",
-        xaxis_title=f"{plot_data.pseudo3D.f2_label} ppm",
-        yaxis_title=f"{plot_data.pseudo3D.f1_label} ppm",
-        xaxis=dict(range=[plot_data.x_plot.max(), plot_data.x_plot.min()]),
-        yaxis=dict(range=[plot_data.y_plot.max(), plot_data.y_plot.min()]),
-    )
-    return fig
-
-
-def create_plotly_figure(plot_data: PlottingDataForPlane):
-    lines = create_plotly_wireframe_lines(plot_data)
-    surfaces = create_plotly_surfaces(plot_data)
-    fig = go.Figure(data=lines + surfaces)
-    fig = update_axis_ranges(fig, plot_data)
-    return fig
-
-
-def update_axis_ranges(fig, plot_data: PlottingDataForPlane):
-    fig.update_layout(
-        scene=dict(
-            xaxis=dict(range=[plot_data.x_plot.max(), plot_data.x_plot.min()]),
-            yaxis=dict(range=[plot_data.y_plot.max(), plot_data.y_plot.min()]),
-            xaxis_title=f"{plot_data.pseudo3D.f2_label} ppm",
-            yaxis_title=f"{plot_data.pseudo3D.f1_label} ppm",
-            annotations=make_annotations(plot_data),
-        )
-    )
-    return fig
-
-
-def make_annotations(plot_data: PlottingDataForPlane):
-    annotations = []
-    for row in plot_data.plane_lineshape_parameters.itertuples():
-        annotations.append(
-            dict(
-                showarrow=True,
-                x=row.center_x_ppm,
-                y=row.center_y_ppm,
-                z=row.height * 1.0,
-                text=row.assignment,
-                opacity=0.8,
-                textangle=0,
-                arrowsize=1,
-            )
-        )
-    return annotations
-
-
-class FitDataModel(BaseModel):
-    plane: int
-    clustid: int
-    assignment: str
-    memcnt: int
-    amp: float
-    height: float
-    center_x_ppm: float
-    center_y_ppm: float
-    fwhm_x_hz: float
-    fwhm_y_hz: float
-    lineshape: str
-    x_radius: float
-    y_radius: float
-    center_x: float
-    center_y: float
-    sigma_x: float
-    sigma_y: float
-
-
-class FitDataModelPVGL(FitDataModel):
-    fraction: float
-
-
-class FitDataModelVoigt(FitDataModel):
-    fraction: float
-    gamma_x: float
-    gamma_y: float
-
-
-class FitDataModelPVPV(FitDataModel):
-    fraction_x: float
-    fraction_y: float
-
-
-def validate_fit_data(dict):
-    lineshape = dict.get("lineshape")
-    if lineshape in ["PV", "G", "L"]:
-        fit_data = FitDataModelPVGL(**dict)
-    elif lineshape == "V":
-        fit_data = FitDataModelVoigt(**dict)
-    else:
-        fit_data = FitDataModelPVPV(**dict)
-
-    return fit_data.model_dump()
-
-
-def validate_fit_dataframe(df):
-    validated_fit_data = []
-    for _, row in df.iterrows():
-        fit_data = validate_fit_data(row.to_dict())
-        validated_fit_data.append(fit_data)
-    return pd.DataFrame(validated_fit_data)
-
-
 @app.command(help="Interactive plots for checking fits")
 def check(
     fits: Path,
@@ -1295,7 +553,6 @@ def check(
     colors: Tuple[str, str] = ("#5e3c99", "#e66101"),
     verb: bool = False,
     plotly: bool = False,
-    config_path: Path = Path("peakipy.config"),
 ):
     """Interactive plots for checking fits
 
@@ -1348,6 +605,7 @@ def check(
     fits = validate_fit_dataframe(pd.read_csv(fits))
     args = {}
     # get dims from config file
+    config_path = data_path.parent / "peakipy.config"
     args, config = update_args_with_values_from_config_file(args, config_path)
     dims = config.get("dims", (1, 2, 3))
 

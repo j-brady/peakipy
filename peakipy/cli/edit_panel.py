@@ -102,9 +102,12 @@ def panel_app():
     button.on_click(fit_peaks_button_click)
 
     def update_source_selected_indices(event):
-        # print(event)
         # print(bs.tablulator_widget.selection)
+        # hack to make current selection however, only allows one selection
+        # at a time
+        bs.tablulator_widget._update_selection([event.value])
         bs.source.selected.indices = bs.tablulator_widget.selection
+        # print(bs.tablulator_widget.selection)
 
     bs.tablulator_widget.on_click(update_source_selected_indices)
     bs.tablulator_widget.on_edit(update_peakipy_data_on_edit_of_table)
