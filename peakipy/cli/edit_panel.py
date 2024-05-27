@@ -42,7 +42,7 @@ def update_peakipy_data_on_edit_of_table(event):
     data.bs.update_memcnt()
 
 
-def panel_app():
+def panel_app(test=False):
     data = data_singleton()
     bs = data.bs
     bokeh_pane = pn.pane.Bokeh(bs.p)
@@ -129,16 +129,19 @@ def panel_app():
     )
     check_app = pn.Card(title="Peakipy check")
     template.main.append(pn.Column(check_app, spectrum))
-    template.show()
+    if test:
+        return
+    else:
+        template.show()
 
 
 @app.command()
-def main(peaklist_path: Path, data_path: Path):
+def main(peaklist_path: Path, data_path: Path, test: bool = False):
     data = data_singleton()
     data.peaklist_path = peaklist_path
     data.data_path = data_path
     data.load_data()
-    panel_app()
+    panel_app(test=test)
 
 
 if __name__ == "__main__":

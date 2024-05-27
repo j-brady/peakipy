@@ -3,7 +3,6 @@ import os
 import json
 import shutil
 from pathlib import Path
-from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Tuple, List, Annotated
 from multiprocessing import Pool, cpu_count
@@ -16,15 +15,11 @@ import pandas as pd
 from tqdm import tqdm
 from rich import print
 from skimage.filters import threshold_otsu
-from pydantic import BaseModel
 
-import matplotlib
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
 
-import yaml
 import plotly.io as pio
 
 pio.templates.default = "plotly_dark"
@@ -71,13 +66,11 @@ from peakipy.fitting import (
     simulate_lineshapes_from_fitted_peak_parameters,
     simulate_pv_pv_lineshapes_from_fitted_peak_parameters,
     validate_fit_dataframe,
-)
-
-from .fit import (
     fit_peak_clusters,
     FitPeaksInput,
     FitPeaksArgs,
 )
+
 from peakipy.plotting import (
     PlottingDataForPlane,
     validate_sample_count,
@@ -86,7 +79,6 @@ from peakipy.plotting import (
     create_residual_figure,
     create_matplotlib_figure,
 )
-from .spec import yaml_file
 
 app = typer.Typer()
 tmp_path = Path("tmp")
@@ -119,7 +111,6 @@ def read(
     y_ppm_column_name: str = "Position F2",
     dims: Annotated[List[int], typer.Option(help=dims_help)] = [0, 1, 2],
     outfmt: OutFmt = OutFmt.csv,
-    show: bool = False,
     fuda: bool = False,
 ):
     """Read NMRPipe/Analysis peaklist into pandas dataframe
@@ -163,9 +154,6 @@ def read(
         peak positions [default: "Position F2"]
     outfmt : OutFmt
         Format of output peaklist [default: csv]
-    show : bool
-        Show the clusters on the spectrum color coded using matplotlib
-    fuda : bool
         Create a parameter file for running fuda (params.fuda)
 
 
@@ -301,39 +289,6 @@ def read(
         write_config(config_path, config_dic)
 
     run_log()
-
-    yaml = f"""
-    ##########################################################################################################
-    #  This first block is global parameters which can be overridden by adding the desired argument          #
-    #  to your list of spectra. One exception is "colors" which if set in global params overrides the        #
-    #  color option set for individual spectra as the colors will now cycle through the chosen matplotlib    #
-    #  colormap                                                                                              #
-    ##########################################################################################################
-
-    cs: {thres}                     # contour start
-    contour_num: 10                 # number of contours
-    contour_factor: 1.2             # contour factor
-    colors: tab20                   # must be matplotlib.cm colormap
-    show_cs: True
-
-    outname: ["clusters.pdf","clusters.png"] # either single value or list of output names
-    ncol: 1 #  tells matplotlib how many columns to give the figure legend - if not set defaults to 2
-    clusters: {outname}
-    dims: {dims}
-
-    # Here is where your list of spectra to plot goes
-    spectra:
-
-            - fname: {data_path}
-              label: ""
-              contour_num: 20
-              linewidths: 0.5
-    """
-
-    if show:
-        with open("show_clusters.yml", "w") as out:
-            out.write(yaml)
-        os.system("peakipy spec show_clusters.yml")
 
     print(
         f"""[green]
@@ -536,10 +491,13 @@ def fit(
     run_log()
 
 
+fits_help = "CSV file containing peakipy fits"
+
+
 @app.command(help="Interactive plots for checking fits")
 def check(
-    fits: Path,
-    data_path: Path,
+    fits: Annotated[Path, typer.Argument(help=fits_help)],
+    data_path: Annotated[Path, typer.Argument(help=data_path_help)],
     clusters: Optional[List[int]] = None,
     plane: Optional[List[int]] = None,
     outname: Path = Path("plots.pdf"),
@@ -551,8 +509,8 @@ def check(
     rcount: int = 50,
     ccount: int = 50,
     colors: Tuple[str, str] = ("#5e3c99", "#e66101"),
-    verb: bool = False,
     plotly: bool = False,
+    test: bool = False,
 ):
     """Interactive plots for checking fits
 
@@ -635,288 +593,87 @@ def check(
     XY = np.meshgrid(x, y)
     X, Y = XY
 
-    with PdfPages(outname) as pdf:
-        for _, peak_cluster in peak_clusters:
-            table = df_to_rich_table(
-                peak_cluster,
-                title="",
-                columns=columns_to_print,
-                styles=["blue" for _ in columns_to_print],
-            )
-            print(table)
+    all_plot_data = []
+    for _, peak_cluster in peak_clusters:
+        table = df_to_rich_table(
+            peak_cluster,
+            title="",
+            columns=columns_to_print,
+            styles=["blue" for _ in columns_to_print],
+        )
+        print(table)
 
-            x_radius = peak_cluster.x_radius.max()
-            y_radius = peak_cluster.y_radius.max()
-            max_x, min_x = get_limits_for_axis_in_points(
-                group_axis_points=peak_cluster.center_x, mask_radius_in_points=x_radius
-            )
-            max_y, min_y = get_limits_for_axis_in_points(
-                group_axis_points=peak_cluster.center_y, mask_radius_in_points=y_radius
-            )
-            max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
-                pseudo3D.data.shape, max_x, min_x, max_y, min_y
-            )
+        x_radius = peak_cluster.x_radius.max()
+        y_radius = peak_cluster.y_radius.max()
+        max_x, min_x = get_limits_for_axis_in_points(
+            group_axis_points=peak_cluster.center_x, mask_radius_in_points=x_radius
+        )
+        max_y, min_y = get_limits_for_axis_in_points(
+            group_axis_points=peak_cluster.center_y, mask_radius_in_points=y_radius
+        )
+        max_x, min_x, max_y, min_y = deal_with_peaks_on_edge_of_spectrum(
+            pseudo3D.data.shape, max_x, min_x, max_y, min_y
+        )
 
-            empty_mask_array = np.zeros(
-                (pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool
-            )
-            first_plane = peak_cluster[peak_cluster.plane == selected_planes[0]]
-            individual_masks, mask = make_masks_from_plane_data(
-                empty_mask_array, first_plane
-            )
+        empty_mask_array = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size), dtype=bool)
+        first_plane = peak_cluster[peak_cluster.plane == selected_planes[0]]
+        individual_masks, mask = make_masks_from_plane_data(
+            empty_mask_array, first_plane
+        )
 
-            # generate simulated data
-            for plane_id, plane in peak_cluster.groupby("plane"):
-                sim_data_singles = []
-                sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
-                try:
-                    (
-                        sim_data,
-                        sim_data_singles,
-                    ) = simulate_pv_pv_lineshapes_from_fitted_peak_parameters(
-                        plane, XY, sim_data, sim_data_singles
-                    )
-                except:
-                    (
-                        sim_data,
-                        sim_data_singles,
-                    ) = simulate_lineshapes_from_fitted_peak_parameters(
-                        plane, XY, sim_data, sim_data_singles
-                    )
-
-                plot_data = PlottingDataForPlane(
-                    pseudo3D,
-                    plane_id,
-                    plane,
-                    X,
-                    Y,
-                    mask,
-                    individual_masks,
+        # generate simulated data
+        for plane_id, plane in peak_cluster.groupby("plane"):
+            sim_data_singles = []
+            sim_data = np.zeros((pseudo3D.f1_size, pseudo3D.f2_size))
+            try:
+                (
                     sim_data,
                     sim_data_singles,
-                    min_x,
-                    max_x,
-                    min_y,
-                    max_y,
-                    fit_color,
-                    data_color,
-                    rcount,
-                    ccount,
+                ) = simulate_pv_pv_lineshapes_from_fitted_peak_parameters(
+                    plane, XY, sim_data, sim_data_singles
+                )
+            except:
+                (
+                    sim_data,
+                    sim_data_singles,
+                ) = simulate_lineshapes_from_fitted_peak_parameters(
+                    plane, XY, sim_data, sim_data_singles
                 )
 
-                if ccpn_flag:
-                    plt = PlotterWidget()
-                # fig = create_plotly_figure(plot_data)
-                if plotly:
-                    fig = create_plotly_figure(plot_data)
-                    residual_fig = create_residual_figure(plot_data)
-                    return fig, residual_fig
-                else:
-                    plt = matplotlib.pyplot
-                    create_matplotlib_figure(
-                        plot_data, pdf, individual, label, ccpn_flag, show
-                    )
-                if first:
-                    break
-
-    run_log()
-
-
-def make_yaml_file(name, yaml_file=yaml_file):
-    if os.path.exists(name):
-        print(f"Copying {name} to {name}.bak")
-        shutil.copy(name, f"{name}.bak")
-
-    print(f"Making yaml file ... {name}")
-    with open(name, "w") as new_yaml_file:
-        new_yaml_file.write(yaml_file)
-
-
-@app.command(help="Show first plane with clusters")
-def spec(yaml_file: Path, new: bool = False):
-    if new:
-        make_yaml_file(name=yaml_file)
-        exit()
-
-    if yaml_file.exists():
-        params = yaml.load(open(yaml_file, "r"), Loader=yaml.FullLoader)
-    else:
-        print(
-            f"[red]{yaml_file} does not exist. Use 'peakipy spec <yaml_file> --new' to create one[/red]"
-        )
-        exit()
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    cs_g = float(params["cs"])
-    spectra = params["spectra"]
-    contour_num_g = params.get("contour_num", 10)
-    contour_factor_g = params.get("contour_factor", 1.2)
-    nspec = len(spectra)
-    notes = []
-    legends = 0
-    for num, spec in enumerate(spectra):
-        # unpack spec specific parameters
-        fname = spec["fname"]
-
-        if params.get("colors"):
-            # currently overrides color option
-            color = np.linspace(0, 1, nspec)[num]
-            colors = cm.get_cmap(params.get("colors"))(color)
-            # print("Colors set to cycle though %s from Matplotlib"%params.get("colors"))
-            # print(colors)
-            colors = colors[:-1]
-
-        else:
-            colors = spec["colors"]
-
-        neg_colors = spec.get("neg_colors")
-        label = spec.get("label")
-        cs = float(spec.get("cs", cs_g))
-        contour_num = spec.get("contour_num", contour_num_g)
-        contour_factor = spec.get("contour_factor", contour_factor_g)
-        #  append cs and colors to notes
-        notes.append((cs, colors))
-
-        # read spectra
-        dic, data = ng.pipe.read(fname)
-        udic = ng.pipe.guess_udic(dic, data)
-
-        ndim = udic["ndim"]
-
-        if ndim == 1:
-            uc_f1 = ng.pipe.make_uc(dic, data, dim=0)
-
-        elif ndim == 2:
-            f1, f2 = params.get("dims", [0, 1])
-            uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
-            uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
-
-            ppm_f1 = uc_f1.ppm_scale()
-            ppm_f2 = uc_f2.ppm_scale()
-
-            ppm_f1_0, ppm_f1_1 = uc_f1.ppm_limits()  # max,min
-            ppm_f2_0, ppm_f2_1 = uc_f2.ppm_limits()  # max,min
-
-        elif ndim == 3:
-            dims = params.get("dims", [0, 1, 2])
-            f1, f2, f3 = dims
-            uc_f1 = ng.pipe.make_uc(dic, data, dim=f1)
-            uc_f2 = ng.pipe.make_uc(dic, data, dim=f2)
-            uc_f3 = ng.pipe.make_uc(dic, data, dim=f3)
-            #  need to make more robust
-            ppm_f1 = uc_f2.ppm_scale()
-            ppm_f2 = uc_f3.ppm_scale()
-
-            ppm_f1_0, ppm_f1_1 = uc_f2.ppm_limits()  # max,min
-            ppm_f2_0, ppm_f2_1 = uc_f3.ppm_limits()  # max,min
-
-            # if f1 == 0:
-            #    data = data[f1]
-            if dims != [1, 2, 3]:
-                data = np.transpose(data, dims)
-            data = data[0]
-            # x and y are set to f2 and f1
-            f1, f2 = f2, f3
-            # elif f1 == 1:
-            #    data = data[:,0,:]
-            # else:
-            #    data = data[:,:,0]
-
-        # plot parameters
-        contour_start = cs  # contour level start value
-        contour_num = contour_num  # number of contour levels
-        contour_factor = contour_factor  # scaling factor between contour levels
-
-        # calculate contour levels
-        cl = contour_start * contour_factor ** np.arange(contour_num)
-        if len(cl) > 1 and np.min(np.diff(cl)) <= 0.0:
-            print(f"Setting contour levels to np.abs({cl})")
-            cl = np.abs(cl)
-
-        ax.contour(
-            data,
-            cl,
-            colors=[colors for _ in cl],
-            linewidths=spec.get("linewidths", 0.5),
-            extent=(ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1),
-        )
-
-        if neg_colors:
-            ax.contour(
-                data * -1,
-                cl,
-                colors=[neg_colors for _ in cl],
-                linewidths=spec.get("linewidths", 0.5),
-                extent=(ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1),
+            plot_data = PlottingDataForPlane(
+                pseudo3D,
+                plane_id,
+                plane,
+                X,
+                Y,
+                mask,
+                individual_masks,
+                sim_data,
+                sim_data_singles,
+                min_x,
+                max_x,
+                min_y,
+                max_y,
+                fit_color,
+                data_color,
+                rcount,
+                ccount,
             )
+            all_plot_data.append(plot_data)
+            if plotly:
+                fig = create_plotly_figure(plot_data)
+                residual_fig = create_residual_figure(plot_data)
+                return fig, residual_fig
+            if first:
+                break
 
-        else:  # if no neg color given then plot with 0.5 alpha
-            ax.contour(
-                data * -1,
-                cl,
-                colors=[colors for _ in cl],
-                linewidths=spec.get("linewidths", 0.5),
-                extent=(ppm_f2_0, ppm_f2_1, ppm_f1_0, ppm_f1_1),
-                alpha=0.5,
-            )
+        with PdfPages(outname) as pdf:
+            for plot_data in all_plot_data:
+                create_matplotlib_figure(
+                    plot_data, pdf, individual, label, ccpn_flag, show, test
+                )
 
-        # make legend
-        if label:
-            legends += 1
-            # hack for legend
-            ax.plot([], [], c=colors, label=label)
-
-    # plt.xlim(ppm_f2_0, ppm_f2_1)
-    ax.invert_xaxis()
-    ax.set_xlabel(udic[f2]["label"] + " ppm")
-    if params.get("xlim"):
-        ax.set_xlim(*params.get("xlim"))
-
-    # plt.ylim(ppm_f1_0, ppm_f1_1)
-    ax.invert_yaxis()
-    ax.set_ylabel(udic[f1]["label"] + " ppm")
-
-    if legends > 0:
-        plt.legend(
-            loc="upper center", bbox_to_anchor=(0.5, 1.20), ncol=params.get("ncol", 2)
-        )
-
-    plt.tight_layout()
-
-    #  add a list of outfiles
-    y = 0.025
-    # only write cs levels if show_cs: True in yaml file
-    if params.get("show_cs"):
-        for num, j in enumerate(notes):
-            col = j[1]
-            con_strt = j[0]
-            ax.text(0.025, y, "cs=%.2e" % con_strt, color=col, transform=ax.transAxes)
-            y += 0.05
-
-    if params.get("clusters"):
-        peaklist = params.get("clusters")
-        if os.path.splitext(peaklist)[-1] == ".csv":
-            clusters = pd.read_csv(peaklist)
-        else:
-            clusters = pd.read_pickle(peaklist)
-        groups = clusters.groupby("CLUSTID")
-        for ind, group in groups:
-            if len(group) == 1:
-                ax.plot(group.X_PPM, group.Y_PPM, "ko", markersize=1)  # , picker=5)
-            else:
-                ax.plot(group.X_PPM, group.Y_PPM, "o", markersize=1)  # , picker=5)
-
-    if params.get("outname") and (type(params.get("outname")) == list):
-        for i in params.get("outname"):
-            plt.savefig(i, bbox_inches="tight", dpi=300)
-    else:
-        plt.savefig(params.get("outname", "test.pdf"), bbox_inches="tight")
-
-    # fig.canvas.mpl_connect("pick_event", onpick)
-    # line, = ax.plot(np.random.rand(100), 'o', picker=5)  # 5 points tolerance
-    plt.show()
+        run_log()
 
 
 if __name__ == "__main__":

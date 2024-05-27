@@ -88,6 +88,7 @@ def create_check_panel(
     data_path: Path,
     config_path: Path = Path("./peakipy.config"),
     edit_panel: bool = False,
+    test: bool = False,
 ):
     data = data_singleton()
     data.fits_path = fits_path
@@ -126,6 +127,8 @@ def create_check_panel(
     )
     if edit_panel:
         return check_pane
+    elif test:
+        return
     else:
         check_pane.show()
 

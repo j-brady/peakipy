@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest
 
 import peakipy.cli.main
+import peakipy.cli.check_panel
+import peakipy.cli.edit_panel
 from peakipy.cli.main import PeaklistFormat, Lineshape
 
 
@@ -45,6 +47,37 @@ def test_fit_main_with_default(protein_L):
         peaklist_path=protein_L / Path("test.csv"),
         data_path=protein_L / Path("test1.ft2"),
         output_path=protein_L / Path("fits_PV.csv"),
+    )
+    peakipy.cli.main.fit(**args)
+
+
+def test_fit_main_with_centers_floated(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("test.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        output_path=protein_L / Path("fits_PV_centers_floated.csv"),
+        fix=["fraction", "sigma"],
+    )
+    peakipy.cli.main.fit(**args)
+
+
+def test_fit_main_with_centers_bounded(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("test.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        output_path=protein_L / Path("fits_PV_centers_bounded.csv"),
+        fix=["fraction", "sigma"],
+        xy_bounds=[0.01, 0.1],
+    )
+    peakipy.cli.main.fit(**args)
+
+
+def test_fit_main_with_sigmas_floated(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("test.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        output_path=protein_L / Path("fits_PV_sigmas_floated.csv"),
+        fix=["fraction", "center"],
     )
     peakipy.cli.main.fit(**args)
 
@@ -106,7 +139,8 @@ def test_check_main_with_default(protein_L):
         clusters=[1],
         first=True,
         label=True,
-        show=False,
+        show=True,
+        test=True,
         individual=True,
     )
     peakipy.cli.main.check(**args)
@@ -119,7 +153,8 @@ def test_check_main_with_gaussian(protein_L):
         clusters=[1],
         first=True,
         label=True,
-        show=False,
+        show=True,
+        test=True,
         individual=True,
     )
     peakipy.cli.main.check(**args)
@@ -132,7 +167,8 @@ def test_check_main_with_lorentzian(protein_L):
         clusters=[1],
         first=True,
         label=True,
-        show=False,
+        show=True,
+        test=True,
         individual=True,
     )
     peakipy.cli.main.check(**args)
@@ -145,7 +181,8 @@ def test_check_main_with_voigt(protein_L):
         clusters=[1],
         first=True,
         label=True,
-        show=False,
+        show=True,
+        test=True,
         individual=True,
     )
     peakipy.cli.main.check(**args)
@@ -158,7 +195,58 @@ def test_check_main_with_pv_pv(protein_L):
         clusters=[1],
         first=True,
         label=True,
-        show=False,
+        show=True,
+        test=True,
         individual=True,
     )
     peakipy.cli.main.check(**args)
+
+
+def test_check_panel_PVPV(protein_L):
+    args = dict(
+        fits_path=protein_L / Path("fits_PV_PV.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        config_path=protein_L / Path("peakipy.config"),
+        test=True,
+    )
+    peakipy.cli.check_panel.create_check_panel(**args)
+
+
+def test_check_panel_PV(protein_L):
+    args = dict(
+        fits_path=protein_L / Path("fits_PV.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        config_path=protein_L / Path("peakipy.config"),
+        test=True,
+    )
+    peakipy.cli.check_panel.create_check_panel(**args)
+
+
+def test_check_panel_V(protein_L):
+    args = dict(
+        fits_path=protein_L / Path("fits_V.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        config_path=protein_L / Path("peakipy.config"),
+        test=True,
+    )
+    peakipy.cli.check_panel.create_check_panel(**args)
+
+
+def test_check_panel_edit(protein_L):
+    args = dict(
+        fits_path=protein_L / Path("fits_V.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        config_path=protein_L / Path("peakipy.config"),
+        edit_panel=True,
+        test=True,
+    )
+    peakipy.cli.check_panel.create_check_panel(**args)
+
+
+def test_edit_panel(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("test.csv"),
+        data_path=protein_L / Path("test1.ft2"),
+        test=True,
+    )
+    peakipy.cli.edit_panel.main(**args)

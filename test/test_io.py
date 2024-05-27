@@ -79,14 +79,6 @@ class TestReadScript(unittest.TestCase):
         # self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
 
 
-class TestSpecScript(unittest.TestCase):
-    @patch("peakipy.cli.main.spec")
-    def test_main(self, MockSpec):
-        args = {"<peaklist>": "hello", "<data>": "data"}
-        spec = MockSpec(args)
-        self.assertIsNotNone(spec)
-
-
 def test_load_config_existing():
     config_path = Path("test_config.json")
     # Create a dummy existing config file
