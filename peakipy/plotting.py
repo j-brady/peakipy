@@ -122,6 +122,7 @@ def create_matplotlib_figure(
     label=False,
     ccpn_flag=False,
     show=True,
+    test=False,
 ):
     fig = plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(projection="3d")
@@ -223,6 +224,8 @@ def create_matplotlib_figure(
             axnext = plt.axes([0.71, 0.05, 0.1, 0.075])
             bnnext = Button(axnext, "Next")
             bnnext.on_clicked(next_plot)
+            if test:
+                return
             if ccpn_flag:
                 plt.show(windowTitle="", size=(1000, 500))
             else:
