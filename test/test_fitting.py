@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 from pathlib import Path
 from collections import namedtuple
 
@@ -51,6 +52,7 @@ from peakipy.fitting import (
     rename_columns_for_compatibility,
     FitPeaksArgs,
     FitPeaksInput,
+    FitResult,
 )
 from peakipy.lineshapes import Lineshape, pvoigt2d, pv_pv
 
@@ -1142,3 +1144,113 @@ def test_add_vclist_to_df_plane_order():
 #     expected_result = pseudo_voigt_model_result
 #     actual_result = perform_initial_lineshape_fit_on_cluster_of_peaks()
 #     assert expected_result == actual_result
+# Mock FitPeakClusterInput class for testing purposes
+class MockFitPeakClusterInput:
+    def __init__(
+        self,
+        mod,
+        peak_slices,
+        XY_slices,
+        p_guess,
+        weights,
+        fit_method,
+        mask,
+        XY,
+        first_plane_data,
+        last_peak,
+        group,
+        min_x,
+        min_y,
+        max_x,
+        max_y,
+        verbose,
+        uc_dics,
+    ):
+        self.mod = mod
+        self.peak_slices = peak_slices
+        self.XY_slices = XY_slices
+        self.p_guess = p_guess
+        self.weights = weights
+        self.fit_method = fit_method
+        self.mask = mask
+        self.XY = XY
+        self.first_plane_data = first_plane_data
+        self.last_peak = last_peak
+        self.group = group
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+        self.verbose = verbose
+        self.uc_dics = uc_dics
+
+
+@pytest.fixture
+def fit_peak_cluster_input():
+    mod = MagicMock()
+    mod.fit = MagicMock(
+        return_value=MagicMock(
+            params="params", fit_report=MagicMock(return_value="fit_report")
+        )
+    )
+    mod.eval = MagicMock(return_value=np.array([2.0, 1.0, 2.0]))
+
+    return MockFitPeakClusterInput(
+        mod=mod,
+        peak_slices="peak_slices",
+        XY_slices="XY_slices",
+        p_guess="p_guess",
+        weights="weights",
+        fit_method="fit_method",
+        mask=np.array([True, False, True]),
+        XY=(np.array([0, 1, 2]), np.array([0, 1, 2])),
+        first_plane_data=np.array([2.0, 1.0, 2.0]),
+        last_peak="last_peak",
+        group="group",
+        min_x="min_x",
+        min_y="min_y",
+        max_x="max_x",
+        max_y="max_y",
+        verbose=True,
+        uc_dics="uc_dics",
+    )
+
+
+def test_perform_initial_lineshape_fit_on_cluster_of_peaks(fit_peak_cluster_input):
+
+    result = perform_initial_lineshape_fit_on_cluster_of_peaks(fit_peak_cluster_input)
+
+    # Check if result is an instance of FitResult
+    assert isinstance(result, FitResult)
+
+    # Verify returned values
+    assert result.out.params == "params"
+    np.testing.assert_array_equal(result.mask, np.array([True, False, True]))
+    assert result.fit_str == ""
+    assert result.log == ""
+    assert result.group == "group"
+    assert result.uc_dics == "uc_dics"
+    assert result.min_x == "min_x"
+    assert result.min_y == "min_y"
+    assert result.max_x == "max_x"
+    assert result.max_y == "max_y"
+    np.testing.assert_array_equal(result.X, np.array([0, 1, 2]))
+    np.testing.assert_array_equal(result.Y, np.array([0, 1, 2]))
+    np.testing.assert_array_equal(result.Z, np.array([2.0, np.nan, 2.0]))
+    np.testing.assert_array_equal(result.Z_sim, np.array([2.0, np.nan, 2.0]))
+    assert result.peak_slices == "peak_slices"
+    assert result.XY_slices == "XY_slices"
+    assert result.weights == "weights"
+    assert result.mod == fit_peak_cluster_input.mod
+
+    # Check if mod.fit and mod.eval were called with correct arguments
+    fit_peak_cluster_input.mod.fit.assert_called_once_with(
+        "peak_slices",
+        XY="XY_slices",
+        params="p_guess",
+        weights="weights",
+        method="fit_method",
+    )
+    # fit_peak_cluster_input.mod.eval.assert_called_once_with(
+    #     XY=(np.array([0,1,2]), np.array([0,1,2])), params='params'
+    # )

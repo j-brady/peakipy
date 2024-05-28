@@ -5,7 +5,7 @@ from typing import List, Tuple, Optional
 import numpy as np
 from numpy import sqrt
 import pandas as pd
-from rich import console
+from rich import print
 from lmfit import Model, Parameters, Parameter
 from lmfit.model import ModelResult
 from pydantic import BaseModel
@@ -941,7 +941,7 @@ def perform_initial_lineshape_fit_on_cluster_of_peaks(
     )
 
     if verbose:
-        console.print(out.fit_report(), style="bold")
+        print(out.fit_report())
 
     z_sim = mod.eval(XY=XY, params=out.params)
     z_sim[~mask] = np.nan
@@ -995,7 +995,9 @@ def refit_peak_cluster_with_constraints(
 
 def merge_unpacked_parameters_with_metadata(cluster_fit_df, group_of_peaks_df):
     group_of_peaks_df["prefix"] = group_of_peaks_df.ASS.apply(to_prefix)
-    merged_cluster_fit_df = cluster_fit_df.merge(group_of_peaks_df, on="prefix")
+    merged_cluster_fit_df = cluster_fit_df.merge(
+        group_of_peaks_df, on="prefix", suffixes=["", "_init"]
+    )
     return merged_cluster_fit_df
 
 

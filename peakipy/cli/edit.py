@@ -98,7 +98,7 @@ class BokehScript:
 
     def make_temp_files(self):
         # Temp files
-        self.TEMP_PATH = Path("tmp")
+        self.TEMP_PATH = self.path.parent / Path("tmp")
         self.TEMP_PATH.mkdir(parents=True, exist_ok=True)
 
         self.TEMP_OUT_CSV = self.TEMP_PATH / Path("tmp_out.csv")

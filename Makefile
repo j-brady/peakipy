@@ -7,6 +7,7 @@ coverage:
 						   test/test_utils.py \
 						   test/test_main.py \
 						   test/test_cli.py \
+						   test/test_simulation.py \
 						   test/test_plotting.py
 
 coverage-html:

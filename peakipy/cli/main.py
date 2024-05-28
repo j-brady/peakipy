@@ -34,6 +34,8 @@ from peakipy.io import (
     get_vclist,
 )
 from peakipy.utils import (
+    mkdir_tmp_dir,
+    create_log_path,
     run_log,
     df_to_rich_table,
     write_config,
@@ -81,9 +83,6 @@ from peakipy.plotting import (
 )
 
 app = typer.Typer()
-tmp_path = Path("tmp")
-tmp_path.mkdir(exist_ok=True)
-log_path = Path("log.txt")
 
 
 peaklist_path_help = "Path to peaklist"
@@ -185,6 +184,8 @@ def read(
        Clusters of peaks are selected
 
     """
+    mkdir_tmp_dir(peaklist_path.parent)
+    log_path = create_log_path(peaklist_path.parent)
 
     clust_args = {
         "struc_el": struc_el,
@@ -251,7 +252,10 @@ def read(
     thres = peaks.thres
 
     if cluster:
-        peaks.clusters(thres=thres, **clust_args, l_struc=None)
+        if struc_el == StrucEl.mask_method:
+            peaks.mask_method(overlap=struc_size[0])
+        else:
+            peaks.clusters(thres=thres, **clust_args, l_struc=None)
     else:
         pass
 
@@ -288,7 +292,7 @@ def read(
         config_dic = dict(config_kvs)
         write_config(config_path, config_dic)
 
-    run_log()
+    run_log(log_path)
 
     print(
         f"""[green]
@@ -382,6 +386,8 @@ def fit(
     verb : bool
         Print what's going on
     """
+    tmp_path = mkdir_tmp_dir(peaklist_path.parent)
+    log_path = create_log_path(peaklist_path.parent)
     # number of CPUs
     n_cpu = cpu_count()
 
@@ -412,7 +418,7 @@ def fit(
 
     args = get_vclist(vclist, args)
     # plot results or not
-    log_file = open(tmp_path / log_path, "w")
+    log_file = open(log_path, "w")
 
     uc_dics = {"f1": peakipy_data.uc_f1, "f2": peakipy_data.uc_f2}
     args["uc_dics"] = uc_dics
@@ -488,7 +494,7 @@ def fit(
            [/green]
         """
     )
-    run_log()
+    run_log(log_path)
 
 
 fits_help = "CSV file containing peakipy fits"
@@ -547,6 +553,7 @@ def check(
     verb : bool
         verbose mode
     """
+    log_path = create_log_path(fits.parent)
     columns_to_print = [
         "assignment",
         "clustid",
@@ -673,7 +680,7 @@ def check(
                     plot_data, pdf, individual, label, ccpn_flag, show, test
                 )
 
-        run_log()
+        run_log(log_path)
 
 
 if __name__ == "__main__":

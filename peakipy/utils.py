@@ -29,6 +29,16 @@ bad_color_selection = [
 ]
 
 
+def mkdir_tmp_dir(base_path: Path = Path("./")):
+    tmp_dir = base_path / "tmp"
+    tmp_dir.mkdir(exist_ok=True)
+    return tmp_dir
+
+
+def create_log_path(base_path: Path = Path("./")):
+    return base_path / "run_log.txt"
+
+
 def run_log(log_name="run_log.txt"):
     """Write log file containing time script was run and with which arguments"""
     with open(log_name, "a") as log:

@@ -7,6 +7,7 @@ import peakipy.cli.main
 import peakipy.cli.check_panel
 import peakipy.cli.edit_panel
 from peakipy.cli.main import PeaklistFormat, Lineshape
+from peakipy.io import StrucEl
 
 
 @pytest.fixture
@@ -38,6 +39,50 @@ def test_read_main_with_default_sparky(protein_L):
         peaklist_path=protein_L / Path("peaks.sparky"),
         data_path=protein_L / Path("test1.ft2"),
         peaklist_format=PeaklistFormat.sparky,
+    )
+    peakipy.cli.main.read(**args)
+
+
+def test_read_main_with_strucel_square(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("peaks.sparky"),
+        data_path=protein_L / Path("test1.ft2"),
+        peaklist_format=PeaklistFormat.sparky,
+        struc_el=StrucEl.square,
+    )
+    peakipy.cli.main.read(**args)
+
+
+def test_read_main_with_strucel_rectangle(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("peaks.sparky"),
+        data_path=protein_L / Path("test1.ft2"),
+        peaklist_format=PeaklistFormat.sparky,
+        struc_el=StrucEl.rectangle,
+        struc_size=(3, 3),
+    )
+    peakipy.cli.main.read(**args)
+
+
+def test_read_main_with_mask_method(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("peaks.sparky"),
+        data_path=protein_L / Path("test1.ft2"),
+        peaklist_format=PeaklistFormat.sparky,
+        struc_el=StrucEl.mask_method,
+        struc_size=(1, 1),
+    )
+    peakipy.cli.main.read(**args)
+
+
+def test_read_main_with_mask_method_fuda(protein_L):
+    args = dict(
+        peaklist_path=protein_L / Path("peaks.sparky"),
+        data_path=protein_L / Path("test1.ft2"),
+        peaklist_format=PeaklistFormat.sparky,
+        struc_el=StrucEl.mask_method,
+        struc_size=(1, 1),
+        fuda=True,
     )
     peakipy.cli.main.read(**args)
 
