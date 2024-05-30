@@ -6,15 +6,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from lmfit import Model, report_fit
 
-from peakipy.core import (
-    pvoigt2d,
-    fix_params,
-    get_params,
-    make_mask,
-    # fit_first_plane,
-    make_models,
-    Lineshape,
-)
+from peakipy.lineshapes import pvoigt2d, Lineshape
+from peakipy.fitting import make_mask, make_models
 
 
 def fit_first_plane(
@@ -153,7 +146,7 @@ XY = np.meshgrid(np.arange(params["f2"]["size"]), np.arange(params["f1"]["size"]
 for p in peaks:
     data += pvoigt2d(
         XY,
-        *p
+        *p,
         # amplitude=1e8,
         # center_x=200,
         # center_y=100,

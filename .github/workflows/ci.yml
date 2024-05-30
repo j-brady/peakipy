@@ -17,7 +17,11 @@ jobs:
                python -m pip install --upgrade pip
                pip install .
                pip install pytest
+               pip install coverage
         - name: Run tests
           run: |
-               pytest test/test_core.py
-               pytest test/test_cli.py
+              make coverage
+        - name: Upload coverage reports to Codecov
+          uses: codecov/codecov-action@v4.0.1
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}

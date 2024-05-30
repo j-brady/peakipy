@@ -1,4 +1,5 @@
 """ Export selected peaks to TSV file """
+
 import os
 from pathlib import Path
 import pandas as pd
@@ -84,7 +85,6 @@ def peakipy_check():
 
 
 if __name__ == "__main__":
-
     peaks = current.peaks
     df = PeaksToDataFrame(peaks)
     column_order = [
