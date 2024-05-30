@@ -4,8 +4,6 @@ from pathlib import Path
 import pytest
 
 import peakipy.cli.main
-import peakipy.cli.check_panel
-import peakipy.cli.edit_panel
 from peakipy.cli.main import PeaklistFormat, Lineshape
 from peakipy.io import StrucEl
 
@@ -179,7 +177,7 @@ def test_fit_main_with_pv_pv(protein_L):
 
 def test_check_main_with_default(protein_L):
     args = dict(
-        fits=protein_L / Path("fits_PV.csv"),
+        fits_path=protein_L / Path("fits_PV.csv"),
         data_path=protein_L / Path("test1.ft2"),
         clusters=[1],
         first=True,
@@ -193,7 +191,7 @@ def test_check_main_with_default(protein_L):
 
 def test_check_main_with_gaussian(protein_L):
     args = dict(
-        fits=protein_L / Path("fits_G.csv"),
+        fits_path=protein_L / Path("fits_G.csv"),
         data_path=protein_L / Path("test1.ft2"),
         clusters=[1],
         first=True,
@@ -207,7 +205,7 @@ def test_check_main_with_gaussian(protein_L):
 
 def test_check_main_with_lorentzian(protein_L):
     args = dict(
-        fits=protein_L / Path("fits_L.csv"),
+        fits_path=protein_L / Path("fits_L.csv"),
         data_path=protein_L / Path("test1.ft2"),
         clusters=[1],
         first=True,
@@ -221,7 +219,7 @@ def test_check_main_with_lorentzian(protein_L):
 
 def test_check_main_with_voigt(protein_L):
     args = dict(
-        fits=protein_L / Path("fits_V.csv"),
+        fits_path=protein_L / Path("fits_V.csv"),
         data_path=protein_L / Path("test1.ft2"),
         clusters=[1],
         first=True,
@@ -235,7 +233,7 @@ def test_check_main_with_voigt(protein_L):
 
 def test_check_main_with_pv_pv(protein_L):
     args = dict(
-        fits=protein_L / Path("fits_PV_PV.csv"),
+        fits_path=protein_L / Path("fits_PV_PV.csv"),
         data_path=protein_L / Path("test1.ft2"),
         clusters=[1],
         first=True,
@@ -251,41 +249,30 @@ def test_check_panel_PVPV(protein_L):
     args = dict(
         fits_path=protein_L / Path("fits_PV_PV.csv"),
         data_path=protein_L / Path("test1.ft2"),
-        config_path=protein_L / Path("peakipy.config"),
         test=True,
+        panel=True,
     )
-    peakipy.cli.check_panel.create_check_panel(**args)
+    peakipy.cli.main.check(**args)
 
 
 def test_check_panel_PV(protein_L):
     args = dict(
         fits_path=protein_L / Path("fits_PV.csv"),
         data_path=protein_L / Path("test1.ft2"),
-        config_path=protein_L / Path("peakipy.config"),
         test=True,
+        panel=True,
     )
-    peakipy.cli.check_panel.create_check_panel(**args)
+    peakipy.cli.main.check(**args)
 
 
 def test_check_panel_V(protein_L):
     args = dict(
         fits_path=protein_L / Path("fits_V.csv"),
         data_path=protein_L / Path("test1.ft2"),
-        config_path=protein_L / Path("peakipy.config"),
         test=True,
+        panel=True,
     )
-    peakipy.cli.check_panel.create_check_panel(**args)
-
-
-def test_check_panel_edit(protein_L):
-    args = dict(
-        fits_path=protein_L / Path("fits_V.csv"),
-        data_path=protein_L / Path("test1.ft2"),
-        config_path=protein_L / Path("peakipy.config"),
-        edit_panel=True,
-        test=True,
-    )
-    peakipy.cli.check_panel.create_check_panel(**args)
+    peakipy.cli.main.check(**args)
 
 
 def test_edit_panel(protein_L):
@@ -294,4 +281,4 @@ def test_edit_panel(protein_L):
         data_path=protein_L / Path("test1.ft2"),
         test=True,
     )
-    peakipy.cli.edit_panel.main(**args)
+    peakipy.cli.main.edit(**args)

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import os
 import json
 import shutil
 from pathlib import Path
-from enum import Enum
+from functools import lru_cache
+from dataclasses import dataclass, field
 from typing import Optional, Tuple, List, Annotated
 from multiprocessing import Pool, cpu_count
 
@@ -17,10 +17,10 @@ from rich import print
 from skimage.filters import threshold_otsu
 
 from mpl_toolkits.mplot3d import axes3d
-from matplotlib import cm
 from matplotlib.backends.backend_pdf import PdfPages
 
 import plotly.io as pio
+import panel as pn
 
 pio.templates.default = "plotly_dark"
 
@@ -81,6 +81,57 @@ from peakipy.plotting import (
     create_residual_figure,
     create_matplotlib_figure,
 )
+from peakipy.cli.edit import BokehScript
+
+pn.extension("plotly")
+pn.config.theme = "dark"
+
+
+@dataclass
+class PlotContainer:
+    main_figure: pn.pane.Plotly
+    residual_figure: pn.pane.Plotly
+
+
+@lru_cache(maxsize=1)
+def data_singleton_edit():
+    return EditData()
+
+
+@lru_cache(maxsize=1)
+def data_singleton_check():
+    return CheckData()
+
+
+@dataclass
+class EditData:
+    peaklist_path: Path = Path("./test.csv")
+    data_path: Path = Path("./test.ft2")
+    _bs: BokehScript = field(init=False)
+
+    def load_data(self):
+        self._bs = BokehScript(self.peaklist_path, self.data_path)
+
+    @property
+    def bs(self):
+        return self._bs
+
+
+@dataclass
+class CheckData:
+    fits_path: Path = Path("./fits.csv")
+    data_path: Path = Path("./test.ft2")
+    config_path: Path = Path("./peakipy.config")
+    _df: pd.DataFrame = field(init=False)
+
+    def load_dataframe(self):
+        self._df = validate_fit_dataframe(pd.read_csv(self.fits_path))
+        print("Here")
+
+    @property
+    def df(self):
+        return self._df
+
 
 app = typer.Typer()
 
@@ -497,24 +548,46 @@ def fit(
     run_log(log_path)
 
 
+@app.command()
+def edit(peaklist_path: Path, data_path: Path, test: bool = False):
+    data = data_singleton_edit()
+    data.peaklist_path = peaklist_path
+    data.data_path = data_path
+    data.load_data()
+    panel_app(test=test)
+
+
 fits_help = "CSV file containing peakipy fits"
+panel_help = "Open fits in browser with an interactive panel app"
+individual_help = "Show individual peak fits as surfaces"
+label_help = "Add peak assignment labels"
+first_help = "Show only first plane"
+plane_help = "Select planes to plot"
+clusters_help = "Select clusters to plot"
+colors_help = "Customize colors for data and fit lines respectively"
+show_help = "Open interactive matplotlib window"
+outname_help = "Name of output multipage pdf"
 
 
 @app.command(help="Interactive plots for checking fits")
 def check(
-    fits: Annotated[Path, typer.Argument(help=fits_help)],
+    fits_path: Annotated[Path, typer.Argument(help=fits_help)],
     data_path: Annotated[Path, typer.Argument(help=data_path_help)],
-    clusters: Optional[List[int]] = None,
-    plane: Optional[List[int]] = None,
-    outname: Path = Path("plots.pdf"),
-    first: bool = False,
-    show: bool = False,
-    label: bool = False,
-    individual: bool = False,
-    ccpn: bool = False,
+    panel: Annotated[bool, typer.Option(help=panel_help)] = False,
+    clusters: Annotated[Optional[List[int]], typer.Option(help=clusters_help)] = None,
+    plane: Annotated[Optional[List[int]], typer.Option(help=plane_help)] = None,
+    first: Annotated[bool, typer.Option(help=first_help)] = False,
+    show: Annotated[bool, typer.Option(help=show_help)] = False,
+    label: Annotated[bool, typer.Option(help=label_help)] = False,
+    individual: Annotated[bool, typer.Option(help=individual_help)] = False,
+    outname: Annotated[Path, typer.Option(help=outname_help)] = Path("plots.pdf"),
+    colors: Annotated[Tuple[str, str], typer.Option(help=colors_help)] = (
+        "#5e3c99",
+        "#e66101",
+    ),
     rcount: int = 50,
     ccount: int = 50,
-    colors: Tuple[str, str] = ("#5e3c99", "#e66101"),
+    ccpn: bool = False,
     plotly: bool = False,
     test: bool = False,
 ):
@@ -553,7 +626,7 @@ def check(
     verb : bool
         verbose mode
     """
-    log_path = create_log_path(fits.parent)
+    log_path = create_log_path(fits_path.parent)
     columns_to_print = [
         "assignment",
         "clustid",
@@ -567,12 +640,18 @@ def check(
         "fwhm_y_hz",
         "lineshape",
     ]
-    fits = validate_fit_dataframe(pd.read_csv(fits))
+    fits = validate_fit_dataframe(pd.read_csv(fits_path))
     args = {}
     # get dims from config file
     config_path = data_path.parent / "peakipy.config"
     args, config = update_args_with_values_from_config_file(args, config_path)
     dims = config.get("dims", (1, 2, 3))
+
+    if panel:
+        create_check_panel(
+            fits_path=fits_path, data_path=data_path, config_path=config_path, test=test
+        )
+        return
 
     ccpn_flag = ccpn
     if ccpn_flag:
@@ -674,13 +753,207 @@ def check(
             if first:
                 break
 
-        with PdfPages(outname) as pdf:
-            for plot_data in all_plot_data:
-                create_matplotlib_figure(
-                    plot_data, pdf, individual, label, ccpn_flag, show, test
-                )
+    with PdfPages(data_path.parent / outname) as pdf:
+        for plot_data in all_plot_data:
+            create_matplotlib_figure(
+                plot_data, pdf, individual, label, ccpn_flag, show, test
+            )
 
-        run_log(log_path)
+    run_log(log_path)
+
+
+def create_plotly_pane(cluster, plane):
+    data = data_singleton_check()
+    fig, residual_fig = check(
+        fits_path=data.fits_path,
+        data_path=data.data_path,
+        clusters=[cluster],
+        plane=[plane],
+        # config_path=data.config_path,
+        plotly=True,
+    )
+    fig["layout"].update(height=800, width=800)
+    fig = fig.to_dict()
+    residual_fig = residual_fig.to_dict()
+    return pn.Column(pn.pane.Plotly(fig), pn.pane.Plotly(residual_fig))
+
+
+def get_cluster(cluster):
+    data = data_singleton_check()
+    cluster_groups = data.df.groupby("clustid")
+    cluster_group = cluster_groups.get_group(cluster)
+    df_pane = pn.widgets.Tabulator(
+        cluster_group[
+            [
+                "assignment",
+                "clustid",
+                "memcnt",
+                "plane",
+                "amp",
+                "height",
+                "center_x_ppm",
+                "center_y_ppm",
+                "fwhm_x_hz",
+                "fwhm_y_hz",
+                "lineshape",
+            ]
+        ],
+        selectable=False,
+        disabled=True,
+    )
+    return df_pane
+
+
+def update_peakipy_data_on_edit_of_table(event):
+    data = data_singleton_edit()
+    column = event.column
+    row = event.row
+    value = event.value
+    data.bs.peakipy_data.df.loc[row, column] = value
+    data.bs.update_memcnt()
+
+
+def panel_app(test=False):
+    data = data_singleton_edit()
+    bs = data.bs
+    bokeh_pane = pn.pane.Bokeh(bs.p)
+    spectrum_view_settings = pn.WidgetBox(
+        "# Contour settings", bs.pos_neg_contour_radiobutton, bs.contour_start
+    )
+    save_peaklist_box = pn.WidgetBox(
+        "# Save your peaklist",
+        bs.savefilename,
+        bs.button,
+        pn.layout.Divider(),
+        bs.exit_button,
+    )
+    recluster_settings = pn.WidgetBox(
+        "# Re-cluster your peaks",
+        bs.clust_div,
+        bs.struct_el,
+        bs.struct_el_size,
+        pn.layout.Divider(),
+        bs.recluster_warning,
+        bs.recluster,
+        sizing_mode="stretch_width",
+    )
+    button = pn.widgets.Button(name="Fit selected cluster(s)", button_type="primary")
+    fit_controls = pn.WidgetBox(
+        "# Fit controls",
+        button,
+        pn.layout.Divider(),
+        bs.select_plane,
+        bs.checkbox_group,
+        pn.layout.Divider(),
+        bs.select_reference_planes_help,
+        bs.select_reference_planes,
+        pn.layout.Divider(),
+        bs.set_initial_fit_threshold_help,
+        bs.set_initial_fit_threshold,
+        pn.layout.Divider(),
+        bs.select_fixed_parameters_help,
+        bs.select_fixed_parameters,
+        pn.layout.Divider(),
+        bs.select_lineshape_radiobuttons_help,
+        bs.select_lineshape_radiobuttons,
+    )
+
+    mask_adjustment_controls = pn.WidgetBox(
+        "# Fitting mask adjustment", bs.slider_X_RADIUS, bs.slider_Y_RADIUS
+    )
+
+    # bs.source.on_change()
+    def fit_peaks_button_click(event):
+        check_app.loading = True
+        bs.fit_selected(None)
+        check_panel = create_check_panel(bs.TEMP_OUT_CSV, bs.data_path, edit_panel=True)
+        check_app.objects = check_panel.objects
+        check_app.loading = False
+
+    button.on_click(fit_peaks_button_click)
+
+    def update_source_selected_indices(event):
+        # print(bs.tablulator_widget.selection)
+        # hack to make current selection however, only allows one selection
+        # at a time
+        bs.tablulator_widget._update_selection([event.value])
+        bs.source.selected.indices = bs.tablulator_widget.selection
+        # print(bs.tablulator_widget.selection)
+
+    bs.tablulator_widget.on_click(update_source_selected_indices)
+    bs.tablulator_widget.on_edit(update_peakipy_data_on_edit_of_table)
+
+    template = pn.template.BootstrapTemplate(
+        title="Peakipy",
+        sidebar=[mask_adjustment_controls, fit_controls],
+    )
+    spectrum = pn.Card(
+        pn.Column(
+            pn.Row(
+                bokeh_pane,
+                pn.Column(spectrum_view_settings, save_peaklist_box),
+                recluster_settings,
+            ),
+            bs.tablulator_widget,
+        ),
+        title="Peakipy fit",
+    )
+    check_app = pn.Card(title="Peakipy check")
+    template.main.append(pn.Column(check_app, spectrum))
+    if test:
+        return
+    else:
+        template.show()
+
+
+def create_check_panel(
+    fits_path: Path,
+    data_path: Path,
+    config_path: Path = Path("./peakipy.config"),
+    edit_panel: bool = False,
+    test: bool = False,
+):
+    data = data_singleton_check()
+    data.fits_path = fits_path
+    data.data_path = data_path
+    data.config_path = config_path
+    data.load_dataframe()
+
+    clusters = [(row.clustid, row.memcnt) for _, row in data.df.iterrows()]
+
+    select_cluster = pn.widgets.Select(
+        name="Cluster (number of peaks)", options={f"{c} ({m})": c for c, m in clusters}
+    )
+    select_plane = pn.widgets.Select(
+        name="Plane", options={f"{plane}": plane for plane in data.df.plane.unique()}
+    )
+    result_table_pane = pn.bind(get_cluster, select_cluster)
+    interactive_plotly_pane = pn.bind(
+        create_plotly_pane, cluster=select_cluster, plane=select_plane
+    )
+    info_pane = pn.pane.Markdown(
+        "Select a cluster and plane to look at from the dropdown menus"
+    )
+    check_pane = pn.Card(
+        # info_pane,
+        # pn.Row(select_cluster, select_plane),
+        pn.Row(
+            pn.Column(
+                pn.Row(
+                    pn.Card(interactive_plotly_pane, title="Fitted cluster"),
+                    pn.Column(info_pane, select_cluster, select_plane),
+                ),
+                pn.Card(result_table_pane, title="Fitted parameters for cluster"),
+            )
+        ),
+        title="Peakipy check",
+    )
+    if edit_panel:
+        return check_pane
+    elif test:
+        return
+    else:
+        check_pane.show()
 
 
 if __name__ == "__main__":

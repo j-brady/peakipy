@@ -733,8 +733,9 @@ class Peaklist(Pseudo3D):
 
         return ClustersResult(labeled_array, num_features, mask, peaks)
 
-    def to_fuda(self, fname="params.fuda"):
-        with open("peaks.fuda", "w") as peaks_fuda:
+    def to_fuda(self):
+        fname = self.peaklist_path.parent / "params.fuda"
+        with open(self.peaklist_path.parent / "peaks.fuda", "w") as peaks_fuda:
             for ass, f1_ppm, f2_ppm in zip(self.df.ASS, self.df.Y_PPM, self.df.X_PPM):
                 peaks_fuda.write(f"{ass}\t{f1_ppm:.3f}\t{f2_ppm:.3f}\n")
         groups = self.df.groupby("CLUSTID")
