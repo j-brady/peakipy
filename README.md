@@ -1,6 +1,8 @@
 # Peakipy - NMR peak integration/deconvolution using python
 
 ![Test](https://github.com/j-brady/peakipy/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/j-brady/peakipy/graph/badge.svg?token=1F90QI5WMS)](https://codecov.io/gh/j-brady/peakipy)
+
 
 [peakipy documentation](https://j-brady.github.io/peakipy)
 
@@ -26,7 +28,7 @@ should have been added to your path.
 
 ## Inputs
 
-1. Peak list (NMRPipe, Analysis v2.4, Sparky) 
+1. Peak list (NMRPipe, Analysis v2.4, Sparky)
 2. NMRPipe frequency domain dataset (2D or Pseudo 3D)
 
 There are four main commands:
