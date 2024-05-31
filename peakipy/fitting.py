@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
@@ -270,6 +271,9 @@ def to_prefix(x):
     ]
     for p in to_replace:
         prefix = prefix.replace(*p)
+
+    # Replace any remaining disallowed characters with underscore
+    x = re.sub(r"[^a-z0-9_]", "_", x)
     return prefix + "_"
 
 

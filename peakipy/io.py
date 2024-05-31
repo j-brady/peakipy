@@ -14,6 +14,7 @@ from bokeh.palettes import Category20
 from scipy import ndimage
 from skimage.morphology import square, binary_closing, disk, rectangle
 from skimage.filters import threshold_otsu
+from pydantic import BaseModel
 
 from peakipy.utils import df_to_rich_table
 from peakipy.fitting import make_mask
@@ -39,6 +40,36 @@ class PeaklistFormat(str, Enum):
 class OutFmt(str, Enum):
     csv = "csv"
     pkl = "pkl"
+
+
+class PeaklistColumns(BaseModel):
+    """These are the columns required for performing fits in peakipy"""
+
+    INDEX: int
+    X_AXIS: int
+    Y_AXIS: int
+    X_AXISf: float
+    Y_AXISf: float
+    X_PPM: float
+    Y_PPM: float
+    XW: float
+    YW: float
+    XW_HZ: float
+    YW_HZ: float
+    HEIGHT: float
+    VOL: float
+    ASS: str
+    X_RADIUS: float
+    Y_RADIUS: float
+    X_RADIUS_PPM: float
+    Y_RADIUS_PPM: float
+    include: str
+
+
+class PeaklistColumnsWithClusters(PeaklistColumns):
+    CLUSTID: int
+    MEMCNT: int
+    color: str
 
 
 class Pseudo3D:
@@ -427,6 +458,15 @@ class Peaklist(Pseudo3D):
         else:
             return self._thres
 
+    def validate_peaklist(self):
+        self.df = pd.DataFrame(
+            [
+                PeaklistColumns(**i).model_dump()
+                for i in self.df.to_dict(orient="records")
+            ]
+        )
+        return self.df
+
     def update_df(self):
         # int point value
         self.df["X_AXIS"] = self.df.X_PPM.apply(lambda x: self.uc_f2(x, "ppm"))
@@ -473,6 +513,7 @@ class Peaklist(Pseudo3D):
         self.check_assignments()
         # check that peaks are within the bounds of the data
         self.check_peak_bounds()
+        self.validate_peaklist()
 
     def add_fix_bound_columns(self):
         """add columns containing parameter bounds (param_upper/param_lower)
@@ -514,10 +555,17 @@ class Peaklist(Pseudo3D):
             self.peaklist_path,
             skiprows=1,
             sep=r"\s+",
-            names=["ASS", "Y_PPM", "X_PPM", "VOLUME", "HEIGHT", "YW_HZ", "XW_HZ"],
+            names=["ASS", "Y_PPM", "X_PPM"],
+            # use only first three columns
+            usecols=[i for i in range(3)],
         )
         df["INDEX"] = df.index
-
+        # need to add LW estimate
+        df["XW_HZ"] = 20.0
+        df["YW_HZ"] = 20.0
+        # dummy values
+        df["HEIGHT"] = 0.0
+        df["VOL"] = 0.0
         return df
 
     def _read_pipe(self):
@@ -825,6 +873,15 @@ class LoadData(Peaklist):
 
         return self.df
 
+    def validate_peaklist(self):
+        self.df = pd.DataFrame(
+            [
+                PeaklistColumnsWithClusters(**i).model_dump()
+                for i in self.df.to_dict(orient="records")
+            ]
+        )
+        return self.df
+
     def check_data_frame(self):
         # make diameter columns
         if "X_DIAMETER_PPM" in self.df.columns:
@@ -897,6 +954,7 @@ class LoadData(Peaklist):
         self.check_assignments()
         # check that peaks are within the bounds of the data
         self.check_peak_bounds()
+        self.validate_peaklist()
 
 
 def get_vclist(vclist, args):

@@ -518,7 +518,7 @@ def fit(
             for num, i in enumerate(result):
                 log_file.write(i.log + "\n")
     else:
-        print("[green]Not using multiprocessing[green]")
+        print("[green]Not using multiprocessing[/green]")
         result = fit_peak_clusters(
             peakipy_data.df,
             FitPeaksInput(
@@ -876,7 +876,7 @@ def panel_app(test=False):
         # print(bs.tablulator_widget.selection)
         # hack to make current selection however, only allows one selection
         # at a time
-        bs.tablulator_widget._update_selection([event.value])
+        # bs.tablulator_widget._update_selection([event.value])
         bs.source.selected.indices = bs.tablulator_widget.selection
         # print(bs.tablulator_widget.selection)
 
