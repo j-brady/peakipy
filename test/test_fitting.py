@@ -640,6 +640,7 @@ class TestCoreFunctions(unittest.TestCase):
             (" one/two", "_oneortwo_"),
             (" one?two", "_onemaybetwo_"),
             (r" [{one?two\}][", "___onemaybetwo____"),
+            ("hel'lo", "_hel_lo_"),
         ]
         for test, expect in names:
             prefix = to_prefix(test)

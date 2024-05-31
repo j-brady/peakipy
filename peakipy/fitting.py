@@ -273,7 +273,7 @@ def to_prefix(x):
         prefix = prefix.replace(*p)
 
     # Replace any remaining disallowed characters with underscore
-    x = re.sub(r"[^a-z0-9_]", "_", x)
+    prefix = re.sub(r"[^a-z0-9_]", "_", prefix)
     return prefix + "_"
 
 
