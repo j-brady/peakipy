@@ -134,13 +134,28 @@ class BokehScript:
     def tabulator_non_editable_columns(self):
         editors = {"X_RADIUS_PPM": None, "Y_RADIUS_PPM": None}
         return editors
-
+    
     def make_tabulator_widget(self):
-        self.tablulator_widget = pn.widgets.Tabulator(
+        tabulator_stylesheet = """
+        .tabulator-cell {
+            font-size: 12px;
+        }
+        .tabulator-headers {
+            font-size: 12px;
+        }
+        """
+        self.tabulator_widget = pn.widgets.Tabulator(
             self.peakipy_data.df[self.tabulator_columns],
             editors=self.tabulator_non_editable_columns,
+            height=500,
+            width=800,
+            show_index=False,
+            frozen_columns=["ASS","CLUSTID"],
+            stylesheets=[tabulator_stylesheet],
+            selectable="checkbox",
+            selection=[],
         )
-        return self.tablulator_widget
+        return self.tabulator_widget
 
     def select_callback(self, attrname, old, new):
         for col in self.peakipy_data.df.columns:
@@ -504,7 +519,7 @@ class BokehScript:
             )
         # update data source
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-        self.tablulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
+        self.tabulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
         return self.peakipy_data.df
 
     def update_memcnt(self):
@@ -521,7 +536,7 @@ class BokehScript:
         self.peakipy_data.df.loc[include_no, "color"] = "ghostwhite"
         # update source data
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-        self.tablulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
+        self.tabulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
         return self.peakipy_data.df
 
     def unpack_parameters_to_fix(self):
@@ -672,7 +687,7 @@ class BokehScript:
         # set edited rows to True
         self.peakipy_data.df.loc[selectionIndex, "Edited"] = True
         self.source.data = ColumnDataSource.from_df(self.peakipy_data.df)
-        self.tablulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
+        self.tabulator_widget.value = self.peakipy_data.df[self.tabulator_columns]
 
     def slider_callback_x(self, attrname, old, new):
         self.slider_callback("X", "f2")

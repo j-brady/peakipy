@@ -773,12 +773,21 @@ def create_plotly_pane(cluster, plane):
         plotly=True,
     )
     fig["layout"].update(height=800, width=800)
+    residual_fig["layout"].update(width=400)
     fig = fig.to_dict()
     residual_fig = residual_fig.to_dict()
-    return pn.Column(pn.pane.Plotly(fig), pn.pane.Plotly(residual_fig))
+    return pn.Row(pn.pane.Plotly(fig), pn.pane.Plotly(residual_fig))
 
 
 def get_cluster(cluster):
+    tabulator_stylesheet = """
+    .tabulator-cell {
+        font-size: 12px;
+    }
+    .tabulator-headers {
+        font-size: 12px;
+    }
+    """
     data = data_singleton_check()
     cluster_groups = data.df.groupby("clustid")
     cluster_group = cluster_groups.get_group(cluster)
@@ -800,6 +809,10 @@ def get_cluster(cluster):
         ],
         selectable=False,
         disabled=True,
+        width=800,
+        show_index=False,
+        frozen_columns=["assignment","clustid","plane"],
+        stylesheets=[tabulator_stylesheet],
     )
     return df_pane
 
@@ -873,15 +886,11 @@ def panel_app(test=False):
     button.on_click(fit_peaks_button_click)
 
     def update_source_selected_indices(event):
-        # print(bs.tablulator_widget.selection)
-        # hack to make current selection however, only allows one selection
-        # at a time
-        # bs.tablulator_widget._update_selection([event.value])
-        bs.source.selected.indices = bs.tablulator_widget.selection
-        # print(bs.tablulator_widget.selection)
+        bs.source.selected.indices = bs.tabulator_widget.selection
 
-    bs.tablulator_widget.on_click(update_source_selected_indices)
-    bs.tablulator_widget.on_edit(update_peakipy_data_on_edit_of_table)
+    # Use on_selection_changed to immediately capture the updated selection
+    bs.tabulator_widget.param.watch(update_source_selected_indices, 'selection')
+    bs.tabulator_widget.on_edit(update_peakipy_data_on_edit_of_table)
 
     template = pn.template.BootstrapTemplate(
         title="Peakipy",
@@ -891,10 +900,10 @@ def panel_app(test=False):
         pn.Column(
             pn.Row(
                 bokeh_pane,
-                pn.Column(spectrum_view_settings, save_peaklist_box),
-                recluster_settings,
+                bs.tabulator_widget,),
+            pn.Row(
+                spectrum_view_settings,recluster_settings, save_peaklist_box,
             ),
-            bs.tablulator_widget,
         ),
         title="Peakipy fit",
     )
@@ -931,20 +940,15 @@ def create_check_panel(
     interactive_plotly_pane = pn.bind(
         create_plotly_pane, cluster=select_cluster, plane=select_plane
     )
-    info_pane = pn.pane.Markdown(
-        "Select a cluster and plane to look at from the dropdown menus"
-    )
     check_pane = pn.Card(
         # info_pane,
         # pn.Row(select_cluster, select_plane),
         pn.Row(
             pn.Column(
-                pn.Row(
-                    pn.Card(interactive_plotly_pane, title="Fitted cluster"),
-                    pn.Column(info_pane, select_cluster, select_plane),
-                ),
-                pn.Card(result_table_pane, title="Fitted parameters for cluster"),
-            )
+                pn.Row(pn.Card(result_table_pane, title="Fitted parameters for cluster"),
+                       pn.Card(select_cluster, select_plane, title="Select cluster and plane")),
+                pn.Card(interactive_plotly_pane, title="Fitted cluster"),
+            ),
         ),
         title="Peakipy check",
     )

@@ -343,6 +343,7 @@ def create_residual_figure(plot_data: PlottingDataForPlane):
         yaxis_title=f"{plot_data.pseudo3D.f1_label} ppm",
         xaxis=dict(range=[plot_data.x_plot.max(), plot_data.x_plot.min()]),
         yaxis=dict(range=[plot_data.y_plot.max(), plot_data.y_plot.min()]),
+        
     )
     return fig
 
