@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 import json
+import textwrap
 
 import pytest
 import numpy as np
@@ -27,6 +28,9 @@ from peakipy.utils import load_config, write_config, update_config_file
 def test_directory():
     return Path(__file__).parent
 
+@pytest.fixture
+def test_directory_protein_L(test_directory):
+    return test_directory / "test_protein_L"
 
 # test for read, edit, fit, check and spec scripts
 # need to actually write proper tests
@@ -54,6 +58,7 @@ class TestFitScript(unittest.TestCase):
         self.assertIsNotNone(fit)
 
 
+
 class TestReadScript(unittest.TestCase):
     test_directory = "./test/"
 
@@ -78,6 +83,66 @@ class TestReadScript(unittest.TestCase):
         # self.assertEqual(peaklist.df.ASS.iloc[0], "None")
         # self.assertEqual(peaklist.df.ASS.iloc[1], "None_dummy_1")
 
+def test_read_custom_csv(test_directory_protein_L, capsys):
+    custom_csv_data = textwrap.dedent("""\
+    ASS,X_PPM,Y_PPM
+    test1,8.763,117.821
+    test2,8.973,122.359
+    test3,9.005,122.436
+    """)
+    custom_csv_data_path = test_directory_protein_L / "custom.csv"
+    custom_csv_data_path.write_text(custom_csv_data)
+    args = {
+        "path": custom_csv_data_path,
+        "data_path": f"{test_directory_protein_L}/test1.ft2",
+        "dims": [0, 1, 2],
+        "fmt": PeaklistFormat.csv,
+    }
+    peaklist = Peaklist(**args)
+    assert peaklist != None
+    assert peaklist.df.shape[0] == 3
+    assert peaklist.fmt.value == "csv"
+
+
+def test_read_pipe_peaklist_check_radius_too_small(test_directory, capsys):
+    args = {
+        "path": f"{test_directory}/test_pipe.tab",
+        "data_path": f"{test_directory}/test_pipe.ft2",
+        "dims": [0, 1, 2],
+        "fmt": PeaklistFormat.pipe,
+        "radii": [0.0001,0.0001],
+    }
+    peaklist = Peaklist(**args)
+    assert peaklist != None
+    assert peaklist.df.shape[0] == 3
+    assert peaklist.fmt.value == "pipe"
+    # assert peaklist.f1_radius == 0.0001
+    peaklist.f2_radius
+    assert "Warning: --x-radius-ppm" in capsys.readouterr().out
+    peaklist.f1_radius
+    assert "Warning: --y-radius-ppm" in capsys.readouterr().out
+    # check that number of points are set to 2 if invalid input radius
+    assert (peaklist.f1_radius * peaklist.pt_per_ppm_f1) == 2
+    assert (peaklist.f2_radius * peaklist.pt_per_ppm_f2) == 2
+
+def test_read_pipe_peaklist_check_radius_valid(test_directory, capsys):
+    args = {
+        "path": f"{test_directory}/test_pipe.tab",
+        "data_path": f"{test_directory}/test_pipe.ft2",
+        "dims": [0, 1, 2],
+        "fmt": PeaklistFormat.pipe,
+        "radii": [0.05,0.5],
+    }
+    peaklist = Peaklist(**args)
+    assert peaklist != None
+    assert peaklist.df.shape[0] == 3
+    assert peaklist.fmt.value == "pipe"
+    assert peaklist.f1_radius == 0.5
+    assert peaklist.f2_radius == 0.05
+    peaklist.f2_radius
+    assert capsys.readouterr().out == ""
+    peaklist.f1_radius
+    assert capsys.readouterr().out == ""
 
 def test_load_config_existing():
     config_path = Path("test_config.json")

@@ -41,6 +41,8 @@ log_style = "overflow:scroll;"
 log_div = """<div style=%s>%s</div>"""
 
 
+
+
 class BokehScript:
     def __init__(self, peaklist_path: Path, data_path: Path):
         self._path = peaklist_path
@@ -144,6 +146,7 @@ class BokehScript:
             font-size: 12px;
         }
         """
+
         self.tabulator_widget = pn.widgets.Tabulator(
             self.peakipy_data.df[self.tabulator_columns],
             editors=self.tabulator_non_editable_columns,
@@ -163,18 +166,19 @@ class BokehScript:
         self.update_memcnt()
 
     def setup_radii_sliders(self):
+
         # configure sliders for setting radii
         self.slider_X_RADIUS = Slider(
             title="X_RADIUS - ppm",
-            start=0.001,
-            end=0.200,
+            start=self.peakipy_data.ppm_per_pt_f2*2,
+            end=0.500,
             value=0.040,
             step=0.001,
             format="0[.]000",
         )
         self.slider_Y_RADIUS = Slider(
             title="Y_RADIUS - ppm",
-            start=0.010,
+            start=self.peakipy_data.ppm_per_pt_f1*2,
             end=2.000,
             value=0.400,
             step=0.001,

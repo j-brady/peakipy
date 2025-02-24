@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import List
+import shutil
 
 from rich import print
 from rich.table import Table
@@ -179,6 +180,13 @@ def update_peak_positions_from_ppm_to_points(peakipy_data):
     )
     return peakipy_data
 
+
+def check_for_existing_output_file_and_backup(outname: Path):
+    if outname.exists():
+        shutil.copy(outname, outname.with_suffix(".bak"))
+    else:
+        pass
+    return outname
 
 def save_data(df, output_name):
     suffix = output_name.suffix

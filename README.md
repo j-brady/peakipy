@@ -84,29 +84,29 @@ In [5]: for ind, group in groups:
 
 ## Pseudo-Voigt model
 
-![Pseudo-Voigt](images/equations/pv.tex.png)
+![Pseudo-Voigt](static/equations/pv.tex.png)
 
 Where Gaussian lineshape is
 
-![G](images/equations/G.tex.png)
+![G](static/equations/G.tex.png)
 
 And Lorentzian is
 
-![L](images/equations/L.tex.png)
+![L](static/equations/L.tex.png)
 
 The fit minimises the residuals of the functions in each dimension
 
-![PV_xy](images/equations/pv_xy.tex.png)
+![PV_xy](static/equations/pv_xy.tex.png)
 
 Fraction parameter is fraction of Lorentzian lineshape.
 
 The linewidth for the G lineshape is
 
-![G_lw](images/equations/G_lw.tex.png)
+![G_lw](static/equations/G_lw.tex.png)
 
 The linewidth for PV and L lineshapes is
 
-![PV FWHM](images/equations/pv_lw.png)
+![PV FWHM](static/equations/pv_lw.png)
 
 ## Test data
 
