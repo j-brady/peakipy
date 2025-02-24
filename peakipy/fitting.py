@@ -446,7 +446,7 @@ def select_planes_above_threshold_from_masked_data(data, threshold=None):
     """This function returns planes with data above the threshold.
 
     It currently uses absolute intensity values.
-    Negative thresholds just result in return of the orignal data.
+    Negative thresholds just result in return of the original data.
 
     """
     if threshold == None:

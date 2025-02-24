@@ -35,6 +35,7 @@ class PeaklistFormat(str, Enum):
     sparky = "sparky"
     pipe = "pipe"
     peakipy = "peakipy"
+    csv = "csv"
 
 
 class OutFmt(str, Enum):
@@ -305,6 +306,7 @@ class UnknownFormat(Exception):
     pass
 
 
+
 class Peaklist(Pseudo3D):
     """Read analysis, sparky or NMRPipe peak list and convert to NMRPipe-ish format also find peak clusters
 
@@ -409,6 +411,9 @@ class Peaklist(Pseudo3D):
 
             case self.fmt.pipe:
                 self._df = self._read_pipe()
+            
+            case self.fmt.csv:
+                self._df = self._read_csv()
 
             case _:
                 raise UnknownFormat("I don't know this format: {self.fmt}")
@@ -428,15 +433,30 @@ class Peaklist(Pseudo3D):
     def radii(self):
         return self._radii
 
+    def check_radius_contains_enough_points_for_fitting(self, radius, pt_per_ppm, flag):
+        if (radius * pt_per_ppm) < 2.0:
+            new_radius = 2.0 * (1./ pt_per_ppm)
+            print(
+                "\n",
+                f"[red]Warning: {flag} is set to {radius:.3f} ppm which is {radius * pt_per_ppm:.3f} points[/red]" + "\n",
+                f"[yellow]Setting to 2 points which is {new_radius:.3f} ppm[/yellow]" + "\n",
+                f"[yellow]Consider increasing this value to improve robustness of fitting (or increase zero filling)[/yellow]" + "\n",
+            )
+        else:
+            new_radius = radius
+        return new_radius
+
     @property
     def f2_radius(self):
         """radius for fitting mask in f2"""
-        return self.radii[0]
+        _f2_radius = self.check_radius_contains_enough_points_for_fitting(self.radii[0], self.pt_per_ppm_f2, "--x-radius-ppm")
+        return _f2_radius
 
     @property
     def f1_radius(self):
         """radius for fitting mask in f1"""
-        return self.radii[1]
+        _f1_radius = self.check_radius_contains_enough_points_for_fitting(self.radii[1], self.pt_per_ppm_f1, "--y-radius-ppm")
+        return _f1_radius
 
     @property
     def analysis_to_pipe_dic(self):
@@ -582,6 +602,33 @@ class Peaklist(Pseudo3D):
         df = pd.read_csv(
             self.peaklist_path, skiprows=to_skip, names=columns, sep=r"\s+"
         )
+        return df
+
+    def _read_csv(self):
+        """ Read a csv file containing peaklist data 
+        
+        Requires the following columns:
+            X_PPM: ppm position of peak in X axis
+            Y_PPM: ppm position of peak in Y axis
+            ASS: assignment of peak
+        Optional columns include:
+            XW_HZ: estimated X axis linewidth in HZ
+            YW_HZ: estimated Y axis linewidth in HZ
+            VOL: peak volume
+            Height: peak height
+        """
+        df = pd.read_csv(self.peaklist_path)
+        df["INDEX"] = df.index
+        # need to add LW estimate
+        if not "XW_HZ" in df.columns:
+            df["XW_HZ"] = 20.0
+        if not "YW_HZ" in df.columns:
+            df["YW_HZ"] = 20.0
+        # dummy values
+        if not "HEIGHT" in df.columns:
+            df["HEIGHT"] = 0.0
+        if not "VOL" in df.columns:
+            df["VOL"] = 0.0
         return df
 
     def check_assignments(self):

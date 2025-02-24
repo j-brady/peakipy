@@ -1,10 +1,9 @@
 # Say hello to peakipy!
 
-Simple deconvolution of NMR peaks for extraction of intensities.
-Provided an NMRPipe format spectrum (2D or Pseudo 3D) and a peak list
-(NMRPipe, Sparky or CCPNMR v2/v3), overlapped peaks are
-automatically/interactively clustered and groups of overlapped peaks are
-fitted together using Gaussian, Lorentzian or Pseudo-Voigt (Gaussian +
-Lorentzian) lineshape.
+*Simple deconvolution of NMR peaks for extraction of intensities*
 
-![image](./static/bokeh.png)
+ - Cluster and group overlapping peaks
+ - Fit and deconvolute clusters of peaks using selected lineshapes (Gaussian, Lorentzian, Pseudo-Voigt (Gaussian + Lorentzian) or Voigt).
+ - Interactively edit initial fitting parameters and evaluate results 
+
+![image](./static/panel.png)

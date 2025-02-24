@@ -18,6 +18,7 @@ from skimage.filters import threshold_otsu
 
 from mpl_toolkits.mplot3d import axes3d
 from matplotlib.backends.backend_pdf import PdfPages
+from bokeh.models.widgets.tables import ScientificFormatter
 
 import plotly.io as pio
 import panel as pn
@@ -48,6 +49,7 @@ from peakipy.utils import (
     remove_excluded_peaks,
     warn_if_trying_to_fit_large_clusters,
     save_data,
+    check_for_existing_output_file_and_backup
 )
 
 from peakipy.lineshapes import (
@@ -126,7 +128,6 @@ class CheckData:
 
     def load_dataframe(self):
         self._df = validate_fit_dataframe(pd.read_csv(self.fits_path))
-        print("Here")
 
     @property
     def df(self):
@@ -211,8 +212,8 @@ def read(
     --------
         peakipy read test.tab test.ft2 pipe --dims 0 --dims 1
         peakipy read test.a2 test.ft2 a2 --thres 1e5  --dims 0 --dims 2 --dims 1
-        peakipy read ccpnTable.tsv test.ft2 a3 --y_radius 0.3 --x_radius 0.03
-        peakipy read test.csv test.ft2 peakipy --dims 0 1 2
+        peakipy read ccpnTable.tsv test.ft2 a3 --y-radius-ppm 0.3 --x_radius-ppm 0.03
+        peakipy read test.csv test.ft2 peakipy --dims 0 --dims 1 --dims 2
 
     Description
     -----------
@@ -296,6 +297,15 @@ def read(
             cluster = False
             # don't overwrite the old .csv file
             outname = outname.parent / (outname.stem + "_new")
+        
+        case peaklist_format.csv:
+            peaks = Peaklist(
+                peaklist_path,
+                data_path,
+                fmt=PeaklistFormat.csv,
+                dims=dims,
+                radii=[x_radius_ppm, y_radius_ppm],
+            )
 
     peaks.update_df()
 
@@ -316,10 +326,10 @@ def read(
     match outfmt.value:
         case "csv":
             outname = outname.with_suffix(".csv")
-            data.to_csv(outname, float_format="%.4f", index=False)
+            data.to_csv(check_for_existing_output_file_and_backup(outname), float_format="%.4f", index=False)
         case "pkl":
             outname = outname.with_suffix(".pkl")
-            data.to_pickle(outname)
+            data.to_pickle(check_for_existing_output_file_and_backup(outname))
 
     # write config file
     config_path = peaklist_path.parent / Path("peakipy.config")
@@ -788,6 +798,10 @@ def get_cluster(cluster):
         font-size: 12px;
     }
     """
+    table_formatters = {
+        "amp": ScientificFormatter(precision=3),
+        "height": ScientificFormatter(precision=3),
+    }
     data = data_singleton_check()
     cluster_groups = data.df.groupby("clustid")
     cluster_group = cluster_groups.get_group(cluster)
@@ -813,6 +827,7 @@ def get_cluster(cluster):
         show_index=False,
         frozen_columns=["assignment","clustid","plane"],
         stylesheets=[tabulator_stylesheet],
+        formatters=table_formatters,
     )
     return df_pane
 
