@@ -12,7 +12,7 @@ from rich.console import Console
 
 from bokeh.palettes import Category20
 from scipy import ndimage
-from skimage.morphology import square, binary_closing, disk, rectangle
+from skimage.morphology import binary_closing, disk, footprint_rectangle
 from skimage.filters import threshold_otsu
 from pydantic import BaseModel
 
@@ -497,8 +497,8 @@ class Peaklist(Pseudo3D):
         # in case of missing values (should estimate though)
         self.df["XW_HZ"] = self.df.XW_HZ.replace("None", "20.0")
         self.df["YW_HZ"] = self.df.YW_HZ.replace("None", "20.0")
-        self.df["XW_HZ"] = self.df.XW_HZ.replace(np.NaN, "20.0")
-        self.df["YW_HZ"] = self.df.YW_HZ.replace(np.NaN, "20.0")
+        self.df["XW_HZ"] = self.df.XW_HZ.replace(np.nan, "20.0")
+        self.df["YW_HZ"] = self.df.YW_HZ.replace(np.nan, "20.0")
         # convert linewidths to float
         self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
         self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))
@@ -744,14 +744,14 @@ class Peaklist(Pseudo3D):
                 width = struc_size[0]
                 if self.verbose:
                     print(f"using square with {width}")
-                closed_data = binary_closing(thresh_data, square(int(width)))
+                closed_data = binary_closing(thresh_data, footprint_rectangle((int(width),int(width))))
 
             case struc_el.rectangle:
                 width, height = struc_size
                 if self.verbose:
                     print(f"using rectangle with {width} and {height}")
                 closed_data = binary_closing(
-                    thresh_data, rectangle(int(width), int(height))
+                    thresh_data, footprint_rectangle((int(width), int(height)))
                 )
 
             case _:
@@ -930,7 +930,14 @@ class LoadData(Peaklist):
         return self.df
 
     def check_data_frame(self):
-        # make diameter columns
+        """
+        Ensure the data frame has all required columns and add necessary derived columns for fitting.
+        
+        Returns
+        -------
+        pd.DataFrame
+            The modified DataFrame after validation.
+        """    # make diameter columns
         if "X_DIAMETER_PPM" in self.df.columns:
             pass
         else:
@@ -968,8 +975,8 @@ class LoadData(Peaklist):
         self.df["X_AXISf"] = self.df.X_PPM.apply(lambda x: self.uc_f2.f(x, "ppm"))
         self.df["Y_AXISf"] = self.df.Y_PPM.apply(lambda x: self.uc_f1.f(x, "ppm"))
         # in case of missing values (should estimate though)
-        self.df["XW_HZ"] = self.df.XW_HZ.replace(np.NaN, "20.0")
-        self.df["YW_HZ"] = self.df.YW_HZ.replace(np.NaN, "20.0")
+        self.df["XW_HZ"] = self.df.XW_HZ.replace(np.nan, "20.0")
+        self.df["YW_HZ"] = self.df.YW_HZ.replace(np.nan, "20.0")
         # convert linewidths to float
         self.df["XW_HZ"] = self.df.XW_HZ.apply(lambda x: float(x))
         self.df["YW_HZ"] = self.df.YW_HZ.apply(lambda x: float(x))

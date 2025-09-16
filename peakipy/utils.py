@@ -96,6 +96,16 @@ def load_config(config_path):
 
 
 def write_config(config_path, config_dic):
+    """
+    Write a configuration dictionary to a JSON file.
+    
+    Parameters
+    ----------
+    config_path : Path
+        Path to where the config should be saved.
+    config_dic : dict
+        Dictionary containing configuration parameters to write to the file.
+    """
     with open(config_path, "w") as config:
         config.write(json.dumps(config_dic, sort_keys=True, indent=4))
 

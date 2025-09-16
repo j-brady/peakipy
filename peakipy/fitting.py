@@ -818,6 +818,19 @@ class FitPeaksResultRowVoigt(FitPeaksResultDfRow):
 
 
 def get_fit_peaks_result_validation_model(lineshape):
+    """
+    Retrieve the appropriate validation model based on the lineshape used for fitting.
+    
+    Parameters
+    ----------
+    lineshape : Lineshape
+        Enum or string indicating the type of lineshape model used for fitting.
+    
+    Returns
+    -------
+    type
+        The validation model class corresponding to the specified lineshape.
+    """
     match lineshape:
         case lineshape.V:
             validation_model = FitPeaksResultRowVoigt
@@ -998,6 +1011,21 @@ def refit_peak_cluster_with_constraints(
 
 
 def merge_unpacked_parameters_with_metadata(cluster_fit_df, group_of_peaks_df):
+    """
+    Combine fitted peak parameters with their associated metadata.
+    
+    Parameters
+    ----------
+    cluster_fit_df : pd.DataFrame
+        DataFrame containing peak fitting results.
+    group_of_peaks_df : pd.DataFrame
+        DataFrame with metadata for corresponding peaks.
+    
+    Returns
+    -------
+    pd.DataFrame
+        Merged DataFrame with both fitting results and metadata.
+    """
     group_of_peaks_df["prefix"] = group_of_peaks_df.ASS.apply(to_prefix)
     merged_cluster_fit_df = cluster_fit_df.merge(
         group_of_peaks_df, on="prefix", suffixes=["", "_init"]

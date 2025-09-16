@@ -31,3 +31,5 @@ test/test_protein_L/tmp/
 ## pytest
 .pytest_cache
 .coverage
+*~undo-tree~
+.opencode/
