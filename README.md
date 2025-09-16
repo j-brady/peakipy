@@ -14,14 +14,20 @@ Simple deconvolution of NMR peaks for extraction of intensities. Provided an NMR
 
 ## Installation
 
-The easiest way to install peakipy is with poetry...
+I have recently switched to using [uv](https://docs.astral.sh/uv/) for managing my Python versions, environments and packages. To install peakipy with uv, use either of the following:
 
 ``` bash
 git clone https://github.com/j-brady/peakipy.git
-cd peakipy; poetry install
+cd peakipy; uv sync
 ```
 
-If you don't have poetry please refer to the [poetry documentation](https://poetry.eustace.io/docs/) for more details
+or
+
+``` bash
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install peakipy
+```
 
 At this point the package should be installed and the main scripts (`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
 should have been added to your path.

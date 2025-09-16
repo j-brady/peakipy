@@ -1,111 +1,116 @@
-Quickstart instructions
-=======================
+# Quickstart Instructions
+This guide provides a quick overview of how to get started with `peakipy`. Follow these instructions to set up your environment, install the necessary components, and execute basic commands.
 
-Inputs
-------
+## Inputs
+To work with `peakipy`, you will need the following input files:
+1. **Peak List:** A formatted file that describes the peaks of interest. Refer to the [instructions](./instructions.md) for formatting guidance.
+2. **NMRPipe Frequency Domain Dataset:** This can be a 2D or pseudo 3D dataset for processing.
 
-1.  Peak list (see [instructions](./instructions.md))
-2.  NMRPipe frequency domain dataset (2D or Pseudo 3D)
+## Main Commands
+`peakipy` provides four main commands to facilitate peak analysis:
 
-There are four main commands.
+1. **`peakipy read`**  
+   Converts your peak list into a `.csv` file while selecting clusters of peaks.  
+   **Usage:**  
+   ```bash
+   peakipy read [PEAK_LIST_FILE] [NMR_DATA_FILE] [OUTPUT_FORMAT] [OPTIONS]
+   ```
+   
+2. **`peakipy edit`**  
+   Interactively checks and adjusts fit parameters (i.e., clusters and mask radii) if the initial clustering is not satisfactory.  
+   **Usage:**  
+   ```bash
+   peakipy edit [PEAK_LIST_FILE] [NMR_DATA_FILE] [OPTIONS]
+   ```
 
-1.  `peakipy read` converts your peak list into a `.csv` file and
-    selects clusters of peaks.
-2.  `peakipy edit` is used to check and adjust fit parameters
-    interactively (i.e clusters and mask radii) if initial clustering is
-    not satisfactory.
-3.  `peakipy fit` fits clusters of peaks using the `.csv` peak list
-    generated (or edited) by the `read (edit)` script(s).
-4.  `peakipy check` is used to check individual fits or groups of fits
-    and make plots.
+3. **`peakipy fit`**  
+   Fits clusters of peaks using the `.csv` peak list generated (or edited) by the `read` (or `edit`) command(s).  
+   **Usage:**  
+   ```bash
+   peakipy fit [PEAK_LIST_FILE] [NMR_DATA_FILE] [OUTPUT_FILE] [OPTIONS]
+   ```
+   
+4. **`peakipy check`**  
+   Checks individual fits or groups of fits and generates plots.  
+   **Usage:**  
+   ```bash
+   peakipy check [OUTPUT_FILE] [NMR_DATA_FILE] [OPTIONS]
+   ```
 
-Head to the [instructions](./instructions.md) section for a
-description of how to run these scripts. You can also use the
-`--help` flag for instructions on how to run the programs from the
-command line (e.g `peakipy read --help`).
+For more details on how to run these scripts, check the [instructions](./instructions.md). You can also use the `--help` flag for further guidance on running each command (e.g., `peakipy read --help`).
 
-How to install peakipy
-----------------------
+## How to Install `peakipy`
 
-=== "poetry"
-    !!! note ""
-        Clone the [peakipy](https://github.com/j-brady/peakipy) repository from
-        github:
+### Using `uv` (recommended)
 
-            git clone https://github.com/j-brady/peakipy.git
-            cd peakipy; poetry install
+Either of the following approaches should work:
 
-        If you don't have poetry I refer you to the [poetry documentation](https://poetry.eustace.io/docs/) for more details.
+1. Clone the `peakipy` repository:
+   ```bash
+   git clone https://github.com/j-brady/peakipy.git
+   cd peakipy
+   uv sync
+   ```
 
-        At this point the package should be installed and the main scripts
-        (`peakipy read`, `peakipy edit`, `peakipy fit` and `peakipy check`)
-        should have been added to your path.
+   The `uv sync` command will automatically create a virtual environment for you in `.venv` which you can then activate with the usual `source .venv/bin/activate`.
+   
+2. Install from PyPI:
+   ```bash
+   uv venv --python 3.12
+   source .venv/bin/activate
+   uv pip install peakipy
+   ```
 
-=== "pip"
+### Using pip
+1. Install `peakipy` using pip:
+   ```bash
+   pip install peakipy
+   ```
 
-    !!! note ""
-            pip install peakipy
+#### Example Bash Script
+Below is an example of an installation script and a basic use case:
 
-        Below is an example of an installation script and a basic use case :
+```bash
+#!/bin/bash
+# Create a virtual environment and activate it
+uv venv --python 3.12
+source .venv/bin/activate
 
-            #!/bin/bash
-            ##############################
-            # make a virtual environment #
-            ##############################
-            python3.10 -m venv peakipy_env;
-            source peakipy_env/bin/activate;
+# Install peakipy
+uv pip install peakipy
 
-            ##############################
-            # install peakipy            #
-            ##############################
-            pip install --upgrade pip;
-            pip install peakipy;
+# Process some data using peakipy
+peakipy read peaks.a2 test.ft2 a2 --y-radius-ppm 0.213 --show
+peakipy edit peaks.csv test.ft2  # Adjust fitting parameters
+peakipy fit peaks.csv test.ft2 fits.csv --vclist vclist --max-cluster-size 15
+peakipy check fits.csv test.ft2 --clusters 1 --clusters 2 --clusters 3 --colors purple green --show --outname tmp.pdf
+```
 
-            ##############################
-            #  process some data!        #
-            ##############################
-            peakipy read peaks.a2 test.ft2 a2 --y-radius-ppm 0.213 --show;
-            peakipy edit peaks.csv test.ft2; # adjust fitting parameters
-            peakipy fit peaks.csv test.ft2 fits.csv --vclist vclist --max-cluster-size 15; # assuming you saved edited peaklist as peaks.csv
-            # interactive checking
-            peakipy check fits.csv test.ft2 --clusters 1 --clusters 2 --clusters 3 --colors purple green --show --outname tmp.pdf;
-            # plots all the fits (first plane only)
-            peakipy check fits.csv test.ft2 --first --colors purple green --show;
+Run this script by sourcing the file:
+```bash
+source file_containing_commands
+```
 
-        Run this above code by sourcing the file e.g.
-        `source file_containing_commands`
+**Note:** It is recommended to use a virtual environment:
+```bash
+uv venv --python 3.12
+source .venv/bin/activate
+# or for csh:
+source .venv/bin/activate.csh
+```
 
-!!! note
-    I recommend using a virtual environment:
+## Requirements
+### Latest
+The latest version (2.1.1) of `peakipy` requires Python 3.11 or above (see `pyproject.toml` for details).
 
-        python3 -m venv peakipy_venv
-
-    Then activate (bash):
-
-        source peakipy_venv/bin/activate
-
-    or (csh):
-
-        source peakipy_venv/bin/activate.csh
-
-    Once activated you can install peakipy with pip or poetry.
-
-
-Requirements
------------
-
-=== "Latest"
-
-    The latest version (2.1.0) of `peakipy` requires Python 3.10 or above (see `pyproject.toml` for details).
-
-=== "0.2.0"
-
-    `peakipy` version 0.2.0 which runs on Python 3.8 can be installed in the following ways:
-
-        git clone --branch v0.2 https://github.com/j-brady/peakipy.git
-        cd peakipy
-        poetry install
-
-    or:
-
-        pip install peakipy==0.2.0
+### Legacy Version (0.2.0)
+`peakipy` version 0.2.0, which runs on Python 3.8, can be installed as follows:
+```bash
+git clone --branch v0.2 https://github.com/j-brady/peakipy.git
+cd peakipy
+poetry install
+```
+Or:
+```bash
+pip install peakipy==0.2.0
+```
