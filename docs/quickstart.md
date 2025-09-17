@@ -101,7 +101,7 @@ source .venv/bin/activate.csh
 
 ## Requirements
 ### Latest
-The latest version (2.1.1) of `peakipy` requires Python 3.11 or above (see `pyproject.toml` for details).
+The latest version (2.1.2) of `peakipy` requires Python 3.11 or above (see `pyproject.toml` for details).
 
 ### Legacy Version (0.2.0)
 `peakipy` version 0.2.0, which runs on Python 3.8, can be installed as follows:
