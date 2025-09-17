@@ -1,0 +1,953 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../quickstart/">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+    
+    
+      
+        <title>Instructions - peakipy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.e53b48f4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#instructions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="peakipy" class="md-header__button md-logo" aria-label="peakipy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            peakipy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Instructions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/j-brady/peakipy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="peakipy" class="md-nav__button md-logo" aria-label="peakipy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    peakipy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/j-brady/peakipy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Instructions
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Instructions
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#peak-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peak lists
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nmr-spectra" class="md-nav__link">
+    <span class="md-ellipsis">
+      NMR spectra
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peakipy-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      peakipy read
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peakipy-edit" class="md-nav__link">
+    <span class="md-ellipsis">
+      peakipy edit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peakipy-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      peakipy fit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-fits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking fits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#excluding-peaks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Excluding peaks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      Protocol
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Outputs
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lineshapes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lineshapes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#peak-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peak lists
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nmr-spectra" class="md-nav__link">
+    <span class="md-ellipsis">
+      NMR spectra
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peakipy-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      peakipy read
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peakipy-edit" class="md-nav__link">
+    <span class="md-ellipsis">
+      peakipy edit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peakipy-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      peakipy fit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-fits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking fits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#excluding-peaks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Excluding peaks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      Protocol
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Outputs
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="instructions">Instructions</h1>
+<h2 id="peak-lists">Peak lists</h2>
+<p>First you need a peak list in either Sparky, CCPNMRv2 (Analysis2), CCPNMRv3
+(assign) or NMRPipe format. Alternatively, a <code>.csv</code> format file can be used. Details of peak list formats are explained below.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:6"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><input id="__tabbed_1_6" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">CCPNMRv3 (a3)</label><label for="__tabbed_1_2">CCPNMRv2 (a2)</label><label for="__tabbed_1_3">Sparky (sparky)</label><label for="__tabbed_1_4">NMRPipe (pipe)</label><label for="__tabbed_1_5">Custom .csv (csv)</label><label for="__tabbed_1_6">Peakipy .csv (peakipy)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Example of a tab delimited peak table exported directly from CCPNMRv3
+assign:</p>
+<div class="highlight"><pre><span></span><code>#   Pid Spectrum    PeakList    Id  Assign F1   Assign F2   Pos F1  Pos F2  LW F1 (Hz)  LW F2 (Hz)  Height  HeightError Volume  VolumeError Merit   Annotation  Comment
+0   1   PK:test1_projection_H_N.1.1 test1_projection_H_N    1   1           10.380684043013412  129.32603752049937  14.179313120050438  18.675223392932594  66224788.0      None        1.0     
+1   2   PK:test1_projection_H_N.1.2 test1_projection_H_N    1   2           9.335853185661527   129.6732286432531   14.962974392261438  18.644570222511447  39807284.0      None        1.0     
+2   3   PK:test1_projection_H_N.1.3 test1_projection_H_N    1   3           9.185077855609203   128.66553436519882  13.786411378949163  18.70449353638719   56258792.0      None        1.0
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Empty <code>Assign F1</code> and <code>Assign F2</code> column rows will be replaced
+with dummy labels. Duplicated assignments will also be appended with
+dummy labels. This table can be exported from CCPNMRv3 assign by opening
+your peak list of interest as a module with the following steps:</p>
+<ul>
+<li>select peaks (Ctrl/Cmd + a)</li>
+<li>right click and select <code>Export All Columns</code></li>
+<li>Save in <code>.tsv</code> format (tab separated) by using the
+    dropdown for <code>Files of type</code>.</li>
+</ul>
+</div>
+</div>
+<div class="tabbed-block">
+<p>Example of tab delimited peak list exported directly from Analysis2:</p>
+<div class="highlight"><pre><span></span><code>Number  #       Position F1     Position F2     Sampled None    Assign F1       Assign F2       Assign F3       Height  Volume  Line Width F1 (Hz)  Line Width F2 (Hz)      Line Width F3 (Hz)      Merit   Details Fit Method      Vol. Method
+1       1       9.33585 129.67323       2.00000  {23}H[45]       {23}N[46]       2.0    3.91116e+07     2.14891e+08     15.34578        19.24590    None    1.00000 None    parabolic       box sum
+2       2       10.38068        129.32604       2.00000  {9}H[17]        {9}N[18]        2.0    6.61262e+07     3.58137e+08     15.20785        19.76284        None    1.00000 None    parabolic       box sum
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>Position F1</code> and <code>Position F2</code> are often flipped 
+(i.e. F1=x and F2=y). I think this happens by default with
+Analysis2, however, you can chastise me for being an idiot if I'm
+wrong. <code>peakipy read</code> will flip them automatically, so beware. If you have
+"correctly" labelled columns then you can use <code>--posF1 &lt;column_name&gt;</code>
+and <code>--posF2 &lt;column_name&gt;</code> to define which column names map to <code>Y_PPM</code>
+and <code>X_PPM</code>, respectively.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p>Minimum:</p>
+<div class="highlight"><pre><span></span><code>Assignment  w1  w2
+PeakOne 118 7.5
+PeakTwo 119 7.4
+etc...
+</code></pre></div>
+<p>Also accepted:</p>
+<div class="highlight"><pre><span></span><code>Assignment         w1         w2        Volume   Data Height   lw1 (hz)   lw2 (hz)
+    ALA8N-H    123.410      7.967   2.25e+08      15517405       15.8       20.5
+PHE12N-H    120.353      8.712   3.20e+08      44377264        9.3       16.6
+etc...
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Default peak list generated by NMRDraw (e.g. test.tab):</p>
+<div class="highlight"><pre><span></span><code>VARS   INDEX X_AXIS Y_AXIS DX DY X_PPM Y_PPM X_HZ Y_HZ XW YW XW_HZ YW_HZ X1 X3 Y1 Y3 HEIGHT DHEIGHT VOL PCHI2 TYPE ASS CLUSTID MEMCNT
+FORMAT %5d %9.3f %9.3f %6.3f %6.3f %8.3f %8.3f %9.3f %9.3f %7.3f %7.3f %8.3f %8.3f %4d %4d %4d %4d %+e %+e %+e %.5f %d %s %4d %4d
+
+NULLVALUE -666
+NULLSTRING *
+
+    1   159.453    10.230  0.006  0.004    9.336  129.673  7471.831 10516.882   2.886   2.666   16.937   20.268  159  160    9   11 +2.564241e+07 +2.505288e+04 +1.122633e+08 0.00000 1 None    1    1
+    2    17.020    13.935  0.002  0.002   10.381  129.326  8307.740 10488.713   2.671   2.730   15.678   20.752   16   18   13   15 +4.326169e+07 +2.389882e+04 +2.338556e+08 0.00000 1 None    2    1
+    etc...
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>A custom .csv file must have the following columns</p>
+<div class="highlight"><pre><span></span><code>ASS,X_PPM,Y_PPM
+test1,8.763,117.821
+test2,8.973,122.359
+test3,9.005,122.436
+</code></pre></div>
+<p>It is also possible to provide peak linewidth, volume and height estimates</p>
+<div class="highlight"><pre><span></span><code>ASS,X_PPM,Y_PPM,XW_HZ,YW_HZ,VOL,HEIGHT
+test1,8.763,117.821,20.0,20.0,10,10
+test2,8.973,122.359,20.0,20.0,10,10
+test3,9.005,122.436,20.0,20.0,10,10
+</code></pre></div>
+<p>You can then run peakipy with the following command</p>
+<p><code>peakipy read test.csv test.ft3 csv</code></p>
+</div>
+<div class="tabbed-block">
+<p>If you would like to re-use a peakipy peaklist generated using <code>peakipy read</code> for a new dataset then you can use the <code>peakipy</code> argument</p>
+<p><code>peakipy read test.csv test.ft3 peakipy</code></p>
+</div>
+</div>
+</div>
+<h2 id="nmr-spectra">NMR spectra</h2>
+<p>Peakipy accepts NMRPipe processed spectra only. The input data should be either an NMRPipe 2D or 3D cube. By default, peakipy expects a pseudo-3D spectrum with dimension order ID, F1, F2 (Z, Y, X). It is recommended that you process your spectra so that the dimension order is Z, Y, X. However, you can specify the dimension order using the <code>--dims</code> flag. The order in which the <code>--dims</code> flags are provided reflects the order of the dimensions. The integer values reflect the index of the dimension you are re-ordering.</p>
+<p>For example:</p>
+<ul>
+<li>For a 3D cube with shape <code>(X, Y, Z)</code> you would use <code>--dims 2 --dims 1 --dims 0</code> to re-shape to <code>(Z, Y, X)</code>.</li>
+<li>For a 3D cube with shape <code>(Y, X, Z)</code> you would use <code>--dims 2 --dims 0 --dims 1</code> to re-shape to <code>(Z, Y, X)</code></li>
+</ul>
+<p>The default dimension order is <code>(Z, Y, X)</code> (e.g. ID, F1, F2) (<code>--dims 0 --dims 1 --dims 2</code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default peakipy expects a pseudo 3D spectrum with dimension order Z, Y, X. For a 2D spectrum with dimension order Y, X then you need to run <code>peakipy read test.tab test.ft2 pipe --dims 0 --dims 1</code></p>
+</div>
+<h2 id="peakipy-read">peakipy read</h2>
+<p>Here is an example of how to read a Sparky peaklist into peakipy:</p>
+<div class="highlight"><pre><span></span><code>peakipy read peaks.sparky test.ft2 sparky --show
+</code></pre></div>
+<p>This converts your peak list into a <code>pandas DataFrame</code> and uses
+<code>threshold_otsu</code> (<code>scikit-image</code>) to determine a cutoff for clustering
+overlapping peaks (cluster ids are added to the "CLUSTID" column a la NMRPipe!). The clustered peak list is saved as a csv file <code>peaks.csv</code> to be used as input for
+either <code>peakipy edit</code> or <code>peakipy fit</code>. </p>
+<p>To set the threshold manually use the <code>--thres</code> option:</p>
+<div class="highlight"><pre><span></span><code>peakipy read peaks.sparky test.ft2 sparky --show --thres 1e6
+</code></pre></div>
+<p>This will exclude signals below 1e6. However, it may be preferable to adjust this parameter interactively using <code>peakipy edit</code>.</p>
+<p>Below is an example of a clustered peak list. Clustered peaks are colour coded and singlet peaks are black.</p>
+<p><img alt="image" src="../static/clusters.png" /></p>
+<p>To adjust the clustering behaviour, change the
+structuring element used for binary closing.</p>
+<div class="highlight"><pre><span></span><code>peakipy read peaks.sparky test.ft2 --dims 0 --dims 1 --dims 2 --struc-el disk --struc-size 4 0 --show
+</code></pre></div>
+<p>The above would use a disk shaped structuring element with a radius of 4
+points (see the
+<a href="http://scikit-image.org/docs/dev/api/skimage.morphology.html">scikit-image.morphology</a>
+module for more information).</p>
+<p>Adjust the radii used for masking the data by setting the <code>--x-radius-ppm</code> and <code>--y-radius-ppm</code> flags:</p>
+<div class="highlight"><pre><span></span><code>peakipy read peaks.sparky test.ft2 sparky --dims 0 --dims 1 --dims 2 --y-radius-ppm 0.2 --x-radius-ppm 0.04
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>peakipy read</code> will generate a <code>peakipy.config</code> which is subsequently read by <code>edit</code>, <code>fit</code> and <code>check</code> so that the <code>--dims</code> option is not required after running <code>peakipy read</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">        </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">            </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">            </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">            </span><span class="mi">2</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="p">],</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">}</span>
+</code></pre></div></p>
+</div>
+<h2 id="peakipy-edit">peakipy edit</h2>
+<p>If the automatic clustering is not satisfactory you can manually adjust
+clusters and initial fitting parameters using <code>peakipy edit</code>. :</p>
+<div class="highlight"><pre><span></span><code>peakipy edit &lt;peaklist&gt; &lt;nmrdata&gt;
+</code></pre></div>
+<p>As of peakipy 2.0.0 this will open a <code>panel</code> session in your internet browser that allows you to interactively edit peak fitting parameters.</p>
+<p>This command will start a <code>bokeh</code> server and cause a tab to open in your
+internet browser in which you can interactively edit peak fitting
+parameters.</p>
+<p><img alt="image" src="../static/bokeh.png" /></p>
+<p>Use the table on the right to select the cluster(s) you are interested
+and double click to edit values in the table. For example if you think
+peak1 should be fitted with peak2 but they have different clustids then
+you can simply change peak2's clustid to match peak1's.</p>
+<p>Once a set of peaks is selected (or at least one peak within a cluster)
+you can manually adjust their starting parameters for fitting (including
+the X and Y radii for the fitting mask, using the sliders).</p>
+<p>The effect of changing these parameters can be visualised by clicking on
+the <code>Fit selected</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If using matplotlib you will need to have your
+interactive backend correctly configured by editing your matplotlibrc
+file. If you don't know where that is then you can find it by importing
+matplotlib into your Python interpreter and typing
+<code>matplotlib.get_data_path()</code>. If you have trouble with opening
+interactive matplotlib my first suggestion is to check that you have a
+<code>matplotlibrc</code> file placed in your home directory
+<code>~/.matplotlib/matplotlibrc</code> with the backend option set to either
+<code>TkAgg</code> or <code>Agg</code>. These usually work:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TkAgg</span>
+</code></pre></div>
+<p>or :</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Agg</span>
+</code></pre></div>
+<p>or for Mac users :</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">macosx</span>
+</code></pre></div>
+</div>
+<p>To test other peak clustering settings you can adjust the contour level
+(akin to changing <code>--thres</code>) or adjust the dimensions of the structuring
+element used for binary closing.</p>
+<p><img alt="image" src="../static/fit.png" /></p>
+<p>If you like the parameters you have chosen then you can save the peak
+list using the <code>save</code> button. If you want to return to your edited peak
+list at a later stage then run <code>peakipy edit</code> with the edited peak list
+as your <code>&lt;peaklist&gt;</code> argument.</p>
+<p>Clicking <code>Quit</code> closes the bokeh server.</p>
+<p>Peaks can be added via the <code>tap</code> button on the right side of the
+spectrum. Once the tap button is activated then peaks are added to the
+spectrum by double clicking at the desired position.</p>
+<h2 id="peakipy-fit">peakipy fit</h2>
+<p>Once you are satisfied with your initial fitting parameters <code>peakipy fit</code> can be
+run using the peak list generated by <code>peakipy read</code> or <code>peakipy edit</code>
+(e.g. <code>edited_peaks.csv</code>).</p>
+<p>For example... </p>
+<div class="highlight"><pre><span></span><code>peakipy fit edited_peaks.csv test.ft2 fits.csv --dims 0 --dims 1 --dims 2 --lineshape PV
+</code></pre></div>
+<p>Fits that are likely to need checking are flagged in the <code>log.txt</code> file.</p>
+<p>If you have a <code>vclist</code> style file containing your delay values then you
+can run <code>peakipy fit</code> with the <code>--vclist</code> option:</p>
+<div class="highlight"><pre><span></span><code>peakipy fit edited_peaks.csv test.ft2 fits.csv --lineshape PV --vclist vclist
+</code></pre></div>
+<p>This will result in an extra column being added to your <code>fits.csv</code> file
+called <code>vclist</code> containing the corresponding delay values.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Here is an example of a vclist style file</p>
+<div class="highlight"><pre><span></span><code>0.1
+0.2
+0.4
+0.8
+1.0
+</code></pre></div>
+</div>
+<h2 id="checking-fits">Checking fits</h2>
+<p>To plot fits for all planes or interactively check them you can run
+<code>peakipy check</code>:</p>
+<div class="highlight"><pre><span></span><code>peakipy check fits.csv test.ft2 --clusters 1 --clusters 10 --clusters 20 --show
+</code></pre></div>
+<p>Will plot clusters 1,10 and 20 showing each plane in an interactive
+matplotlib window and save the plots to a multipage pdf called plot.pdf.
+Calling <code>peakipy check</code> with the <code>--first</code> flag results in only the
+first plane of each fit being plotted. The colour or output plots can be
+changed using the <code>--colors</code> like so:</p>
+<div class="highlight"><pre><span></span><code>peakipy check fits.csv test1.ft2 --colors green purple --clusters 30 --show --first
+</code></pre></div>
+<p><img alt="Custom colouring" src="../static/colors.png" /></p>
+<p>Only valid matplotlib color names can be used.</p>
+<p>To open an interactive <code>panel</code> in your web browser</p>
+<div class="highlight"><pre><span></span><code>peakipy check fits.csv test.ft2 --panel
+</code></pre></div>
+<p>Run <code>peakipy check --help</code> for more options.</p>
+<h2 id="excluding-peaks">Excluding peaks</h2>
+<p>Peaks can be excluded from fitting by changing the value in the
+<code>include</code> column from <code>yes</code> to <code>no</code> (in the <code>.csv</code> file containing your
+peak list). The easiest way to do this is via the <code>peakipy edit</code> script.</p>
+<h2 id="protocol">Protocol</h2>
+<p>Initial parameters for FWHM, peak centers and fraction are fitted from
+the sum of all planes in your spectrum (for best signal to noise).
+Following this, the default method is to fix the center, linewidth and
+fraction parameters only fitting the amplitudes for each plane. If you
+want to float all parameters, this can be done with <code>--fix None</code> or you
+could just float the linewidths and amplitudes with
+<code>--fix fraction --fix center</code>.</p>
+<h2 id="outputs">Outputs</h2>
+<ol>
+<li>
+<p>Pandas DataFrame containing fitted intensities/linewidths/centers
+    etc:</p>
+<div class="highlight"><pre><span></span><code>,fit_prefix,assignment,amp,amp_err,center_x,center_y,sigma_x,sigma_y,fraction,clustid,plane,x_radius,y_radius,x_radius_ppm,y_radius_ppm,lineshape,fwhm_x,fwhm_y,center_x_ppm,center_y_ppm,sigma_x_ppm,sigma_y_ppm,fwhm_x_ppm,fwhm_y_ppm,fwhm_x_hz,fwhm_y_hz
+0,_None_,None,291803398.52980924,5502183.185104156,158.44747896487527,9.264911100915297,1.1610674220702277,1.160506074898704,0.0,1,0,4.773,3.734,0.035,0.35,G,2.3221348441404555,2.321012149797408,9.336283145411077,129.6698850201278,0.008514304888101518,0.10878688239041588,0.017028609776203036,0.21757376478083176,13.628064792721176,17.645884354478063
+1,_None_,None,197443035.67109975,3671708.463467884,158.44747896487527,9.264911100915297,1.1610674220702277,1.160506074898704,0.0,1,1,4.773,3.734,0.035,0.35,G,2.3221348441404555,2.321012149797408,9.336283145411077,129.6698850201278,0.008514304888101518,0.10878688239041588,0.017028609776203036,0.21757376478083176,13.628064792721176,17.645884354478063
+etc...
+</code></pre></div>
+</li>
+<li>
+<p><code>log.txt</code> contains fit reports for all fits</p>
+</li>
+<li>If <code>--plot &lt;path&gt;</code> option selected when running <code>peakipy fit</code>, the
+    first plane of each fit will be plotted in \&lt;path&gt; with the files
+    named according to the cluster ID (clustid) of the fit. Adding
+    <code>--show</code> option calls <code>plt.show()</code> on each fit so you can see what
+    it looks like. However, using <code>peakipy check</code> should be preferable
+    since plotting the fits during fitting slows down the process a lot.</li>
+</ol>
+<p>You can explore the output data conveniently with <code>pandas</code>. :</p>
+<div class="highlight"><pre><span></span><code>In [1]: import pandas as pd
+
+In [2]: import matplotlib.pyplot as plt
+
+In [3]: data = pd.read_csv(&quot;fits.csv&quot;)
+
+In [4]: groups = data.groupby(&quot;assignment&quot;)
+
+In [5]: for ind, group in groups:
+   ...:     plt.errorbar(group.vclist,group.amp,yerr=group.amp_err,fmt=&quot;o&quot;,label=group.assignment.iloc[0])
+   ...:     plt.legend()
+   ...:     plt.show()
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../js/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
