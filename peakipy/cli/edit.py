@@ -398,7 +398,8 @@ class BokehScript:
             line_dash="dotted",
             line_alpha=0.5,
         )
-        self.p.circle(x="X_PPM", y="Y_PPM", source=self.source, color="color")
+        # setting radius very small so you don't see the points. Just for selection purposes
+        self.p.circle(x="X_PPM", y="Y_PPM", radius=0.00001, source=self.source, color="color")
         # plot cluster numbers
         self.p.text(
             x="X_PPM",
