@@ -28,6 +28,9 @@ First you need a peak list in either Sparky, CCPNMRv2 (Analysis2), CCPNMRv3
         -   Save in `.tsv` format (tab separated) by using the
             dropdown for `Files of type`.
 
+    !!! note
+        Current CCPNMRv3 versions drop the `(Hz)` unit suffix, so `LW F1`/`LW F2` are also accepted in place of `LW F1 (Hz)`/`LW F2 (Hz)`.
+
 === "CCPNMRv2 (a2)"
 
     Example of tab delimited peak list exported directly from Analysis2:
