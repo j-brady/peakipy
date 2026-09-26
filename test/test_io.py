@@ -345,6 +345,31 @@ def test_Peaklist_a3(test_data_path):
     peaklist.update_df()
 
 
+def test_Peaklist_a3_lw_without_hz_suffix(test_data_path, tmp_path):
+    dims = [0, 1, 2]
+    legacy_path = test_data_path / "ccpnTable.tsv"
+    data_path = test_data_path / "test1.ft2"
+    fmt = PeaklistFormat.a3
+    radii = [0.04, 0.4]
+
+    current_ccpn = legacy_path.read_text().replace(
+        "LW F1 (Hz)\tLW F2 (Hz)", "LW F1\tLW F2"
+    )
+    assert "LW F1 (Hz)" not in current_ccpn
+    current_path = tmp_path / "ccpnTable_no_hz.tsv"
+    current_path.write_text(current_ccpn)
+
+    peaklist = Peaklist(legacy_path, data_path, fmt, dims, radii)
+    peaklist.update_df()
+    peaklist_no_hz = Peaklist(current_path, data_path, fmt, dims, radii)
+    peaklist_no_hz.update_df()
+
+    columns = ["INDEX", "ASS", "X_PPM", "Y_PPM", "XW_HZ", "YW_HZ"]
+    pd.testing.assert_frame_equal(
+        peaklist.df[columns], peaklist_no_hz.df[columns], check_dtype=False
+    )
+
+
 def test_Peaklist_sparky(test_data_path):
     dims = [0, 1, 2]
     path = test_data_path / "peaks.sparky"

@@ -378,6 +378,8 @@ class Peaklist(Pseudo3D):
             "Pos F2": "Y_PPM",
             "LW F1 (Hz)": "XW_HZ",
             "LW F2 (Hz)": "YW_HZ",
+            "LW F1": "XW_HZ",
+            "LW F2": "YW_HZ",
             "Height": "HEIGHT",
             "Volume": "VOL",
         }

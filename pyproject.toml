@@ -1,6 +1,6 @@
 [project]
 name = "peakipy"
-version = "2.1.2"
+version = "2.2.0"
 authors = [
     { name = "j-brady", email = "jacob.brady@protonmail.com" }
 ]
@@ -14,6 +14,8 @@ classifiers = [
         "Topic :: Scientific/Engineering",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
