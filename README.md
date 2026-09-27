@@ -138,3 +138,8 @@ The `lmfit` team for their awesome work.
 `scikit-image`!
 
 My colleagues, Rui Huang, Alex Conicella, Enrico Rennella, Rob Harkness and Tae Hun Kim for their extremely helpful input.
+
+## Development
+
+Notes for working on peakipy itself, including how versions are tested and published to PyPI, are in [RELEASING.md](RELEASING.md).
+
