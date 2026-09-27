@@ -7,21 +7,20 @@ jobs:
             matrix:
                 python-version: ["3.11","3.12","3.13"]
         steps:
-        - uses: actions/checkout@v3
-        - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@v3
+        - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
           with:
-              python-version: ${{ matrix.python-version }}
-        - name: Install
-          run: |
-               python -m pip install --upgrade pip
-               pip install .
-               pip install pytest
-               pip install coverage
+            persist-credentials: false
+        - name: Install uv
+          uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+          with:
+            enable-cache: true
+        - name: Install dependencies
+          # --locked fails if uv.lock is out of date with pyproject.toml, so the
+          # tests always run against the versions that are committed to the repo
+          run: uv sync --locked --no-editable --python ${{ matrix.python-version }}
         - name: Run tests
-          run: |
-              make coverage
+          run: uv run --no-sync make coverage
         - name: Upload coverage reports to Codecov
-          uses: codecov/codecov-action@v4.0.1
+          uses: codecov/codecov-action@e0b68c6749509c5f83f984dd99a76a1c1a231044 # v4.0.1
           with:
             token: ${{ secrets.CODECOV_TOKEN }}
