@@ -1173,19 +1173,6 @@ wheels = [
 ]
 
 [[package]]
-name = "numdifftools"
-version = "0.11.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "scipy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/75/e0/33c9240387173d4a92ae777a91deac759f0b8e9e47e4e3fbd984e17980d2/numdifftools-0.11.1.tar.gz", hash = "sha256:af6d58c22eb201fef9aa4dfc8caf286b14e10154a736c03a45f0a1df2bcec452", size = 82246, upload-time = "2026-09-02T11:53:56.656Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/84/1a5e50aa81a84ef740e968913b06c78845d3f57e07d022c99a4cea887faa/numdifftools-0.11.1-py3-none-any.whl", hash = "sha256:bae72cba59a45cd1bc842d8438a7643a3013d3bdfc0192829c536fbb03a3679f", size = 96458, upload-time = "2026-09-02T11:53:55.455Z" },
-]
-
-[[package]]
 name = "numpy"
 version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1442,7 +1429,6 @@ dependencies = [
     { name = "lmfit" },
     { name = "matplotlib" },
     { name = "nmrglue" },
-    { name = "numdifftools" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "panel" },
@@ -1476,7 +1462,6 @@ requires-dist = [
     { name = "lmfit", specifier = ">=1.3.4" },
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "nmrglue", specifier = ">=0.11" },
-    { name = "numdifftools", specifier = ">=0.9.41" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "panel", specifier = ">=1.8.0" },
@@ -1507,7 +1492,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
