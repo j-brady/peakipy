@@ -31,7 +31,6 @@ dependencies = [
     "lmfit>=1.3.4",
     "matplotlib>=3.10.6",
     "nmrglue>=0.11",
-    "numdifftools>=0.9.41",
     "numpy>=2.3.3",
     "pandas>=2.3.2",
     "panel>=1.8.0",
